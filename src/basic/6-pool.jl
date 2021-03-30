@@ -140,3 +140,10 @@ function exppool(x::AbstractArray; dims::Union{Int,NTuple{N,Int}}) where N
     e = exp.(x)
     return sum(e .* x, dims=dims) ./ sum(e, dims=dims)
 end
+
+
+
+export mean
+export maxmin
+export linearpool
+export exppool

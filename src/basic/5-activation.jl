@@ -13,6 +13,18 @@ import Base.exp10
 import Base.log2
 import Base.log10
 
+export abs
+export reshape
+export sind
+export sinpi
+
+export exp2
+export exp10
+
+export log2
+export log10
+
+export relu, relu!
 # -------------------------------------------------------- relu
 function relu!(x::AbstractArray)
     @. x = max(0.0, x)
@@ -56,7 +68,7 @@ function relu(var::Variable{T}) where T
     return out
 end
 
-
+export relu1, relu1!
 # -------------------------------------------------------- relu1
 function relu1!(x::AbstractArray)
     @. x = min(1.0, max(0.0, x))
@@ -102,7 +114,7 @@ function relu1(var::Variable{T}) where T
     return out
 end
 
-
+export relu6, relu6!
 # -------------------------------------------------------- relu6
 function relu6!(x::AbstractArray)
     @. x = min(6.0, max(0.0, x))
@@ -148,7 +160,7 @@ function relu6(var::Variable{T}) where T
     return out
 end
 
-
+export line, line!
 # -------------------------------------------------------- line
 function line!(x::AbstractArray)
     @. x = (-1.0 < x < 1.0) * x
@@ -196,6 +208,7 @@ function line(var::Variable{T}) where T
 end
 
 
+export hardtanh, hardtanh!
 # -------------------------------------------------------- hardtanh
 function hardtanh!(x::AbstractArray)
     T = eltype(x)
@@ -245,6 +258,7 @@ function hardtanh(var::Variable{T}) where T
 end
 
 
+export leakyrelu, leakyrelu!
 # -------------------------------------------------------- leakyrelu
 function leakyrelu!(x::AbstractArray)
     ZPONE = eltype(x)(0.1)
@@ -297,6 +311,7 @@ function leakyrelu(var::Variable{T}) where T
 end
 
 
+export sigmoid, sigmoid!
 # -------------------------------------------------------- sigmoid
 function sigmoid!(x::AbstractArray)
     ONE = eltype(x)(1.0)
@@ -342,6 +357,7 @@ function sigmoid(var::Variable{T}) where T
 end
 
 
+export swish, swish!
 # -------------------------------------------------------- swish
 function swish!(x::AbstractArray)
     ONE = eltype(x)(1.0)
@@ -365,10 +381,17 @@ function swish(var::Variable{T}) where T
 end
 
 
+export softmax
+
+function softmax(x::AbstractArray; dims::Union{Int,NTuple{N,Int}}) where N
+    out = exp.(x .- maximum(x, dims=dims))
+    SUM = eltype(x)(1.0) ./ sum(out, dims=dims)
+    return out .* SUM
+end
+
+
 function softmax(var::Variable{T}; dims::Union{Int,NTuple{N,Int}}) where {T,N}
-    out = exp.(var.value .- maximum(var.value, dims=dims))
-    SUM = eltype(var)(1.0) ./ sum(out, dims=dims)
-    out = Variable{T}(out .* SUM, var.backprop)
+    out = Variable{T}(softmax(var.value; dims=dims), var.backprop)
     if var.backprop
         function softmaxBackward()
             if need2computeδ!(var)
@@ -383,16 +406,10 @@ function softmax(var::Variable{T}; dims::Union{Int,NTuple{N,Int}}) where {T,N}
 end
 
 
-function softmax(x::AbstractArray; dims::Union{Int,NTuple{N,Int}}) where N
-    out = exp.(x .- maximum(x, dims=dims))
-    SUM = eltype(x)(1.0) ./ sum(out, dims=dims)
-    return out .* SUM
-end
-
-
 # -----------------
 # 不常用激活函数....
 # -----------------
+export softplus, softplus! 
 function softplus!(x::AbstractArray)
     @. x = log(1.0 + exp(x))
 end
@@ -436,6 +453,7 @@ function softplus(var::Variable{T}) where T
 end
 
 
+export exp! 
 function exp!(var::Variable{T}) where T
     out = Variable{T}(exp!(var.value), var.backprop)
     if var.backprop
@@ -466,6 +484,7 @@ function Base.:exp(var::Variable{T}) where T
 end
 
 
+export log!
 function log!(var::Variable{T}) where T
     out = Variable{T}(log(var.value), var.backprop)
     if var.backprop
@@ -496,6 +515,7 @@ function Base.:log(var::Variable{T}) where T
 end
 
 
+export abs!
 function abs!(x::AbstractArray)
     @. x = abs(x)
 end
@@ -792,6 +812,7 @@ end
 
 
 # -- tan serials --
+export tan!
 function tan!(var::Variable{T}) where T
     out = Variable{T}(tan!(var.value), var.backprop)
     if var.backprop
@@ -828,6 +849,7 @@ function Base.:tan(var::Variable{T}) where T
 end
 
 
+export tand!
 function tand!(x::AbstractArray)
     @. x = tand(x)
 end
@@ -876,6 +898,7 @@ function Base.:tand(var::Variable{T}) where T
 end
 
 
+export tanh!
 function tanh!(var::Variable{T}) where T
     out = Variable{T}(tanh!(var.value), var.backprop)
     if var.backprop
@@ -912,6 +935,7 @@ function Base.:tanh(var::Variable{T}) where T
 end
 
 
+export tanhshrink, tanhshrink!
 function tanhshrink!(x::AbstractArray)
     @. x = x - tanh(x)
 end
@@ -933,6 +957,7 @@ end
 
 
 # # -- sin serials --
+export sin!
 function sin!(var::Variable{T}) where T
     out = Variable{T}(sin(var.value), var.backprop)
     if var.backprop
@@ -963,6 +988,7 @@ function Base.:sin(var::Variable{T}) where T
 end
 
 
+export sinc!
 function sinc!(x::AbstractArray)
     @. x = sinc(x)
 end
@@ -1005,6 +1031,7 @@ function Base.:sinc(var::Variable{T}) where T
 end
 
 
+export sind!
 function sind!(x::AbstractArray)
     @. x = sind(x)
 end
@@ -1047,6 +1074,7 @@ function Base.:sind(var::Variable{T}) where T
 end
 
 
+export sinpi!
 function sinpi!(x::AbstractArray)
     @. x = sinpi(x)
 end
@@ -1089,6 +1117,7 @@ function Base.:sinpi(var::Variable{T}) where T
 end
 
 
+export linearsin,linearsin!
 function linearsin!(x::AbstractArray)
     @. x = sin(x) + x
 end
@@ -1109,6 +1138,7 @@ function linearsin(var::Variable{T}) where T
 end
 
 
+export cos!
 function cos!(var::Variable{T}) where T
     out = Variable{T}(cos(var.value), var.backprop)
     if var.backprop
@@ -1139,6 +1169,7 @@ function Base.:cos(var::Variable{T}) where T
 end
 
 
+export inv!
 function inv!(var::Variable{T}) where T
     out = Variable{T}(inv!(var.value), var.backprop)
     if var.backprop

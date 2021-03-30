@@ -1,3 +1,5 @@
+export linear
+
 mutable struct linear <: Block
     w::Variable # input to hidden weights
     b::Variable # bias of hidden units

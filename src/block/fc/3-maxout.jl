@@ -1,3 +1,6 @@
+export maxout
+
+
 mutable struct maxout <: Block
     w::Variable # input to middle hidden weights
     b::Variable # bias of middle hidden units

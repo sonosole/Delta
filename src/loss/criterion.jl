@@ -1,3 +1,17 @@
+export loss
+export cost
+export mse
+export mseLoss
+export mseCost
+export crossEntropy
+export crossEntropyLoss
+export crossEntropyCost
+export binaryCrossEntropy
+export binaryCrossEntropyLoss
+export binaryCrossEntropyCost
+
+
+
 """
     crossEntropy(var::Variable{T}, label::Variable{T}) -> Variable{T}
     cross entropy loss = - l * log(x) where l is label and x is the output of the network.

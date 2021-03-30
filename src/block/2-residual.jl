@@ -1,3 +1,6 @@
+export residual
+
+
 mutable struct residual
     blocks::Vector
     function residual(sequence::Vector)

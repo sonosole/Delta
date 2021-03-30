@@ -1,3 +1,11 @@
+export Optimizer
+export Descent
+export Momentum
+export Adam
+export decay
+export normclip
+
+
 abstract type Optimizer end
 
 

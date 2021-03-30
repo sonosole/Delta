@@ -6,6 +6,10 @@ import Base.-
 import Base.*
 import Base.^
 
+export dotAdd
+export dotMul
+export matAddVec
+export matMulVec
 
 function Base.:+(var::Variable{T}, constant) where T
     # a matrix add a constant element by element
@@ -132,9 +136,12 @@ function Base.:-(var1::Variable{T1}, var2::Variable{T2}) where {T1,T2}
 end
 
 
-# not sure if this op makes any sense
+"""
+    dotAdd(var1::Variable{T1}, var2::Variable{T2}) where {T1,T2}
+    a tensor add a tensor element by element
+"""
 function dotAdd(var1::Variable{T1}, var2::Variable{T2}) where {T1,T2}
-    # a matrix add a matrix element by element
+    # a tensor add a tensor element by element
     @assert T1 <: T2 || T1 >: T2
     T = T1 <: T2 ? T1 : T2
     @assert (var1.shape == var2.shape) "2 inputs shall be the same size"
@@ -152,6 +159,10 @@ function dotAdd(var1::Variable{T1}, var2::Variable{T2}) where {T1,T2}
 end
 
 
+"""
+    dotMul(var1::Variable{T1}, var2::Variable{T2}) where {T1,T2}
+    a tensor multiplies a tensor element by element
+"""
 function dotMul(var1::Variable{T1}, var2::Variable{T2}) where {T1,T2}
     # a tensor multiplies a tensor element by element
     @assert T1 <: T2 || T1 >: T2
@@ -193,6 +204,10 @@ function Base.:*(var1::Variable{T1}, var2::Variable{T2}) where {T1,T2}
 end
 
 
+"""
+    matAddVec(var1::Variable{T1}, var2::Variable{T2}) where {T1,T2}
+    a matrix tensor `var1` adds a vector tensor `var2`
+"""
 function matAddVec(var1::Variable{T1}, var2::Variable{T2}) where {T1,T2}
     # var1 -- 充当和节点，非学习的参数
     # var2 -- 偏置列向量，要学习的参数
@@ -217,6 +232,10 @@ function matAddVec(var1::Variable{T1}, var2::Variable{T2}) where {T1,T2}
 end
 
 
+"""
+    matAddVec(var1::Variable{T1}, var2::Variable{T2}) where {T1,T2}
+    a matrix tensor `var1` multiplies a vector tensor `var2`
+"""
 function matMulVec(var1::Variable{T1}, var2::Variable{T2}) where {T1,T2}
     # var1 -- 一般充当激活节点，非网络需要学习的参数
     # var2 -- 列向量，循环权重，是网络需要学习的参数

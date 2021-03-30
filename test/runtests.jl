@@ -1,4 +1,6 @@
 using Test
+using Delta
+
 
 @testset "checking gradient" begin
     include("./checkgrad/0-softmax.jl")

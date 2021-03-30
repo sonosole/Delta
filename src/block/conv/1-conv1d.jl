@@ -1,6 +1,10 @@
+export conv1d
+export conv1dReceptiveField
+export gradsof
+
 """
     Computes a 1-D convolution given 3-D input and 3-D filter tensors.
-    Input 3D-tensor of shape (timeSteps, ichannels, batchsize)
+    Input 3D-tensor of shape (ichannels, timeSteps, batchsize)
     Filter 3D-tensor of shape (ochannels, ichannels, kernel) but
     actually reshaped to 2D-tensor of shape (ochannels, ichannels*kernel) for convenient.
 """

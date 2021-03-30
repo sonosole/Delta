@@ -12,6 +12,7 @@ import Base.tan
 import Base.tanh
 import Base.inv
 
+
 function sin!(x::XArray)
     @. x = sin(x)
 end

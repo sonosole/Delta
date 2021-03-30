@@ -137,3 +137,9 @@ function to(type::Type, var::Variable{T}, show::Bool=false) where T
         end
     end
 end
+
+
+export Variable
+export zeroDelta
+export Zero
+export to

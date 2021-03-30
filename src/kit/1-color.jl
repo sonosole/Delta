@@ -1,3 +1,6 @@
+export black,red,green,yellow,blue,magenta,cyan,white
+export color
+
 COLORS = Dict(
 "black"         => 0,
 "red"           => 1,
@@ -37,3 +40,4 @@ blue(str)    = color("blue",    string(str))
 magenta(str) = color("magenta", string(str))
 cyan(str)    = color("cyan",    string(str))
 white(str)   = color("white",   string(str))
+

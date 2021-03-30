@@ -1,5 +1,8 @@
 include("./1-conv1d.jl")
 
+export CuBlocks
+export SetCudaThreads
+
 # 每个块使用线程数量
 global CuThreads = 512
 

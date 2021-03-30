@@ -1,3 +1,6 @@
+export dropout
+
+
 mutable struct dropout <: Block
     p # dropout probibility
     dropout(   ) = new(0.1)

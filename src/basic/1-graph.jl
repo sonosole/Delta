@@ -1,3 +1,13 @@
+export Graph, graph
+export forward
+export backward
+export update
+export zerograds
+export clear
+export predict
+
+
+
 """
     mutable struct Graph
 # Field

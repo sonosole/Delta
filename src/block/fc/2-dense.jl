@@ -1,3 +1,6 @@
+export dense
+export MLP
+
 mutable struct dense <: Block
     w::Variable
     b::Variable

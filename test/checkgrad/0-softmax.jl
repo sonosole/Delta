@@ -1,5 +1,5 @@
-clear()
 @testset "check softmax op's gradient" begin
+    clear()
     for d in [1 2 3 (1,2) (2,3) (1,3) (1,2,3)]
         @testset "check softmax op's gradient at dim = $d" begin
             DIMS = d

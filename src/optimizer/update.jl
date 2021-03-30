@@ -1,3 +1,5 @@
+export clip
+
 function clip(x, clipval)
     x = (abs(x) > clipval) ? clipval * sign(x) : x
 end

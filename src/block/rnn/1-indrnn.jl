@@ -1,3 +1,7 @@
+export indrnn
+export INDRNN
+
+
 function uniform(shape::Tuple;from=0.0,to=1.0)
     if from==0.0 && to==1.0
         return rand(typeof(from),shape)
