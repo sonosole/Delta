@@ -1,7 +1,7 @@
 name = "Delta"
 uuid = "9e3a83e1-479c-4d1c-ae0a-a5bbc61f1663"
 license = "MIT"
-authors = ["sole <sonosole@163.com>"]
+authors = ["Sole <sonosole@163.com>"]
 version = "0.1.0"
 
 [deps]

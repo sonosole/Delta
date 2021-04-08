@@ -143,3 +143,6 @@ export Variable
 export zeroDelta
 export Zero
 export to
+
+export need2computeδ!
+export ifNotKeepδThenFreeδ!
