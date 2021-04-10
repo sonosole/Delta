@@ -1,6 +1,6 @@
 export conv1d
 export conv1dReceptiveField
-export gradsof
+
 
 """
     Computes a 1-D convolution given 3-D input and 3-D filter tensors.
