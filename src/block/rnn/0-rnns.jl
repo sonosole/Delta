@@ -11,8 +11,8 @@ global RNNLIST = [indrnn];
 
 """
     makeRNNBatch(inputs::Vector)
-
-```julia
+# Examples
+```jldoctest
 julia> makeRNNBatch([ones(2,1), 2ones(2,2), 3ones(2,3)])
 2×3×3 Array{Float64,3}:
 [:, :, 1] =
@@ -27,7 +27,6 @@ julia> makeRNNBatch([ones(2,1), 2ones(2,2), 3ones(2,3)])
  3.0  3.0  3.0
  3.0  3.0  3.0
  ```
-
 """
 function makeRNNBatch(inputs::Vector)
     # all Array of inputs shall have the same size in dim-1
@@ -65,7 +64,7 @@ function unionRNNSteps(inputs::Vector{Variable{T}}) where T
         function unionRNNStepsBackward()
             for t = 1:timeSteps
                 if need2computeδ!(inputs[t])
-                    inputs[t].delta += out.delta
+                    inputs[t].delta += out.delta[:,t,:]
                 end
             end
             ifNotKeepδThenFreeδ!(out)
