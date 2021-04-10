@@ -3,6 +3,11 @@ export CTCGreedySearch
 export DNN_CTC_With_Softmax
 export DNN_Batch_CTC_With_Softmax
 export RNN_Batch_CTC_With_Softmax
+export LogZero
+export indexbounds
+export LogSum2Exp
+export LogSum3Exp
+export LogSumExp
 
 
 function indexbounds(lengthArray)
@@ -20,15 +25,16 @@ function indexbounds(lengthArray)
 end
 
 
-LogZero = -floatmax(Float32)
+LogZero(T::DataType) = - floatmax(T)
 
 
 function LogSum2Exp(a::Real, b::Real)
-	if a <= LogZero
-        a = LogZero
+    Log0 = LogZero(typeof(a))
+	if a <= Log0
+        a = Log0
     end
-	if b <= LogZero
-        b = LogZero
+	if b <= Log0
+        b = Log0
     end
 	return (max(a,b) + log(1.0 + exp(-abs(a-b))));
 end
@@ -40,7 +46,7 @@ end
 
 
 function LogSumExp(a)
-    tmp = LogZero
+    tmp = LogZero(eltype(a))
     for i = 1:length(a)
         tmp = LogSum2Exp(tmp, a[i])
     end
@@ -59,20 +65,21 @@ end
 `lossvalue`: negative log-likelyhood
 """
 function CTC(p::Array{TYPE,2}, seq) where TYPE
-    S,T = size(p)           # assert p is a 2-D tensor
-    L = length(seq)*2 + 1   # topology length with blanks
-    a = fill(LogZero, L,T)  # 𝜶 = p(s[k,t], x[1:t])
-    b = fill(LogZero, L,T)  # 𝛃  = p(x[t+1:T] | s[k,t])
-    r = zero(p)             # 𝜸 = classWiseSum(𝜶 .* 𝛃)
+    Log0 = LogZero(TYPE)   # approximate -Inf of TYPE
+    S, T = size(p)         # assert p is a 2-D tensor
+    L = length(seq)*2 + 1  # topology length with blanks
+    a = fill(Log0, L,T)    # 𝜶 = p(s[k,t], x[1:t])
+    b = fill(Log0, L,T)    # 𝛃  = p(x[t+1:T] | s[k,t])
+    r = zero(p)            # 𝜸 = classWiseSum(𝜶 .* 𝛃)
 
     if L>1
         a[1,1] = log(p[    1, 1])
         a[2,1] = log(p[seq[1],1])
-        b[L-1,T] = 0.0
-        b[L-0,T] = 0.0
+        b[L-1,T] = TYPE(0.0)
+        b[L-0,T] = TYPE(0.0)
     else
         a[1,1] = log(p[1,1])
-        b[L,T] = 0.0
+        b[L,T] = TYPE(0.0)
     end
 
     # --- forward in log scale ---
@@ -116,7 +123,7 @@ function CTC(p::Array{TYPE,2}, seq) where TYPE
         end
     end
 
-    logsum = LogZero
+    logsum = Log0
     for s = 1:L
         logsum = LogSum2Exp(logsum, a[s,1] + b[s,1])
     end
@@ -154,7 +161,7 @@ end
 
 """
     DNN_CTC_With_Softmax(var::Variable, seq)
-    
+
 `var`: 2-D Variable, input sequence.\n
 `seq`: 1-D Array, input sequence's label.
 """
@@ -177,7 +184,7 @@ end
 
 """
     DNN_Batch_CTC_With_Softmax(var::Variable, seq, inputLengths, labelLengths)
-    
+
 `var`: 2-D Variable, resulted by a batch of concatenated input sequence.\n
 `seq`: 1-D Array, concatenated by a batch of input sequence label.\n
 `inputLengths`: 1-D Array which records each input sequence's length.\n
@@ -215,7 +222,7 @@ end
 
 """
     RNN_Batch_CTC_With_Softmax(var::Variable, seq, inputLengths, labelLengths)
-    
+
 `var`: 3-D Variable (featdims,timesteps,batchsize), resulted by a batch of padded input sequence.\n
 `seq`: 1-D Array concatenated by a batch of input sequence label.\n
 `inputLengths`: 1-D Array which records each input sequence's length.\n
@@ -247,4 +254,3 @@ function RNN_Batch_CTC_With_Softmax(var::Variable{Array{T}}, seqlabel, inputLeng
     end
     return LogLikely/batchsize
 end
-
