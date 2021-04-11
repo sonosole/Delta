@@ -11,7 +11,7 @@ export LogSumExp
 
 
 function indexbounds(lengthArray)
-	# assert lengthArray has no 0 element
+    # assert lengthArray has no 0 element
     acc = 0
     num = length(lengthArray)
     s = ones(Int,num,1)
