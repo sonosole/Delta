@@ -30,13 +30,13 @@ LogZero(T::DataType) = - floatmax(T)
 
 function LogSum2Exp(a::Real, b::Real)
     Log0 = LogZero(typeof(a))
-	if a <= Log0
+    if a <= Log0
         a = Log0
     end
-	if b <= Log0
+    if b <= Log0
         b = Log0
     end
-	return (max(a,b) + log(1.0 + exp(-abs(a-b))));
+    return (max(a,b) + log(1.0 + exp(-abs(a-b))));
 end
 
 
@@ -69,7 +69,7 @@ function CTC(p::Array{TYPE,2}, seq) where TYPE
     S, T = size(p)         # assert p is a 2-D tensor
     L = length(seq)*2 + 1  # topology length with blanks
     a = fill(Log0, L,T)    # 𝜶 = p(s[k,t], x[1:t])
-    b = fill(Log0, L,T)    # 𝛃  = p(x[t+1:T] | s[k,t])
+    b = fill(Log0, L,T)    # 𝛃 = p(x[t+1:T] | s[k,t])
     r = zero(p)            # 𝜸 = classWiseSum(𝜶 .* 𝛃)
 
     if L>1
@@ -128,13 +128,13 @@ function CTC(p::Array{TYPE,2}, seq) where TYPE
         logsum = LogSum2Exp(logsum, a[s,1] + b[s,1])
     end
 
-	g = exp.((a + b) .- logsum)
+    g = exp.((a + b) .- logsum)
     for s = 1:L
         if mod(s,2)==1
-			r[1,:] .+= g[s,:]
+            r[1,:] .+= g[s,:]
         else
-			i = div(s,2)
-			r[seq[i],:] .+= g[s,:]
+            i = div(s,2)
+            r[seq[i],:] .+= g[s,:]
         end
     end
     return r, -logsum
@@ -146,7 +146,7 @@ end
 remove repeats and blanks of argmax(x, dims=1)
 """
 function CTCGreedySearch(x::Array)
-	# blank 映射到 1
+    # blank 映射到 1
     hyp = []
     idx = argmax(x,dims=1)
     for i = 1:length(idx)
@@ -167,7 +167,7 @@ end
 """
 function DNN_CTCLoss_With_Softmax(var::Variable{Array{T}}, seq) where T
     # for case batchsize==1
-	p = softmax(var.value; dims=1)
+    p = softmax(var.value; dims=1)
     C = eltype(p)((length(seq)+1) / var.shape[2])
     r, loglikely = CTC(p, seq)
     if var.backprop
@@ -199,13 +199,13 @@ function DNN_Batch_CTCLoss_With_Softmax(var::Variable{Array{T}}, seq, inputLengt
 	sidL,eidL = indexbounds(labelLengths)
 
 	Threads.@threads for i = 1:batchsize
-		IDI = sidI[i]:eidI[i]
-		IDL = sidL[i]:eidL[i]
-		CST = (length(IDL)+1) / length(IDI)
-		gamma[:,IDI], loglikely = CTC(probs[:,IDI], seq[IDL])
-		gamma[:,IDI] .*= CST
-		probs[:,IDI] .*= CST
-		LogLikely += loglikely
+        IDI = sidI[i]:eidI[i]
+        IDL = sidL[i]:eidL[i]
+        CST = (length(IDL)+1) / length(IDI)
+        gamma[:,IDI], loglikely = CTC(probs[:,IDI], seq[IDL])
+        gamma[:,IDI] .*= CST
+        probs[:,IDI] .*= CST
+        LogLikely += loglikely
 	end
 
     if var.backprop
@@ -231,7 +231,7 @@ end
 function RNN_Batch_CTC_With_Softmax(var::Variable{Array{T}}, seqlabel, inputLengths, labelLengths) where T
     # assert (featdims,timesteps,batchsize) = size(var)
     probs = zero(var.value)
- 	gamma = zero(var.value)
+    gamma = zero(var.value)
     LogLikely = 0.0
 
     Threads.@threads for b = 1:batchsize
