@@ -191,12 +191,12 @@ end
 `labelLengths`: 1-D Array which records input sequence label's length.
 """
 function DNN_Batch_CTCLoss_With_Softmax(var::Variable{Array{T}}, seq, inputLengths, labelLengths) where T
-	LogLikely = 0.0
-	batchsize = length(inputLengths)
-	probs = softmax(var.value; dims=1)
-	gamma = zero(probs)
-	sidI,eidI = indexbounds(inputLengths)
-	sidL,eidL = indexbounds(labelLengths)
+    LogLikely = 0.0
+    batchsize = length(inputLengths)
+    probs = softmax(var.value; dims=1)
+    gamma = zero(probs)
+    sidI,eidI = indexbounds(inputLengths)
+    sidL,eidL = indexbounds(labelLengths)
 
     Threads.@threads for i = 1:batchsize
         IDI = sidI[i]:eidI[i]
@@ -206,7 +206,7 @@ function DNN_Batch_CTCLoss_With_Softmax(var::Variable{Array{T}}, seq, inputLengt
         gamma[:,IDI] .*= CST
         probs[:,IDI] .*= CST
         LogLikely += loglikely
-	end
+    end
 
     if var.backprop
         function DNN_Batch_CTCLoss_With_Softmax_Backward()
