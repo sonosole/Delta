@@ -36,7 +36,7 @@ function LogSum2Exp(a::Real, b::Real)
     if b <= Log0
         b = Log0
     end
-    return (max(a,b) + log(1.0 + exp(-abs(a-b))));
+    return (max(a,b) + log(1.0 + exp(-abs(a-b))))
 end
 
 
@@ -198,7 +198,7 @@ function DNN_Batch_CTCLoss_With_Softmax(var::Variable{Array{T}}, seq, inputLengt
 	sidI,eidI = indexbounds(inputLengths)
 	sidL,eidL = indexbounds(labelLengths)
 
-	Threads.@threads for i = 1:batchsize
+    Threads.@threads for i = 1:batchsize
         IDI = sidI[i]:eidI[i]
         IDL = sidL[i]:eidL[i]
         CST = (length(IDL)+1) / length(IDI)
