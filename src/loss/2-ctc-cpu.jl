@@ -3,6 +3,7 @@ export CTCGreedySearch
 export DNN_CTC_With_Softmax
 export DNN_Batch_CTC_With_Softmax
 export RNN_Batch_CTC_With_Softmax
+export CRNN_Batch_CTCLoss_With_Softmax
 export LogZero
 export indexbounds
 export LogSum2Exp
@@ -70,7 +71,7 @@ function CTC(p::Array{TYPE,2}, seq) where TYPE
     L = length(seq)*2 + 1  # topology length with blanks
     a = fill(Log0, L,T)    # 𝜶 = p(s[k,t], x[1:t])
     b = fill(Log0, L,T)    # 𝛃 = p(x[t+1:T] | s[k,t])
-    r = zero(p)            # 𝜸 = classWiseSum(𝜶 .* 𝛃)
+    r = zero(p)            # 𝜸 = p(s[k,t] | x[1:T])
 
     if L>1
         a[1,1] = log(p[    1, 1])
@@ -191,8 +192,8 @@ end
 `labelLengths`: 1-D Array which records input sequence label's length.
 """
 function DNN_Batch_CTCLoss_With_Softmax(var::Variable{Array{T}}, seq, inputLengths, labelLengths) where T
-    LogLikely = 0.0
     batchsize = length(inputLengths)
+    loglikely = zeros(T, batchsize)
     probs = softmax(var.value; dims=1)
     gamma = zero(probs)
     sidI,eidI = indexbounds(inputLengths)
@@ -202,10 +203,9 @@ function DNN_Batch_CTCLoss_With_Softmax(var::Variable{Array{T}}, seq, inputLengt
         IDI = sidI[i]:eidI[i]
         IDL = sidL[i]:eidL[i]
         CST = (length(IDL)+1) / length(IDI)
-        gamma[:,IDI], loglikely = CTC(probs[:,IDI], seq[IDL])
+        gamma[:,IDI], loglikely[b] = CTC(probs[:,IDI], seq[IDL])
         gamma[:,IDI] .*= CST
         probs[:,IDI] .*= CST
-        LogLikely += loglikely
     end
 
     if var.backprop
@@ -216,32 +216,31 @@ function DNN_Batch_CTCLoss_With_Softmax(var::Variable{Array{T}}, seq, inputLengt
         end
         push!(graph.backward, DNN_Batch_CTCLoss_With_Softmax_Backward)
     end
-    return LogLikely/batchsize
+    return sum(loglikely)/batchsize
 end
 
 
 """
-    RNN_Batch_CTC_With_Softmax(var::Variable, seq, inputLengths, labelLengths)
+    RNN_Batch_CTC_With_Softmax(var::Variable, seqlabels, inputLengths, labelLengths)
 
-`var`: 3-D Variable (featdims,timesteps,batchsize), resulted by a batch of padded input sequence.\n
-`seq`: 1-D Array concatenated by a batch of input sequence label.\n
+`var`: 3-D Variable with shape (featdims,timesteps,batchsize), resulted by a batch of padded input sequence.\n
+`seqlabels`: 1-D Array concatenated by a batch of input sequence's label.\n
 `inputLengths`: 1-D Array which records each input sequence's length.\n
-`labelLengths`: 1-D Array which records input sequence label's length.\n
+`labelLengths`: 1-D Array which records all labels' length.\n
 """
-function RNN_Batch_CTC_With_Softmax(var::Variable{Array{T}}, seqlabel, inputLengths, labelLengths) where T
+function RNN_Batch_CTC_With_Softmax(var::Variable{Array{T}}, seqlabels, inputLengths, labelLengths) where T
     # assert (featdims,timesteps,batchsize) = size(var)
     probs = zero(var.value)
     gamma = zero(var.value)
-    LogLikely = 0.0
+    loglikely = zeros(T, batchsize)
 
     Threads.@threads for b = 1:batchsize
         Tᵇ = inputLengths[b]
         C = (labelLengths[b]+1) / inputLengths[b]
         probs[:,1:Tᵇ,b] = softmax(var.value[:,1:Tᵇ,b]; dims=1)
-        gamma[:,1:Tᵇ,b], loglikely = CTC(probs[:,1:Tᵇ,b], seqlabel[b])
+        gamma[:,1:Tᵇ,b], loglikely[b] = CTC(probs[:,1:Tᵇ,b], seqlabels[b])
         gamma[:,1:Tᵇ,b] .*= C
         probs[:,1:Tᵇ,b] .*= C
-        LogLikely += loglikely
     end
 
     if var.backprop
@@ -252,5 +251,35 @@ function RNN_Batch_CTC_With_Softmax(var::Variable{Array{T}}, seqlabel, inputLeng
         end
         push!(graph.backward, RNN_Batch_CTCLoss_With_Softmax_Backward)
     end
-    return LogLikely/batchsize
+    return sum(loglikely)/batchsize
+end
+
+
+"""
+    CRNN_CTCLoss_With_Softmax(var::Variable{Array{T}}, seqlabels::Vector) where T -> LogLikely
+
+`var`: 3-D Variable (featdims,timesteps,batchsize), resulted by a batch of padded input sequence.\n
+`seqlabels`: a vector contains a batch of 1-D Array labels.\n
+"""
+function CRNN_Batch_CTCLoss_With_Softmax(var::Variable{Array{T}}, seqlabels::Vector) where T
+    featdims, timesteps, batchsize = size(var)
+    probs = softmax(var.value; dims=1)
+    gamma = zero(var.value)
+    loglikely = zeros(T, batchsize)
+    Threads.@threads for b = 1:batchsize
+        C = (length(seqlabels[b])+1) / timesteps
+        gamma[:,:,b], loglikely[b] = CTC(probs[:,:,b], seqlabels[b])
+        gamma[:,:,b] .*= C
+        probs[:,:,b] .*= C
+    end
+
+    if var.backprop
+        function CRNN_Batch_CTCLoss_With_Softmax_Backward()
+            if need2computeδ!(var)
+                var.delta += probs - gamma
+            end
+        end
+        push!(graph.backward, CRNN_Batch_CTCLoss_With_Softmax_Backward)
+    end
+    return sum(loglikely)/batchsize
 end
