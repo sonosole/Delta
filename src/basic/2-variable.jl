@@ -96,11 +96,26 @@ Base.ndims(x::Variable)          =   ndims(x.value)
 Base.length(x::Variable)         =  length(x.value)
 Base.strides(x::Variable)        = strides(x.value)
 Base.eltype(x::Variable)         =  eltype(x.value)
-Base.getindex(x::Variable,     k...)  =    x.value[k...]
-Base.setindex!(x::Variable, v, k...)  =   (x.value[k...] = v)
 Base.similar(x::Variable{T})  where T = Variable{T}( similar(x.value), x.backprop, x.keepsgrad, x.isleaf)
 Base.copy(x::Variable{T})     where T = Variable{T}(    copy(x.value), x.backprop, x.keepsgrad, x.isleaf)
 Base.deepcopy(x::Variable{T}) where T = Variable{T}(deepcopy(x.value), x.backprop, x.keepsgrad, x.isleaf)
+
+Base.setindex!(x::Variable, v::Number,        k...) = (x.value[k...] .= v)
+Base.setindex!(x::Variable, v::AbstractArray, k...) = (x.value[k...]  = v)
+
+function Base.getindex(x::Variable{T}, k...) where T
+    y = Variable{T}(x.value[k...], x.backprop, x.keepsgrad, x.isleaf)
+    if x.backprop
+        function getindexBackward()
+            if need2computeδ!(x)
+                x.delta[k...] += y.delta
+            end
+            ifNotKeepδThenFreeδ!(y);
+        end
+        push!(graph.backward, getindexBackward)
+    end
+    return y
+end
 
 
 function (v::Variable)(i...)
