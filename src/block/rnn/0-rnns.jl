@@ -11,6 +11,7 @@ global RNNLIST = [indrnn];
 
 """
     makeRNNBatch(inputs::Vector)
+pad zeros to align raw input features probably with different length
 # Examples
 ```jldoctest
 julia> makeRNNBatch([ones(2,1), 2ones(2,2), 3ones(2,3)])
@@ -34,31 +35,33 @@ function makeRNNBatch(inputs::Vector)
     lengths   = [size(inputs[i], 2) for i in 1:batchSize]
     featDims  = size(inputs[1], 1)
     maxSteps  = maximum(lengths)
-    InPackage = zeros(eltype(inputs[1]), featDims, maxSteps, batchSize)
+    rnnBatch  = zeros(eltype(inputs[1]), featDims, maxSteps, batchSize)
     for i = 1:batchSize
         Tᵢ = lengths[i]
-        InPackage[:,1:Tᵢ,i] = inputs[i]
+        rnnBatch[:,1:Tᵢ,i] = inputs[i]
     end
-    return InPackage
+    return rnnBatch
 end
 
 
 """
-    unionRNNSteps(inputs::Vector{Variable{T}}) where T
+    unionRNNSteps(inputs::Vector{Variable})
+union output of RNN of different time steps.
+# Examples
 `x1 = Variable( ones(2,2),keepsgrad=true)`\n
 `x2 = Variable(2ones(2,2),keepsgrad=true)`\n
 `x3 = Variable(3ones(2,2),keepsgrad=true)`\n
 `unionRNNSteps([x1, x2, x3])`
 """
-function unionRNNSteps(inputs::Vector{Variable{T}}) where T
+function unionRNNSteps(inputs::Vector{Variable})
     timeSteps = length(inputs)
     featDims  = size(inputs[1], 1)
     batchSize = size(inputs[1], 2)
-    InPackage = zeros(eltype(inputs[1]), featDims, timeSteps, batchSize)
+    rnnBatch  = zeros(eltype(inputs[1]), featDims, timeSteps, batchSize)
     for t = 1:timeSteps
-        InPackage[:,t,:] = inputs[t].value
+        rnnBatch[:,t,:] = inputs[t].value
     end
-    out = Variable{T}(InPackage, inputs[1].backprop)
+    out = typeof(inputs[1])(rnnBatch, inputs[1].backprop)
 
     if out.backprop
         function unionRNNStepsBackward()
@@ -72,4 +75,16 @@ function unionRNNSteps(inputs::Vector{Variable{T}}) where T
         push!(graph.backward, unionRNNStepsBackward)
     end
     return out
+end
+
+
+function unionRNNSteps(inputs::Vector{Array})
+    timeSteps = length(inputs)
+    featDims  = size(inputs[1], 1)
+    batchSize = size(inputs[1], 2)
+    rnnBatch  = zeros(eltype(inputs[1]), featDims, timeSteps, batchSize)
+    for t = 1:timeSteps
+        rnnBatch[:,t,:] = inputs[t].value
+    end
+    return rnnBatch
 end
