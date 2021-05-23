@@ -44,7 +44,7 @@ end
 
 
 function paramsof(m::linear)
-    params = Vector(undef,2)
+    params = Vector{Variable}(undef,2)
     params[1] = m.w
     params[2] = m.b
     return params
