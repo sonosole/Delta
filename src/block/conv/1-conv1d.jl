@@ -100,6 +100,21 @@ function conv1dReceptiveField(StrideKernelPair::Vector{NTuple{2,Int}})
 end
 
 
+function conv1dReceptiveField(chain::Chain)
+    # 计算感受野时从顶层往底层计算,为了流式计算时候缓存空间的设计
+    # 本函数返回：顶层第一个时间步感受到的底层时间步范围
+    #            顶层第二个时间步感受到的底层时间步范围
+    t1 = 1
+    t2 = 2
+    for i = length(chain):-1:1
+        @assert (typeof(chain[i]) <: conv1d) "$(typeof(chain[i])) <: conv1d"
+        t1 = (t1-1) * chain[i].s + chain[i].k
+        t2 = (t2-1) * chain[i].s + chain[i].k
+    end
+    return (1:t1,t2-t1+1:t2)
+end
+
+
 # in2col for predict
 function in2col(var::Array{T}, kernel::Int, stride::Int) where T
     # from (ichannels,width,batchsize) to (ichannels*kernel,cols)
