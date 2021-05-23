@@ -1,16 +1,20 @@
 using Delta
 
+featdims  = 64
+timesteps = 124
+batchsize = 16
+
 # 1. make some pseudo inputs
-x = Variable(randn(64,124,64));
+x = Variable(randn(featdims,timesteps,batchsize));
 
 # 2. make some pseudo seqlabels
-seqlabels = Vector(undef,64)
-for i=1:64
+seqlabels = Vector(undef,batchsize)
+for i=1:batchsize
     seqlabels[i] = [2, 3, 4, 5]
 end
 
 # 3. build conv1d layers
-c1 = conv1d( 64,256,8,stride=3)
+c1 = conv1d(featdims,256,8,stride=3)
 c2 = conv1d(256,256,3,stride=2)
 c3 = conv1d(256,512,3,stride=1)
 c4 = conv1d(512,512,3,stride=1)
