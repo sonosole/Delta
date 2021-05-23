@@ -16,7 +16,7 @@ mutable struct indrnn <: Block
     b::Variable # bias of hidden units
     u::Variable # recurrent weights
     f::Function # activation function
-    h::Union{Variable,Nothing} # hidden variable
+    h::Any      # hidden variable
     function indrnn(inputSize::Int, hiddenSize::Int; type::Type=Array{Float32})
         w = randn(hiddenSize, inputSize) .* sqrt( 2 / inputSize )
         b = zeros(hiddenSize, 1)
@@ -35,7 +35,6 @@ mutable struct indrnn <: Block
     end
 end
 
-
 mutable struct INDRNN <: Block
     layers::Vector{indrnn}
     function INDRNN(topology::Vector{Int}, fn::Array{T}; type::Type=Array{Float32}) where T
@@ -49,7 +48,7 @@ mutable struct INDRNN <: Block
 end
 
 
-Base.getindex(m::INDRNN, k...) = m.layers[k...]
+Base.getindex(m::INDRNN,     k...) =  m.layers[k...]
 Base.setindex!(m::INDRNN, v, k...) = (m.layers[k...] = v)
 Base.length(m::INDRNN) = length(m.layers)
 
@@ -101,12 +100,12 @@ function forward(m::INDRNN, input::Variable)
 end
 
 
-function predict(m::indrnn, x)
+function predict(m::indrnn, x::AbstractArray{T}) where T
     f = m.f        # activition function
     w = m.w.value  # input's weights
     b = m.b.value  # input's bias
     u = m.u.value  # memory's weights
-    h = m.h != nothing ? m.h : zeros(size(w,1),size(x,2))
+    h = m.h != nothing ? m.h : zeros(T,size(w,1),size(x,2))
     x = f(w*x + h .* u .+ b)
     m.h = x
     return x
