@@ -1,7 +1,3 @@
-begin
-
-XArray = eval(:Array)
-
 import Base.sin
 import Base.cos
 import Base.exp
@@ -13,17 +9,17 @@ import Base.tanh
 import Base.inv
 
 
-function sin!(x::XArray)
+function sin!(x::T) where T <: AbstractArray
     @. x = sin(x)
 end
 
 
-function Base.:sin(x::XArray)
+function Base.:sin(x::T) where T <: AbstractArray
     return sin.(x)
 end
 
 
-function cos!(x::XArray)
+function cos!(x::T) where T <: AbstractArray
     @. x = cos(x)
 end
 
@@ -33,74 +29,71 @@ function Base.:cos(x::Array)
 end
 
 
-function sec!(x::XArray)
+function sec!(x::T) where T <: AbstractArray
     @. x = sec(x)
 end
 
 
-function Base.:sec(x::XArray)
+function Base.:sec(x::T) where T <: AbstractArray
     return sec.(x)
 end
 
 
-function tan!(x::XArray)
+function tan!(x::T) where T <: AbstractArray
     @. x = tan(x)
 end
 
 
-function Base.:tan(x::XArray)
+function Base.:tan(x::T) where T <: AbstractArray
     return tan.(x)
 end
 
 
-function tanh!(x::XArray)
+function tanh!(x::T) where T <: AbstractArray
     @. x = tanh(x)
 end
 
 
-function Base.:tanh(x::XArray)
+function Base.:tanh(x::T) where T <: AbstractArray
     return tanh.(x)
 end
 
 
-function exp!(x::XArray)
+function exp!(x::T) where T <: AbstractArray
     @. x = exp(x)
 end
 
 
-function Base.:exp(x::XArray)
+function Base.:exp(x::T) where T <: AbstractArray
     return exp.(x)
 end
 
 
-function log!(x::XArray)
+function log!(x::T) where T <: AbstractArray
     @. x = log(x)
 end
 
 
-function Base.:log(x::XArray)
+function Base.:log(x::T) where T <: AbstractArray
     return log.(x)
 end
 
 
-function sqrt!(x::XArray)
+function sqrt!(x::T) where T <: AbstractArray
     @. x = sqrt(x)
 end
 
 
-function Base.:sqrt(x::XArray)
+function Base.:sqrt(x::T) where T <: AbstractArray
     return sqrt.(x)
 end
 
 
-function inv!(x::XArray)
+function inv!(x::T) where T <: AbstractArray
     @. x = inv(x)
 end
 
 
-function inv(x::XArray)
+function inv(x::T) where T <: AbstractArray
     return inv.(x)
-end
-
-
 end
