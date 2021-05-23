@@ -37,7 +37,7 @@ end
 import Base.getindex
 import Base.setindex!
 # Base.getindex(c::Chain, k::AbstractArray) = Chain(c.blocks[k]...)
-Base.getindex(c::Chain, k...) = c.blocks[k...]
+Base.getindex(c::Chain, k...)      = c.blocks[k...]
 Base.setindex!(c::Chain, v, k...) = (c.blocks[k...] = v)
 
 
