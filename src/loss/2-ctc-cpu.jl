@@ -4,11 +4,7 @@ export DNN_CTC_With_Softmax
 export DNN_Batch_CTC_With_Softmax
 export RNN_Batch_CTC_With_Softmax
 export CRNN_Batch_CTCLoss_With_Softmax
-export LogZero
 export indexbounds
-export LogSum2Exp
-export LogSum3Exp
-export LogSumExp
 
 
 function indexbounds(lengthArray)
@@ -23,35 +19,6 @@ function indexbounds(lengthArray)
         acc += lengthArray[i]
     end
     return (s,e)
-end
-
-
-LogZero(T::DataType) = - floatmax(T)
-
-
-function LogSum2Exp(a::Real, b::Real)
-    Log0 = LogZero(typeof(a))
-    if a <= Log0
-        a = Log0
-    end
-    if b <= Log0
-        b = Log0
-    end
-    return (max(a,b) + log(1.0 + exp(-abs(a-b))))
-end
-
-
-function LogSum3Exp(a::Real, b::Real, c::Real)
-    return LogSum2Exp(LogSum2Exp(a,b),c)
-end
-
-
-function LogSumExp(a)
-    tmp = LogZero(eltype(a))
-    for i = 1:length(a)
-        tmp = LogSum2Exp(tmp, a[i])
-    end
-    return tmp
 end
 
 
@@ -229,10 +196,11 @@ end
 `labelLengths`: 1-D Array which records all labels' length.\n
 """
 function RNN_Batch_CTC_With_Softmax(var::Variable{Array{T}}, seqlabels, inputLengths, labelLengths) where T
-    # assert (featdims,timesteps,batchsize) = size(var)
+    batchsize = length(inputLengths)
+    loglikely = zeros(T, batchsize)
+
     probs = zero(var.value)
     gamma = zero(var.value)
-    loglikely = zeros(T, batchsize)
 
     Threads.@threads for b = 1:batchsize
         Tᵇ = inputLengths[b]
