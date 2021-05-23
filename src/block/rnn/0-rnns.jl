@@ -78,13 +78,13 @@ function unionRNNSteps(inputs::Vector{Variable})
 end
 
 
-function unionRNNSteps(inputs::Vector{Array})
+function unionRNNSteps(inputs::Vector{T}) where {T <: AbstractArray}
     timeSteps = length(inputs)
     featDims  = size(inputs[1], 1)
     batchSize = size(inputs[1], 2)
     rnnBatch  = zeros(eltype(inputs[1]), featDims, timeSteps, batchSize)
     for t = 1:timeSteps
-        rnnBatch[:,t,:] = inputs[t].value
+        rnnBatch[:,t,:] = inputs[t]
     end
     return rnnBatch
 end
