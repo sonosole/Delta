@@ -9,12 +9,13 @@
 abstract type Block end
 export Block
 
-include("./conv/0-conv.jl")
-include(  "./fc/0-fc.jl")
-include( "./rnn/0-rnns.jl")
 include("./1-chain.jl")
 include("./2-residual.jl")
 include("./3-dropout.jl")
+
+include("./conv/0-conv.jl")
+include(  "./fc/0-fc.jl")
+include( "./rnn/0-rnns.jl")
 
 
 export paramsof
