@@ -35,24 +35,17 @@ optim2 = Momentum(p2);
 
 for i=1:20
     # for non-recurrent layers, we computes all timesteps at once
-    y1 = forward(chain1,x);
-    # for recurrent layers, we computes one timestep at once
-    steps = size(y1,2)
-    y2 = Vector{Variable}(undef,steps)
-    resethidden(chain2)
-    for t=1:steps
-        y2[t] = forward(chain2, y1[:,t,:])
-    end
-    # for sequential type loss, we re-arrange time slices
-    y3 = unionRNNSteps(y2)
+    y1 = forward(chain1, x);
+    # sequential forward propagation
+    y2 = PackedSeqForward(chain2, y1);
     # computes ctc loss
-    LogLikely = CRNN_Batch_CTCLoss_With_Softmax(y3, seqlabels)
-    println(LogLikely)
+    logLikely = CRNN_Batch_CTCLoss_With_Softmax(y2, seqlabels);
+    println(logLikely);
     # backward gradients and update params
-    backward()
-    update(optim1,p1,clipvalue=10.0)
-    update(optim2,p2,clipvalue=10.0)
+    backward();
+    update(optim1,p1,clipvalue=10.0);
+    update(optim2,p2,clipvalue=10.0);
     # zero gradients
-    zerograds(p1)
-    zerograds(p2)
+    zerograds(p1);
+    zerograds(p2);
 end

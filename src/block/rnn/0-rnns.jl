@@ -1,8 +1,10 @@
 include("./1-indrnn.jl")
 
 export resethidden
-export makeRNNBatch
-export unionRNNSteps
+export PadSeqPackBatch
+export PackSeqSlices
+export PackedSeqPredict
+export PackedSeqForward
 
 global RNNLIST = [indrnn];
 # global RNNLIST = [rnn, rin, lstm, indrnn, indlstm, RNN, RIN, LSTM, INDLSTM];
@@ -10,11 +12,11 @@ global RNNLIST = [indrnn];
 
 
 """
-    makeRNNBatch(inputs::Vector)
+    PadSeqPackBatch(inputs::Vector)
 pad zeros to align raw input features probably with different length
 # Examples
 ```jldoctest
-julia> makeRNNBatch([ones(2,1), 2ones(2,2), 3ones(2,3)])
+julia> PadSeqPackBatch([ones(2,1), 2ones(2,2), 3ones(2,3)])
 2×3×3 Array{Float64,3}:
 [:, :, 1] =
  1.0  0.0  0.0
@@ -29,7 +31,7 @@ julia> makeRNNBatch([ones(2,1), 2ones(2,2), 3ones(2,3)])
  3.0  3.0  3.0
  ```
 """
-function makeRNNBatch(inputs::Vector)
+function PadSeqPackBatch(inputs::Vector{T}) where { T<: AbstractArray}
     # all Array of inputs shall have the same size in dim-1
     batchSize = length(inputs)
     lengths   = [size(inputs[i], 2) for i in 1:batchSize]
@@ -45,15 +47,15 @@ end
 
 
 """
-    unionRNNSteps(inputs::Vector{Variable})
+    PackSeqSlices(inputs::Vector{Variable})
 union output of RNN of different time steps.
 # Examples
 `x1 = Variable( ones(2,2),keepsgrad=true)`\n
 `x2 = Variable(2ones(2,2),keepsgrad=true)`\n
 `x3 = Variable(3ones(2,2),keepsgrad=true)`\n
-`unionRNNSteps([x1, x2, x3])`
+`PackSeqSlices([x1, x2, x3])`
 """
-function unionRNNSteps(inputs::Vector{Variable})
+function PackSeqSlices(inputs::Vector{Variable})
     timeSteps = length(inputs)
     featDims  = size(inputs[1], 1)
     batchSize = size(inputs[1], 2)
@@ -64,7 +66,7 @@ function unionRNNSteps(inputs::Vector{Variable})
     out = typeof(inputs[1])(rnnBatch, inputs[1].backprop)
 
     if out.backprop
-        function unionRNNStepsBackward()
+        function PackSeqSlicesBackward()
             for t = 1:timeSteps
                 if need2computeδ!(inputs[t])
                     inputs[t].delta += out.delta[:,t,:]
@@ -72,13 +74,13 @@ function unionRNNSteps(inputs::Vector{Variable})
             end
             ifNotKeepδThenFreeδ!(out)
         end
-        push!(graph.backward, unionRNNStepsBackward)
+        push!(graph.backward, PackSeqSlicesBackward)
     end
     return out
 end
 
 
-function unionRNNSteps(inputs::Vector{T}) where {T <: AbstractArray}
+function PackSeqSlices(inputs::Vector{T}) where {T <: AbstractArray}
     timeSteps = length(inputs)
     featDims  = size(inputs[1], 1)
     batchSize = size(inputs[1], 2)
@@ -87,4 +89,26 @@ function unionRNNSteps(inputs::Vector{T}) where {T <: AbstractArray}
         rnnBatch[:,t,:] = inputs[t]
     end
     return rnnBatch
+end
+
+
+function PackedSeqForward(chain::Chain, x::Variable)
+    T = size(x,2)
+    y = Vector{Variable}(undef,T)
+    resethidden(chain)
+    for t = 1:T
+        y[t] = forward(chain, x[:,t,:])
+    end
+    return PackSeqSlices(y)
+end
+
+
+function PackedSeqPredict(chain::Chain, x::AbstractArray{S,N}) where {S,N}
+    T = size(x,2)
+    y = Vector{AbstractArray{S,N-1}}(undef,T)
+    resethidden(chain)
+    for t = 1:T
+        y[t] = predict(chain, x[:,t,:])
+    end
+    return PackSeqSlices(y)
 end
