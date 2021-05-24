@@ -115,7 +115,7 @@ remove repeats and blanks of argmax(x, dims=1)
 """
 function CTCGreedySearch(x::Array)
     # blank 映射到 1
-    hyp = []
+    hyp = Vector{Int}(undef,0)
     idx = argmax(x,dims=1)
     for i = 1:length(idx)
         maxid = idx[i][1]
