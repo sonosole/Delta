@@ -18,14 +18,6 @@ include(  "./fc/0-fc.jl")
 include( "./rnn/0-rnns.jl")
 
 
-
-function paramsof(collection, items...)
-    for item in items
-        append!(collection, paramsof(item))
-    end
-end
-
-
 export paramsof
 export nparamsof
 export weightsof
