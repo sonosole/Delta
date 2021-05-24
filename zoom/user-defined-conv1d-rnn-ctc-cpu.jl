@@ -63,7 +63,7 @@ for i=1:batchsize
     seqlabels[i] = [2, 3, 4, 5]
 end
 
-# 6. instance an model object
+# 6. instantiate an model object
 #    extrac its parameters
 #    choose an optimizer
 asr = Model(featdims);
