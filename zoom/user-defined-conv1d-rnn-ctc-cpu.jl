@@ -2,8 +2,11 @@ using Delta
 import Delta.paramsof
 import Delta.forward
 import Delta.predict
+import Base.length
+import Base.getindex
 
-# 1. define model struct
+
+# 1. define model struct and its length and indexing method
 mutable struct Model
     blocks::Vector
     function Model(featdims::Int)
@@ -19,30 +22,34 @@ mutable struct Model
     end
 end
 
+
+length(m::Model) = length(m.blocks)
+getindex(m::Model, k...) = m.blocks[k...]
+
+
 # 2. define how to extrac model's params
 function paramsof(m::Model)
     params = Vector{Variable}(undef,0)
-    for b in m.blocks
-        paramsof(params, b)
+    for i = 1:length(m)
+        append!(params, paramsof(m[i]))
     end
     return params
 end
 
 # 3. define model's forward calculation
-function forward(ASRModel::Model, input::Variable)
-    x1 = forward(ASRModel.blocks[1], input)
+function forward(m::Model, input::Variable)
+    x1 = forward(m[1], input)
     x1 = relu(x1)
-    x2 = forward(ASRModel.blocks[2], x1)
+    x2 = forward(m[2], x1)
     x2 = relu(x2)
-    x3 = forward(ASRModel.blocks[3], x2)
+    x3 = forward(m[3], x2)
     x3 = relu(x3)
-    x4 = forward(ASRModel.blocks[4], x3)
+    x4 = forward(m[4], x3)
     x4 = relu(x4)
-    x5 = forward(ASRModel.blocks[5], x4)
+    x5 = forward(m[5], x4)
     x5 = relu(x5)
-    return PackedSeqForward(ASRModel.blocks[6], x5)
+    return PackedSeqForward(m[6], x5)
 end
-
 
 # 4. experimental constants
 featdims  = 64
@@ -62,34 +69,33 @@ end
 asr = Model(featdims);
 asrparams = paramsof(asr);
 optim = Momentum(asrparams);
-
-
+epoch = 37
 # 7. train this model
-for e = 1:20
+for e = 1:epoch
     y = forward(asr, x)
     loglikely = CRNN_Batch_CTCLoss_With_Softmax(y, seqlabels);
-    println(loglikely);
+    println("iter $e loss = $loglikely");
     backward()
-    update(optim, asrparams, clipvalue=10.0)
+    update(optim, asrparams, clipvalue=20.0)
     zerograds(asrparams)
 end
 
-
 # 8. define predict calculation
-function predict(ASRModel::Model, input::AbstractArray)
-    x1 = predict(ASRModel.blocks[1], input)
+function predict(m::Model, input::AbstractArray)
+    x1 = predict(m[1], input)
     x1 = relu(x1)
-    x2 = predict(ASRModel.blocks[2], x1)
+    x2 = predict(m[2], x1)
     x2 = relu(x2)
-    x3 = predict(ASRModel.blocks[3], x2)
+    x3 = predict(m[3], x2)
     x3 = relu(x3)
-    x4 = predict(ASRModel.blocks[4], x3)
+    x4 = predict(m[4], x3)
     x4 = relu(x4)
-    x5 = predict(ASRModel.blocks[5], x4)
+    x5 = predict(m[5], x4)
     x5 = relu(x5)
-    return PackedSeqPredict(ASRModel.blocks[6], x5)
+    return PackedSeqPredict(m[6], x5)
 end
 
 # 9. predict
 y = predict(asr, randn(featdims,timesteps,batchsize));
-println(CTCGreedySearch(y[:,:,1]))
+r = CTCGreedySearch(softmax(y[:,:,10],dims=1));
+println("decoding result: ", r);
