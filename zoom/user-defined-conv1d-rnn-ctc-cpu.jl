@@ -18,7 +18,7 @@ mutable struct Model
         r1 = indrnn(512,512)
         r2 = indrnn(512,512)
         f1 = linear(512,140)
-        new(push!([], c1,c2,c3,c4,c5, Chain(r1,r2,f1)))
+        new([c1,c2,c3,c4,c5, Chain(r1,r2,f1)])
     end
 end
 
