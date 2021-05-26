@@ -70,6 +70,7 @@ asr = Model(featdims);
 asrparams = paramsof(asr);
 optim = Momentum(asrparams);
 epoch = 37
+
 # 7. train this model
 for e = 1:epoch
     y = forward(asr, x)
@@ -99,3 +100,32 @@ end
 y = predict(asr, randn(featdims,timesteps,batchsize));
 r = CTCGreedySearch(softmax(y[:,:,10],dims=1));
 println("decoding result: ", r);
+
+
+
+# for more humanlity iteration style
+import Base.firstindex
+import Base.lastindex
+import Base.iterate
+lastindex(m::Model)  = length(m)
+firstindex(m::Model) = 1
+iterate(m::Model, i=firstindex(m)) = i>length(m) ? nothing : (m[i], i+1)
+
+# so we could iterate like `for x in X`
+function Delta.nparamsof(model::Model)
+    nparams = 0
+    for m in model
+        nparams += nparamsof(m)
+    end
+    return nparams
+end
+
+# of course we could also calculate how many bytes it uses
+function bytesof(model::Model, unit::String="MB")
+    n = nparamsof(model)
+    u = lowercase(unit)
+    if u == "kb" return n * sizeof(eltype(model[1].w)) / 1024 end
+    if u == "mb" return n * sizeof(eltype(model[1].w)) / 1048576 end
+    if u == "gb" return n * sizeof(eltype(model[1].w)) / 1073741824 end
+    if u == "tb" return n * sizeof(eltype(model[1].w)) / 1099511627776 end
+end
