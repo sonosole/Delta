@@ -12,7 +12,7 @@ global RNNLIST = [indrnn];
 
 
 """
-    PadSeqPackBatch(inputs::Vector)
+    PadSeqPackBatch(inputs::Vector{T}; epsilon::Real=0.0) where {T<: AbstractArray} -> AbstractArray{Real,3}
 pad zeros to align raw input features probably with different length
 # Examples
 ```jldoctest
@@ -31,13 +31,15 @@ julia> PadSeqPackBatch([ones(2,1), 2ones(2,2), 3ones(2,3)])
  3.0  3.0  3.0
  ```
 """
-function PadSeqPackBatch(inputs::Vector{T}) where { T<: AbstractArray}
+function PadSeqPackBatch(inputs::Vector{T}; epsilon::Real=0.0) where {T<: AbstractArray}
     # all Array of inputs shall have the same size in dim-1
     batchSize = length(inputs)
     lengths   = [size(inputs[i], 2) for i in 1:batchSize]
     featDims  = size(inputs[1], 1)
     maxSteps  = maximum(lengths)
     rnnBatch  = zeros(eltype(inputs[1]), featDims, maxSteps, batchSize)
+    fill!(rnnBatch, epsilon)
+
     for i = 1:batchSize
         Tᵢ = lengths[i]
         rnnBatch[:,1:Tᵢ,i] = inputs[i]
