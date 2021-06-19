@@ -3,7 +3,7 @@ export CTCGreedySearch
 export DNN_CTC_With_Softmax
 export DNN_Batch_CTC_With_Softmax
 export RNN_Batch_CTC_With_Softmax
-export CRNN_Batch_CTCLoss_With_Softmax
+export CRNN_Batch_CTC_With_Softmax
 export indexbounds
 
 
@@ -133,19 +133,19 @@ end
 `var`: 2-D Variable, input sequence.\n
 `seq`: 1-D Array, input sequence's label.
 """
-function DNN_CTCLoss_With_Softmax(var::Variable{Array{T}}, seq) where T
+function DNN_CTC_With_Softmax(var::Variable{Array{T}}, seq) where T
     # for case batchsize==1
     p = softmax(var.value; dims=1)
     L = length(seq) + 1
     C = eltype(p)(L / var.shape[2])
     r, loglikely = CTC(p, seq)
     if var.backprop
-        function DNN_CTCLoss_With_Softmax_Backward()
+        function DNN_CTC_With_Softmax_Backward()
             if need2computeδ!(var)
                 var.delta += (p - r) .* C
             end
         end
-        push!(graph.backward, DNN_CTCLoss_With_Softmax_Backward)
+        push!(graph.backward, DNN_CTC_With_Softmax_Backward)
     end
     return loglikely / (L * var.shape[2])
 end
@@ -159,7 +159,7 @@ end
 `inputLengths`: 1-D Array which records each input sequence's length.\n
 `labelLengths`: 1-D Array which records input sequence label's length.
 """
-function DNN_Batch_CTCLoss_With_Softmax(var::Variable{Array{T}}, seq, inputLengths, labelLengths) where T
+function DNN_Batch_CTC_With_Softmax(var::Variable{Array{T}}, seq, inputLengths, labelLengths) where T
     batchsize = length(inputLengths)
     loglikely = zeros(T, batchsize)
     probs = softmax(var.value; dims=1)
@@ -179,12 +179,12 @@ function DNN_Batch_CTCLoss_With_Softmax(var::Variable{Array{T}}, seq, inputLengt
     end
 
     if var.backprop
-        function DNN_Batch_CTCLoss_With_Softmax_Backward()
+        function DNN_Batch_CTC_With_Softmax_Backward()
             if need2computeδ!(var)
                 var.delta += probs - gamma
             end
         end
-        push!(graph.backward, DNN_Batch_CTCLoss_With_Softmax_Backward)
+        push!(graph.backward, DNN_Batch_CTC_With_Softmax_Backward)
     end
     return sum(loglikely)/batchsize
 end
@@ -215,12 +215,12 @@ function RNN_Batch_CTC_With_Softmax(var::Variable{Array{T}}, seqlabels, inputLen
     end
 
     if var.backprop
-        function RNN_Batch_CTCLoss_With_Softmax_Backward()
+        function RNN_Batch_CTC_With_Softmax_Backward()
             if need2computeδ!(var)
                 var.delta += probs - gamma
             end
         end
-        push!(graph.backward, RNN_Batch_CTCLoss_With_Softmax_Backward)
+        push!(graph.backward, RNN_Batch_CTC_With_Softmax_Backward)
     end
     return sum(loglikely)/batchsize
 end
@@ -232,7 +232,7 @@ end
 `var`: 3-D Variable (featdims,timesteps,batchsize), resulted by a batch of padded input sequence.\n
 `seqlabels`: a vector contains a batch of 1-D Array labels.\n
 """
-function CRNN_Batch_CTCLoss_With_Softmax(var::Variable{Array{T}}, seqlabels::Vector) where T
+function CRNN_Batch_CTC_With_Softmax(var::Variable{Array{T}}, seqlabels::Vector) where T
     featdims, timesteps, batchsize = size(var)
     probs = softmax(var.value; dims=1)
     gamma = zero(var.value)
@@ -247,12 +247,12 @@ function CRNN_Batch_CTCLoss_With_Softmax(var::Variable{Array{T}}, seqlabels::Vec
     end
 
     if var.backprop
-        function CRNN_Batch_CTCLoss_With_Softmax_Backward()
+        function CRNN_Batch_CTC_With_Softmax_Backward()
             if need2computeδ!(var)
                 var.delta += probs - gamma
             end
         end
-        push!(graph.backward, CRNN_Batch_CTCLoss_With_Softmax_Backward)
+        push!(graph.backward, CRNN_Batch_CTC_With_Softmax_Backward)
     end
     return sum(loglikely)/batchsize
 end
