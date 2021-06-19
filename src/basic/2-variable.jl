@@ -1,16 +1,26 @@
-function Zero(::Type{T}, x...) where T
-    return fill!(T(undef, x...), 0.0)
+"""
+    Zero(::Type{T}, shape...) where T
+return a array of type T which has shape `shape...`
+
+# Example
+    julia> Zero(Array{Float64}, 2, 5)
+    2×5 Array{Float64,2}:
+     0.0  0.0  0.0  0.0  0.0
+     0.0  0.0  0.0  0.0  0.0
+ """
+function Zero(::Type{T}, shape...) where T
+    return fill!(T(undef, shape...), 0.0)
 end
 
 
 """
     mutable struct Variable{T}
 # Fields
-- `value::T`                : value in forward
-- `delta::Union{Nothing,T}` : gradients collected in backprop
-- `shape::Tuple`            : shape of `value`
-- `keepsgrad::Bool`         : whether keeps grad after backprop
-- `isleaf::Bool`            : whether leaf node
++ `value::T`                : value in forward
++ `delta::Union{Nothing,T}` : gradients collected in backprop
++ `shape::Tuple`            : shape of `value`
++ `keepsgrad::Bool`         : whether keeps grad after backprop
++ `isleaf::Bool`            : whether leaf node
 """
 mutable struct Variable{T}
     value::T
@@ -129,11 +139,10 @@ end
 
 """
     to(type::Type, var::Variable{T}, show::Bool=false) where T -> Variable{type}
-Type conversions between data types in Variable. (like from Array{Float64} to CuArray{Float32} )
-## Example
-`x = Variable(ones(1,4),type=Array{Float64})`
-
-`y = to(CuArray{Float16},x,true)`
+Type conversions between data types in `Variable`. (like from Array{Float64} to CuArray{Float32} )
+# Example
+    x = Variable(ones(1,4), type=Array{Float64})
+    y = to(CuArray{Float16}, x, true)
 """
 function to(type::Type, var::Variable{T}, show::Bool=false) where T
     if type <: T || type >: T
@@ -151,8 +160,32 @@ function to(type::Type, var::Variable{T}, show::Bool=false) where T
             return Variable{type}(var.value, var.backprop, var.keepsgrad, var.isleaf)
         end
     end
+    return
 end
 
+
+"""
+    to(type::Type, vars::Vector{Variable}, show::Bool=false)
+Type conversions between data types in `Vector{Variable}`
+# Example
+    julia> v = Vector{Variable}(undef,2);
+    julia> v[1] = Variable(4ones(2,4),type=Array{Float64});
+    julia> v[2] = Variable(3ones(2,3),type=Array{Float64});
+
+    julia> typeof(v[1])
+    Variable{Array{Float64,N} where N}
+
+    julia> v = to(Array{Float32},v);
+
+    julia> typeof(v[1])
+    Variable{Array{Float32,N} where N}
+"""
+function to(type::Type, vars::Vector{Variable}, show::Bool=false)
+    for i = 1:length(vars)
+        vars[i] = to(type, vars[i], show);
+    end
+    return vars
+end
 
 export Variable
 export zeroDelta
