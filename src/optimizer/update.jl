@@ -20,7 +20,9 @@ end
 
 
 function zerograds(parameters)
-    for v in parameters
-        v.delta .= 0.0
+    for var in parameters
+        if var.delta != nothing
+            var.delta .= 0.0
+        end
     end
 end
