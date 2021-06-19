@@ -15,21 +15,19 @@ global RNNLIST = [indrnn];
     PadSeqPackBatch(inputs::Vector{T}; epsilon::Real=0.0) where {T<: AbstractArray} -> AbstractArray{Real,3}
 pad zeros to align raw input features probably with different length
 # Examples
-```jldoctest
-julia> PadSeqPackBatch([ones(2,1), 2ones(2,2), 3ones(2,3)])
-2×3×3 Array{Float64,3}:
-[:, :, 1] =
- 1.0  0.0  0.0
- 1.0  0.0  0.0
+    julia> PadSeqPackBatch([ones(2,1), 2ones(2,2), 3ones(2,3)])
+    2×3×3 Array{Float64,3}:
+    [:, :, 1] =
+     1.0  0.0  0.0
+     1.0  0.0  0.0
 
-[:, :, 2] =
- 2.0  2.0  0.0
- 2.0  2.0  0.0
+    [:, :, 2] =
+     2.0  2.0  0.0
+     2.0  2.0  0.0
 
-[:, :, 3] =
- 3.0  3.0  3.0
- 3.0  3.0  3.0
- ```
+    [:, :, 3] =
+     3.0  3.0  3.0
+     3.0  3.0  3.0
 """
 function PadSeqPackBatch(inputs::Vector; epsilon::Real=0.0)
     # all Array of inputs shall have the same size in dim-1
@@ -52,10 +50,10 @@ end
     PackSeqSlices(inputs::Vector{Variable})
 union output of RNN of different time steps.
 # Examples
-`x1 = Variable( ones(2,2),keepsgrad=true)`\n
-`x2 = Variable(2ones(2,2),keepsgrad=true)`\n
-`x3 = Variable(3ones(2,2),keepsgrad=true)`\n
-`PackSeqSlices([x1, x2, x3])`
+    x1 = Variable( ones(2,2), keepsgrad=true)
+    x2 = Variable(2ones(2,2), keepsgrad=true)
+    x3 = Variable(3ones(2,2), keepsgrad=true)
+    PackSeqSlices([x1, x2, x3])
 """
 function PackSeqSlices(inputs::Vector{Variable})
     timeSteps = length(inputs)

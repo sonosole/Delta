@@ -8,10 +8,7 @@ Chain multiple blocks / functions together, so that they are called in sequence 
 `Chain` also supports indexing and slicing, e.g. `c[2]` or `c[1:3]` or c[[1,3]].
 
 # Examples
-```jldoctest
-julia> m = Chain(dense(256,128),lstm(128,64),dense(64,10));
-
-```
+    julia> m = Chain(dense(256,128), lstm(128,64), dense(64,10));
 """
 mutable struct Chain
     blocks::Vector

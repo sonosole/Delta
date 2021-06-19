@@ -138,7 +138,7 @@ end
 
 """
     dotAdd(var1::Variable{T1}, var2::Variable{T2}) where {T1,T2}
-    a tensor add a tensor element by element
+a tensor add a tensor element by element
 """
 function dotAdd(var1::Variable{T1}, var2::Variable{T2}) where {T1,T2}
     # a tensor add a tensor element by element
@@ -161,7 +161,7 @@ end
 
 """
     dotMul(var1::Variable{T1}, var2::Variable{T2}) where {T1,T2}
-    a tensor multiplies a tensor element by element
+a tensor multiplies a tensor element by element
 """
 function dotMul(var1::Variable{T1}, var2::Variable{T2}) where {T1,T2}
     # a tensor multiplies a tensor element by element
@@ -206,7 +206,7 @@ end
 
 """
     matAddVec(var1::Variable{T1}, var2::Variable{T2}) where {T1,T2}
-    a matrix tensor `var1` adds a vector tensor `var2`
+a matrix tensor `var1` adds a vector tensor `var2`
 """
 function matAddVec(var1::Variable{T1}, var2::Variable{T2}) where {T1,T2}
     # var1 -- 充当和节点，非学习的参数
@@ -234,7 +234,7 @@ end
 
 """
     matAddVec(var1::Variable{T1}, var2::Variable{T2}) where {T1,T2}
-    a matrix tensor `var1` multiplies a vector tensor `var2`
+a matrix tensor `var1` multiplies a vector tensor `var2`
 """
 function matMulVec(var1::Variable{T1}, var2::Variable{T2}) where {T1,T2}
     # var1 -- 一般充当激活节点，非网络需要学习的参数

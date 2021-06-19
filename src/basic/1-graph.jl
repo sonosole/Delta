@@ -11,7 +11,7 @@ export clear
 """
     mutable struct Graph
 # Field
-- `backward`: store backward operations
+`backward`: store backward operations
 """
 mutable struct Graph
     # 存储反向传播操作

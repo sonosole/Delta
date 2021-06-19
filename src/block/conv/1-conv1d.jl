@@ -3,10 +3,10 @@ export conv1dReceptiveField
 
 
 """
-    Computes a 1-D convolution given 3-D input and 3-D filter tensors.
-    Input 3D-tensor of shape (ichannels, timeSteps, batchsize)
-    Filter 3D-tensor of shape (ochannels, ichannels, kernel) but
-    actually reshaped to 2D-tensor of shape (ochannels, ichannels*kernel) for convenient.
+Computes a 1-D convolution given 3-D input and 3-D filter tensors.
+Input 3D-tensor of shape (ichannels, timeSteps, batchsize)
+Filter 3D-tensor of shape (ochannels, ichannels, kernel) but
+actually reshaped to 2D-tensor of shape (ochannels, ichannels*kernel) for convenient.
 """
 mutable struct conv1d <: Block
     w::Variable # input to hidden weights
@@ -80,10 +80,9 @@ end
 
 """
     conv1dReceptiveField(StrideKernelPair::Vector{NTuple{2,Int}})
-```julia
-julia> conv1dReceptiveField([(3,2),(3,1),(4,2)]
-(1:13, 5:17)
-```
+# Example
+    julia> conv1dReceptiveField([(3,2),(3,1),(4,2)]
+    (1:13, 5:17)
 """
 function conv1dReceptiveField(StrideKernelPair::Vector{NTuple{2,Int}})
     # 输入是从底层到顶层的(kernel,stride)列表

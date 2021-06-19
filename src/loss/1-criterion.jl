@@ -14,7 +14,7 @@ export binaryCrossEntropyCost
 
 """
     crossEntropy(var::Variable{T}, label::Variable{T}) -> Variable{T}
-    cross entropy = - y * log(̂y) where y is target and ̂y is the output of the network.
+cross entropy = - y * log(̂y) where y is target and ̂y is the output of the network.
 """
 function crossEntropy(var::Variable{T}, label::Variable{T}) where T
     @assert (var.shape == label.shape)
@@ -36,7 +36,7 @@ end
 
 """
     binaryCrossEntropy(x::Variable{T}, l::Variable{T}) -> Variable{T}
-    binary cross entropy = - y * log(̂y) - (1 - y) * log(1-̂y)
+binary cross entropy = - y * log(̂y) - (1 - y) * log(1-̂y)
 """
 function binaryCrossEntropy(var::Variable{T}, label::Variable{T}) where T
     @assert (var.shape == label.shape)
