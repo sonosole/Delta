@@ -6,14 +6,10 @@ mutable struct dense <: Block
     b::Variable
     f::Function
     # type specilized may be CuArray/AFArray/ClArray/Array etc
-    function dense(inputSize::Int, hiddenSize::Int; type::Type=Array{Float32})
-        w = sqrt(2/inputSize) .* randn(hiddenSize, inputSize)
-        b = sqrt(2/inputSize) .* randn(hiddenSize,         1)
-        new(Variable{type}(w,true,true,true), Variable{type}(b,true,true,true), relu)
-    end
-    function dense(inputSize::Int, hiddenSize::Int, fn::Function; type::Type=Array{Float32})
-        w = sqrt(2/inputSize) .* randn(hiddenSize, inputSize)
-        b = sqrt(2/inputSize) .* randn(hiddenSize,         1)
+    function dense(inputSize::Int, hiddenSize::Int, fn::Function=relu; type::Type=Array{Float32})
+        T = eltype(type)
+        w = sqrt(T(2/inputSize)) .* randn(T, hiddenSize, inputSize)
+        b = sqrt(T(2/inputSize)) .* randn(T, hiddenSize,         1)
         new(Variable{type}(w,true,true,true), Variable{type}(b,true,true,true), fn)
     end
 end
@@ -33,10 +29,9 @@ mutable struct MLP <: Block
     function MLP(topology::Vector{Int}; type::Type=Array{Float32})
         n = length(topology) - 1
         layers = Vector{dense}(undef, n)
-        for i = 1:n-1
+        for i = 1:n
             layers[i] = dense(topology[i], topology[i+1], relu; type=type)
         end
-        layers[n] = dense(topology[n], topology[n+1], softmax; type=type)
         new(layers)
     end
 
@@ -59,9 +54,6 @@ function Base.show(io::IO, m::MLP)
 end
 
 
-import Base.length
-import Base.getindex
-import Base.setindex!
 Base.length(m::MLP)             = length(m.layers)
 Base.getindex(m::MLP, k...)     =        m.layers[k...]
 Base.setindex!(m::MLP, v, k...) =       (m.layers[k...] = v)
@@ -179,4 +171,18 @@ function nparamsof(m::MLP)
         num += nparamsof(m[i])
     end
     return num
+end
+
+
+function to(type::Type, m::dense)
+    m.w = to(type, m.w)
+    m.b = to(type, m.b)
+    return m
+end
+
+
+function to!(type::Type, m::dense)
+    m.w = to(type, m.w)
+    m.b = to(type, m.b)
+    return nothing
 end
