@@ -2,11 +2,13 @@ export indrnn
 export INDRNN
 
 
-function uniform(shape::Tuple;from=0.0,to=1.0)
-    if from==0.0 && to==1.0
-        return rand(typeof(from),shape)
+function uniform(dtype::Type, shape::Tuple; from=dtype(0.0), to=dtype(1.0))
+    From = dtype(from)
+    To   = dtype(to)
+    if from==dtype(0.0) && to==dtype(1.0)
+        return rand(dtype, shape)
     else
-        return rand(typeof(from),shape) .* (to - from) .+ from
+        return rand(dtype, shape) .* (To - From) .+ From
     end
 end
 
@@ -17,18 +19,11 @@ mutable struct indrnn <: Block
     u::Variable # recurrent weights
     f::Function # activation function
     h::Any      # hidden variable
-    function indrnn(inputSize::Int, hiddenSize::Int; type::Type=Array{Float32})
-        w = randn(hiddenSize, inputSize) .* sqrt( 2 / inputSize )
-        b = zeros(hiddenSize, 1)
-        u = uniform((hiddenSize, 1);from=-0.7,to=0.7)
-        new(Variable{type}(w,true,true,true),
-            Variable{type}(b,true,true,true),
-            Variable{type}(u,true,true,true), relu, nothing)
-    end
-    function indrnn(inputSize::Int, hiddenSize::Int, fn::Function; type::Type=Array{Float32})
-        w = randn(hiddenSize, inputSize) .* sqrt( 2 / inputSize )
-        b = zeros(hiddenSize, 1)
-        u = uniform((hiddenSize, 1);from=-0.7,to=0.7)
+    function indrnn(inputSize::Int, hiddenSize::Int, fn::Function=relu; type::Type=Array{Float32})
+        T = eltype(type)
+        w = randn(T, hiddenSize, inputSize) .* sqrt( T(2/inputSize) )
+        b = zeros(T, hiddenSize, 1)
+        u = uniform(T, (hiddenSize, 1); from=-0.996, to=0.996)
         new(Variable{type}(w,true,true,true),
             Variable{type}(b,true,true,true),
             Variable{type}(u,true,true,true), fn, nothing)
@@ -37,7 +32,7 @@ end
 
 mutable struct INDRNN <: Block
     layers::Vector{indrnn}
-    function INDRNN(topology::Vector{Int}, fn::Array{T}; type::Type=Array{Float32}) where T
+    function INDRNN(topology::Vector{Int}, fn::Array{F}; type::Type=Array{Float32}) where F
         n = length(topology) - 1
         layers = Vector{indrnn}(undef, n)
         for i = 1:n
