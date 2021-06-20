@@ -4,8 +4,9 @@ mutable struct linear <: Block
     w::Variable # input to hidden weights
     b::Variable # bias of hidden units
     function linear(inputSize::Int, hiddenSize::Int; type::Type=Array{Float32})
-        w = sqrt(1/hiddenSize) .* randn(hiddenSize, inputSize)
-        b = sqrt(1/hiddenSize) .* randn(hiddenSize,         1)
+        T = eltype(type)
+        w = sqrt(T(1/hiddenSize)) .* randn(T, hiddenSize, inputSize)
+        b = sqrt(T(1/hiddenSize)) .* randn(T, hiddenSize,         1)
         new(Variable{type}(w,true,true,true),
             Variable{type}(b,true,true,true))
     end
