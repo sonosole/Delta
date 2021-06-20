@@ -187,10 +187,17 @@ function to(type::Type, vars::Vector{Variable}, show::Bool=false)
     return vars
 end
 
+
+function to!(type::Type, vars::Vector{Variable}, show::Bool=false)
+    vars = to(type, vars, show)
+    return nothing
+end
+
+
 export Variable
 export zeroDelta
 export Zero
-export to
+export to, to!
 
 export need2computeδ!
 export ifNotKeepδThenFreeδ!
