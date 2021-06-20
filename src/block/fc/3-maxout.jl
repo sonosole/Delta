@@ -8,9 +8,10 @@ mutable struct maxout <: Block
     k::Int
     function maxout(inputSize::Int, hiddenSize::Int; k::Int=2, type::Type=Array{Float32})
         @assert (k>=2) "# of affine layers should no less than 2"
+        T = eltype(type)
         d = hiddenSize * k
-        w = randn(d, inputSize) .* sqrt( 1 / d )
-        b = zeros(d, 1)
+        w = randn(T, d, inputSize) .* sqrt( T(1/d) )
+        b = zeros(T, d, 1)
         new(Variable{type}(w,true,true,true),
             Variable{type}(b,true,true,true), hiddenSize, k)
     end
