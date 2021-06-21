@@ -31,16 +31,10 @@ mutable struct Chain
 end
 
 
-import Base.getindex
-import Base.setindex!
-# Base.getindex(c::Chain, k::AbstractArray) = Chain(c.blocks[k]...)
+Base.length(c::Chain)       = length(c.blocks)
 Base.getindex(c::Chain, k...)      = c.blocks[k...]
 Base.setindex!(c::Chain, v, k...) = (c.blocks[k...] = v)
-
-
-function length(c::Chain)
-    return length(c.blocks)
-end
+Base.iterate(c::Chain, i=1) = i>length(c) ? nothing : (c[i], i+1)
 
 
 function Base.show(io::IO, c::Chain)
