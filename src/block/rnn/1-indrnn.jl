@@ -1,6 +1,6 @@
 export indrnn
 export INDRNN
-
+export uniform
 
 function uniform(dtype::Type, shape::Tuple; from=dtype(0.0), to=dtype(1.0))
     From = dtype(from)
@@ -23,7 +23,7 @@ mutable struct indrnn <: Block
         T = eltype(type)
         w = randn(T, hiddenSize, inputSize) .* sqrt( T(2/inputSize) )
         b = zeros(T, hiddenSize, 1)
-        u = uniform(T, (hiddenSize, 1); from=-0.996, to=0.996)
+        u = uniform(T, (hiddenSize, 1); from=-0.1990, to=0.1997)
         new(Variable{type}(w,true,true,true),
             Variable{type}(b,true,true,true),
             Variable{type}(u,true,true,true), fn, nothing)
