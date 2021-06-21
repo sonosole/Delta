@@ -5,8 +5,9 @@ mutable struct linear <: Block
     b::Variable # bias of hidden units
     function linear(inputSize::Int, hiddenSize::Int; type::Type=Array{Float32})
         T = eltype(type)
-        w = sqrt(T(1/hiddenSize)) .* randn(T, hiddenSize, inputSize)
-        b = sqrt(T(1/hiddenSize)) .* randn(T, hiddenSize,         1)
+        a = sqrt(T(1/hiddenSize))
+        w = randn(T, hiddenSize, inputSize) .* a
+        b = randn(T, hiddenSize,         1) .* a
         new(Variable{type}(w,true,true,true),
             Variable{type}(b,true,true,true))
     end
@@ -70,4 +71,18 @@ function predict(m::linear, x)
     w = m.w.value
     b = m.b.value
     return (w * x .+ b)
+end
+
+
+function to(type::Type, m::linear)
+    m.w = to(type, m.w)
+    m.b = to(type, m.b)
+    return m
+end
+
+
+function to!(type::Type, m::linear)
+    m.w = to(type, m.w)
+    m.b = to(type, m.b)
+    return nothing
 end

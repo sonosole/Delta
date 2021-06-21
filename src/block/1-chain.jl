@@ -104,3 +104,19 @@ function predict(c::Chain, input)
     end
     return x
 end
+
+
+function to(type::Type, c::Chain)
+    for m in c
+        m = to(type, m)
+    end
+    return c
+end
+
+
+function to!(type::Type, c::Chain)
+    for m in c
+        m = to(type, m)
+    end
+    return nothing
+end

@@ -77,3 +77,17 @@ function predict(model::maxout, x::AbstractArray)
     out  = reshape(maxv, h,c)       # dim=(h,  c)
     return out
 end
+
+
+function to(type::Type, m::maxout)
+    m.w = to(type, m.w)
+    m.b = to(type, m.b)
+    return m
+end
+
+
+function to!(type::Type, m::maxout)
+    m.w = to(type, m.w)
+    m.b = to(type, m.b)
+    return nothing
+end

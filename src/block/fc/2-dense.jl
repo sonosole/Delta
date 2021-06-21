@@ -8,8 +8,9 @@ mutable struct dense <: Block
     # type specilized may be CuArray/AFArray/ClArray/Array etc
     function dense(inputSize::Int, hiddenSize::Int, fn::Function=relu; type::Type=Array{Float32})
         T = eltype(type)
-        w = sqrt(T(2/inputSize)) .* randn(T, hiddenSize, inputSize)
-        b = sqrt(T(2/inputSize)) .* randn(T, hiddenSize,         1)
+        a = sqrt(T(2/inputSize))
+        w = randn(T, hiddenSize, inputSize) .* a
+        b = randn(T, hiddenSize,         1) .* a
         new(Variable{type}(w,true,true,true), Variable{type}(b,true,true,true), fn)
     end
 end

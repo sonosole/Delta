@@ -199,3 +199,20 @@ function nparamsof(m::INDRNN)
     end
     return num
 end
+
+
+
+function to(type::Type, m::indrnn)
+    m.w = to(type, m.w)
+    m.b = to(type, m.b)
+    m.u = to(type, m.u)
+    return m
+end
+
+
+function to!(type::Type, m::indrnn)
+    m.w = to(type, m.w)
+    m.b = to(type, m.b)
+    m.u = to(type, m.u)
+    return nothing
+end

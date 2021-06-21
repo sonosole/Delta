@@ -219,3 +219,17 @@ function predict(model::conv1d, x::AbstractArray)
     x = w * x .+ b
     return col2out(x, batchsize)
 end
+
+
+function to(type::Type, m::conv1d)
+    m.w = to(type, m.w)
+    m.b = to(type, m.b)
+    return m
+end
+
+
+function to!(type::Type, m::conv1d)
+    m.w = to(type, m.w)
+    m.b = to(type, m.b)
+    return nothing
+end
