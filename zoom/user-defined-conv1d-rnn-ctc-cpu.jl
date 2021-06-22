@@ -23,8 +23,8 @@ mutable struct Model
 end
 
 
-length(m::Model) = length(m.blocks)
-getindex(m::Model, k...) = m.blocks[k...]
+Base.length(m::Model) = length(m.blocks)
+Base.getindex(m::Model, k...) = m.blocks[k...]
 
 
 # 2. define how to extrac model's params
@@ -104,12 +104,9 @@ println("decoding result: ", r);
 
 
 # for more humanlity iteration style
-import Base.firstindex
-import Base.lastindex
-import Base.iterate
-lastindex(m::Model)  = length(m)
-firstindex(m::Model) = 1
-iterate(m::Model, i=firstindex(m)) = i>length(m) ? nothing : (m[i], i+1)
+Base.lastindex(m::Model)  = length(m)
+Base.firstindex(m::Model) = 1
+Base.iterate(m::Model, i=firstindex(m)) = i>length(m) ? nothing : (m[i], i+1)
 
 # so we could iterate like `for x in X`
 function Delta.nparamsof(model::Model)
