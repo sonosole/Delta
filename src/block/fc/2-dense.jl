@@ -56,8 +56,11 @@ end
 
 
 Base.length(m::MLP)             = length(m.layers)
+Base.lastindex(m::MLP)          = length(m.layers)
 Base.getindex(m::MLP, k...)     =        m.layers[k...]
 Base.setindex!(m::MLP, v, k...) =       (m.layers[k...] = v)
+Base.firstindex(m::MLP) = 1
+Base.iterate(m::MLP, i=firstindex(m)) = i>length(m) ? nothing : (m[i], i+1)
 
 
 function forward(m::dense, x::Variable)
@@ -186,4 +189,19 @@ function to!(type::Type, m::dense)
     m.w = to(type, m.w)
     m.b = to(type, m.b)
     return nothing
+end
+
+
+function to(type::Type, m::MLP)
+    for layer in m
+        layer = to(type, layer)
+    end
+    return m
+end
+
+
+function to!(type::Type, m::dense)
+    for layer in m
+        to!(type, layer)
+    end
 end

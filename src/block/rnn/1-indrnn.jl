@@ -45,7 +45,10 @@ end
 
 Base.getindex(m::INDRNN,     k...) =  m.layers[k...]
 Base.setindex!(m::INDRNN, v, k...) = (m.layers[k...] = v)
-Base.length(m::INDRNN) = length(m.layers)
+Base.length(m::INDRNN)       = length(m.layers)
+Base.lastindex(m::INDRNN)    = length(m.layers)
+Base.firstindex(m::INDRNN)   = 1
+Base.iterate(m::INDRNN, i=firstindex(m)) = i>length(m) ? nothing : (m[i], i+1)
 
 
 function Base.show(io::IO, m::indrnn)
@@ -215,4 +218,19 @@ function to!(type::Type, m::indrnn)
     m.b = to(type, m.b)
     m.u = to(type, m.u)
     return nothing
+end
+
+
+function to(type::Type, m::INDRNN)
+    for layer in m
+        layer = to(type, layer)
+    end
+    return m
+end
+
+
+function to!(type::Type, m::INDRNN)
+    for layer in m
+        to!(type, layer)
+    end
 end
