@@ -200,7 +200,7 @@ function to(type::Type, m::MLP)
 end
 
 
-function to!(type::Type, m::dense)
+function to!(type::Type, m::MLP)
     for layer in m
         to!(type, layer)
     end
