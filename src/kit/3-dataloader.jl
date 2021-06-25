@@ -37,7 +37,7 @@ mutable struct DataLoader{T}
             @warn "# observations < batchsize, decreasing batchsize to $n"
             batchsize = n
         end
-        imax = (droplast && mod(n,batchsize)!=0) ? (n - batchsize + 1) : n
+        imax = (droplast && mod(n,batchsize)!=0) ? (n - n % batchsize) : n
         new{T}(dataset, batchsize, droplast, shuffle, imax, n, 1:n, collatefn)
     end
 end
