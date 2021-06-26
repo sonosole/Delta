@@ -118,7 +118,7 @@ function Base.getindex(x::Variable{T}, k...) where T
     if x.backprop
         function getindexBackward()
             if need2computeδ!(x)
-                x.delta[k...] += y.delta
+                x.delta[k...] .+= y.delta
             end
             ifNotKeepδThenFreeδ!(y);
         end
