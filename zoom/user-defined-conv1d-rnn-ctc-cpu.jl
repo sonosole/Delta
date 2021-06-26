@@ -74,7 +74,7 @@ epoch = 37
 # 7. train this model
 for e = 1:epoch
     y = forward(asr, x)
-    loglikely = CRNN_Batch_CTCLoss_With_Softmax(y, seqlabels);
+    loglikely = CRNN_Batch_CTC_With_Softmax(y, seqlabels);
     println("iter $e loss = $loglikely");
     backward()
     update(optim, asrparams, clipvalue=20.0)
