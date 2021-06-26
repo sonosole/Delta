@@ -71,9 +71,8 @@ function forward(m::dense, x::Variable)
 end
 
 
-function forward(m::MLP, input::Variable)
-    x = forward(m[1], input)
-    for i = 2:length(m)
+function forward(m::MLP, x::Variable)
+    for i = 1:length(m)
         x = forward(m[i], x)
     end
     return x
@@ -88,9 +87,8 @@ function predict(m::dense, x)
 end
 
 
-function predict(m::MLP, input)
-    x = predict(m[1], input)
-    for i = 2:length(m)
+function predict(m::MLP, x)
+    for i = 1:length(m)
         x = predict(m[i], x)
     end
     return x

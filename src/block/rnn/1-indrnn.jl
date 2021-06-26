@@ -89,9 +89,8 @@ function forward(m::indrnn, x::Variable{T}) where T
 end
 
 
-function forward(m::INDRNN, input::Variable)
-    x = forward(m[1], input)
-    for i = 2:length(m)
+function forward(m::INDRNN, x::Variable)
+    for i = 1:length(m)
         x = forward(m[i], x)
     end
     return x
@@ -110,9 +109,8 @@ function predict(m::indrnn, x::AbstractArray{T}) where T
 end
 
 
-function predict(m::INDRNN, input)
-    x = predict(m[1], input)
-    for i = 2:length(m)
+function predict(m::INDRNN, x)
+    for i = 1:length(m)
         x = predict(m[i], x)
     end
     return x
