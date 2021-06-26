@@ -13,7 +13,7 @@ global RNNLIST = [indrnn];
 
 """
     PadSeqPackBatch(inputs::Vector{T}; epsilon::Real=0.0) where {T<: AbstractArray} -> AbstractArray{Real,3}
-pad zeros to align raw input features probably with different length
+pad epsilon to align raw input features probably with different length
 # Examples
     julia> PadSeqPackBatch([ones(2,1), 2ones(2,2), 3ones(2,3)])
     2×3×3 Array{Float64,3}:
@@ -40,7 +40,7 @@ function PadSeqPackBatch(inputs::Vector; epsilon::Real=0.0)
 
     for i = 1:batchSize
         Tᵢ = lengths[i]
-        rnnBatch[:,1:Tᵢ,i] = inputs[i]
+        rnnBatch[:,1:Tᵢ,i] .= inputs[i]
     end
     return rnnBatch
 end
@@ -61,7 +61,7 @@ function PackSeqSlices(inputs::Vector{Variable})
     batchSize = size(inputs[1], 2)
     rnnBatch  = zeros(eltype(inputs[1]), featDims, timeSteps, batchSize)
     for t = 1:timeSteps
-        rnnBatch[:,t,:] = inputs[t].value
+        rnnBatch[:,t,:] .= inputs[t].value
     end
     out = typeof(inputs[1])(rnnBatch, inputs[1].backprop)
 
@@ -69,7 +69,7 @@ function PackSeqSlices(inputs::Vector{Variable})
         function PackSeqSlicesBackward()
             for t = 1:timeSteps
                 if need2computeδ!(inputs[t])
-                    inputs[t].delta += out.delta[:,t,:]
+                    inputs[t].delta .+= out.delta[:,t,:]
                 end
             end
             ifNotKeepδThenFreeδ!(out)
@@ -86,7 +86,7 @@ function PackSeqSlices(inputs::Vector{T}) where {T <: AbstractArray}
     batchSize = size(inputs[1], 2)
     rnnBatch  = zeros(eltype(inputs[1]), featDims, timeSteps, batchSize)
     for t = 1:timeSteps
-        rnnBatch[:,t,:] = inputs[t]
+        rnnBatch[:,t,:] .= inputs[t]
     end
     return rnnBatch
 end
