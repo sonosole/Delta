@@ -29,25 +29,25 @@ pad epsilon to align raw input features probably with different length
      3.0  3.0  3.0
      3.0  3.0  3.0
 """
-function PadSeqPackBatch(inputs::Vector; epsilon::Real=0.0)
+function PadSeqPackBatch(inputs::Vector{T}; epsilon::Real=0.0) where T
     # all Array of inputs shall have the same size in dim-1
     batchSize = length(inputs)
     lengths   = [size(inputs[i], 2) for i in 1:batchSize]
     featDims  = size(inputs[1], 1)
     maxSteps  = maximum(lengths)
-    rnnBatch  = zeros(eltype(inputs[1]), featDims, maxSteps, batchSize)
-    fill!(rnnBatch, epsilon)
+    RNNBatch  = T(undef, featDims, maxSteps, batchSize)
+    fill!(RNNBatch, epsilon)
 
     for i = 1:batchSize
         Tᵢ = lengths[i]
-        rnnBatch[:,1:Tᵢ,i] .= inputs[i]
+        RNNBatch[:,1:Tᵢ,i] .= inputs[i]
     end
-    return rnnBatch
+    return RNNBatch
 end
 
 
 """
-    PackSeqSlices(inputs::Vector{Variable})
+    PackSeqSlices(inputs::Vector{Variable{T}}) where T
 union output of RNN of different time steps.
 # Examples
     x1 = Variable( ones(2,2), keepsgrad=true)
@@ -55,28 +55,28 @@ union output of RNN of different time steps.
     x3 = Variable(3ones(2,2), keepsgrad=true)
     PackSeqSlices([x1, x2, x3])
 """
-function PackSeqSlices(inputs::Vector{Variable})
+function PackSeqSlices(inputs::Vector{Variable{T}}) where T
     timeSteps = length(inputs)
     featDims  = size(inputs[1], 1)
     batchSize = size(inputs[1], 2)
-    rnnBatch  = zeros(eltype(inputs[1]), featDims, timeSteps, batchSize)
-    for t = 1:timeSteps
-        rnnBatch[:,t,:] .= inputs[t].value
-    end
-    out = typeof(inputs[1])(rnnBatch, inputs[1].backprop)
+    RNNBatch  = Variable{T}(T(undef, featDims, timeSteps, batchSize), inputs[1].backprop)
 
-    if out.backprop
+    for t = 1:timeSteps
+        RNNBatch.value[:,t,:] .= inputs[t].value
+    end
+
+    if RNNBatch.backprop
         function PackSeqSlicesBackward()
             for t = 1:timeSteps
                 if need2computeδ!(inputs[t])
-                    inputs[t].delta .+= out.delta[:,t,:]
+                    inputs[t].delta .+= RNNBatch.delta[:,t,:]
                 end
             end
-            ifNotKeepδThenFreeδ!(out)
+            ifNotKeepδThenFreeδ!(RNNBatch)
         end
         push!(graph.backward, PackSeqSlicesBackward)
     end
-    return out
+    return RNNBatch
 end
 
 
@@ -84,17 +84,17 @@ function PackSeqSlices(inputs::Vector{T}) where {T <: AbstractArray}
     timeSteps = length(inputs)
     featDims  = size(inputs[1], 1)
     batchSize = size(inputs[1], 2)
-    rnnBatch  = zeros(eltype(inputs[1]), featDims, timeSteps, batchSize)
+    RNNBatch  = zeros(eltype(inputs[1]), featDims, timeSteps, batchSize)
     for t = 1:timeSteps
-        rnnBatch[:,t,:] .= inputs[t]
+        RNNBatch[:,t,:] .= inputs[t]
     end
-    return rnnBatch
+    return RNNBatch
 end
 
 
-function PackedSeqForward(chain::Chain, x::Variable)
+function PackedSeqForward(chain::Chain, x::Variable{S}) where S
     T = size(x,2)
-    y = Vector{Variable}(undef,T)
+    y = Vector{Variable{S}}(undef, T)
     resethidden(chain)
     for t = 1:T
         y[t] = forward(chain, x[:,t,:])
