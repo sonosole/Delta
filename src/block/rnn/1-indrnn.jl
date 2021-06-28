@@ -82,7 +82,7 @@ function forward(m::indrnn, x::Variable{T}) where T
     w = m.w  # input's weights
     b = m.b  # input's bias
     u = m.u  # memory's weights
-    h = m.h ≠ nothing ? m.h : Variable{T}(zeros(size(w,1),size(x,2)))
+    h = m.h ≠ nothing ? m.h : Variable{T}(Zero(T, size(w,1), size(x,2)))
     x = f(matAddVec(matMulVec(h, u) + w*x, b))
     m.h = x
     return x
@@ -97,12 +97,12 @@ function forward(m::INDRNN, x::Variable)
 end
 
 
-function predict(m::indrnn, x::AbstractArray{T}) where T
+function predict(m::indrnn, x::T) where T
     f = m.f        # activition function
     w = m.w.value  # input's weights
     b = m.b.value  # input's bias
     u = m.u.value  # memory's weights
-    h = m.h != nothing ? m.h : zeros(T,size(w,1),size(x,2))
+    h = m.h != nothing ? m.h : Zero(T, size(w,1), size(x,2))
     x = f(w*x + h .* u .+ b)
     m.h = x
     return x
