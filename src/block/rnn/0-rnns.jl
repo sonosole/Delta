@@ -31,7 +31,7 @@ pad epsilon to align raw input features probably with different length
      3.0  3.0  3.0
      3.0  3.0  3.0
 """
-function Delta.PadSeqPackBatch(inputs::Vector; epsilon::Real=0.0)
+function PadSeqPackBatch(inputs::Vector; epsilon::Real=0.0)
     # all Array of inputs shall have the same size in dim-1
     batchSize = length(inputs)
     lengths   = [size(inputs[i], 2) for i in 1:batchSize]
