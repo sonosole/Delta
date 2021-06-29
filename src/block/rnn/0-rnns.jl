@@ -48,30 +48,28 @@ function PadSeqPackBatch(inputs::Vector; epsilon::Real=0.0)
 end
 
 
-"""
-    PackSeqSlices(inputs::Vector{Variable{T}}) where T
-union output of RNN of different time steps.
-# Examples
-    x1 = Variable( ones(2,2), keepsgrad=true)
-    x2 = Variable(2ones(2,2), keepsgrad=true)
-    x3 = Variable(3ones(2,2), keepsgrad=true)
-    PackSeqSlices([x1, x2, x3])
-"""
-function PackSeqSlices(inputs::Vector{Variable{T}}) where T
-    timeSteps = length(inputs)
-    featDims  = size(inputs[1], 1)
-    batchSize = size(inputs[1], 2)
-    RNNBatch  = Variable{T}(T(undef, featDims, timeSteps, batchSize), inputs[1].backprop)
+function PackedSeqForward(chain::Chain, x::Variable{S}) where S
+    T = size(x, 2)
+    y = Vector{Variable{S}}(undef, T)
+    resethidden(chain)
+    for t = 1:T
+        y[t] = forward(chain, x[:,t,:])
+    end
+
+    timeSteps = T
+    featsDims = size(y[1], 1)
+    batchSize = size(y[1], 2)
+    RNNBatch  = Variable{S}(S(undef, featsDims, timeSteps, batchSize), x.backprop)
 
     for t = 1:timeSteps
-        RNNBatch.value[:,t,:] .= inputs[t].value
+        RNNBatch.value[:,t,:] .= y[t].value
     end
 
     if RNNBatch.backprop
         function PackSeqSlicesBackward()
             for t = 1:timeSteps
-                if need2computeδ!(inputs[t])
-                    inputs[t].delta .+= RNNBatch.delta[:,t,:]
+                if need2computeδ!(y[t])
+                    y[t].delta .+= RNNBatch.delta[:,t,:]
                 end
             end
             ifNotKeepδThenFreeδ!(RNNBatch)
@@ -82,35 +80,20 @@ function PackSeqSlices(inputs::Vector{Variable{T}}) where T
 end
 
 
-function PackSeqSlices(inputs::Vector{T}) where {T <: AbstractArray}
-    timeSteps = length(inputs)
-    featDims  = size(inputs[1], 1)
-    batchSize = size(inputs[1], 2)
-    RNNBatch  = zeros(eltype(inputs[1]), featDims, timeSteps, batchSize)
-    for t = 1:timeSteps
-        RNNBatch[:,t,:] .= inputs[t]
-    end
-    return RNNBatch
-end
-
-
-function PackedSeqForward(chain::Chain, x::Variable{S}) where S
+function PackedSeqPredict(chain::Chain, x::AbstractArray{S}) where S
     T = size(x,2)
-    y = Vector{Variable{S}}(undef, T)
-    resethidden(chain)
-    for t = 1:T
-        y[t] = forward(chain, x[:,t,:])
-    end
-    return PackSeqSlices(y)
-end
-
-
-function PackedSeqPredict(chain::Chain, x::AbstractArray{S,N}) where {S,N}
-    T = size(x,2)
-    y = Vector{AbstractArray{S,N-1}}(undef,T)
+    y = Vector{AbstractArray{S}}(undef,T)
     resethidden(chain)
     for t = 1:T
         y[t] = predict(chain, x[:,t,:])
     end
-    return PackSeqSlices(y)
+
+    timeSteps = T
+    featsDims = size(y[1], 1)
+    batchSize = size(y[1], 2)
+    RNNBatch  = typeof(x)(undef, featsDims, timeSteps, batchSize)
+    for t = 1:timeSteps
+        RNNBatch[:,t,:] .= y[t]
+    end
+    return RNNBatch
 end
