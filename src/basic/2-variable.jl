@@ -1,15 +1,30 @@
 """
-    Zero(::Type{T}, shape...) where T
-return a array of type T which has shape `shape...`
+    Zeros(::Type{T}, shape...) where T
+return an all-zero-elements-array of type T which has shape `shape...`
 
 # Example
-    julia> Zero(Array{Float64}, 2, 5)
+    julia> Zeros(Array{Float64}, 2, 5)
     2×5 Array{Float64,2}:
      0.0  0.0  0.0  0.0  0.0
      0.0  0.0  0.0  0.0  0.0
  """
-function Zero(::Type{T}, shape...) where T
+function Zeros(::Type{T}, shape...) where T
     return fill!(T(undef, shape...), 0.0)
+end
+
+
+"""
+    Ones(::Type{T}, shape...) where T
+return an all-one-elements-array of type T which has shape `shape...`
+
+# Example
+    julia> 7Ones(Array{Float64}, 2, 5)
+    2×5 Array{Float64,2}:
+     7.0  7.0  7.0  7.0  7.0
+     7.0  7.0  7.0  7.0  7.0
+ """
+function Ones(::Type{T}, shape...) where T
+    return fill!(T(undef, shape...), 1.0)
 end
 
 
@@ -63,7 +78,7 @@ end
 function zeroDelta(var::Variable{T}) where T
     # 要切断某些反向传播路径的时候将其初始化为零
     if var.delta==nothing
-        var.delta = Zero(T, var.shape);
+        var.delta = Zeros(T, var.shape);
     end
 end
 
@@ -72,7 +87,7 @@ function need2computeδ!(var::Variable{T}) where T
     # 需要反向传播的时候就需要初始化
     if !(var.isleaf && !var.keepsgrad)
         if var.delta==nothing
-            var.delta = Zero(T, var.shape);
+            var.delta = Zeros(T, var.shape);
         end
         return true
     else
@@ -196,7 +211,7 @@ end
 
 export Variable
 export zeroDelta
-export Zero
+export Zeros
 export to, to!
 
 export need2computeδ!

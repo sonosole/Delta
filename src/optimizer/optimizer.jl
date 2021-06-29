@@ -44,7 +44,7 @@ mutable struct Momentum <: Optimizer
         num = length(params)
         vel = Vector(undef,num)
         for i = 1:num
-           vel[i] = Zero(typeof(params[i].value), params[i].shape)
+           vel[i] = Zeros(typeof(params[i].value), params[i].shape)
         end
         new(vel, learnRate, inertia, decay, "Momentum")
     end
@@ -85,8 +85,8 @@ mutable struct Adam <: Optimizer
         w1  = Vector(undef,num)
         w2  = Vector(undef,num)
         for i = 1:num
-            w1[i] = Zero(typeof(params[i].value), params[i].shape)
-            w2[i] = Zero(typeof(params[i].value), params[i].shape)
+            w1[i] = Zeros(typeof(params[i].value), params[i].shape)
+            w2[i] = Zeros(typeof(params[i].value), params[i].shape)
         end
         new(w1,w2,learnRate, b1, b2, epsilon, 0, 1.0, 1.0, decay, "Adam")
     end
