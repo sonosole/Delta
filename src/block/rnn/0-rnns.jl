@@ -2,7 +2,6 @@ include("./1-indrnn.jl")
 
 export resethidden
 export PadSeqPackBatch
-export PackSeqSlices
 export PackedSeqPredict
 export PackedSeqForward
 
