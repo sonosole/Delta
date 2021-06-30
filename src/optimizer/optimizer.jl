@@ -115,7 +115,8 @@ function update(a::Adam, params::Vector{Variable}; clipvalue=1.0)
 
     for i = 1:length(params)
         μ = sqrt(1-b₂ᵗ) / (1-b₁ᵗ) * lr
-        ∇ = clip.(params[i].delta, clipvalue)
+        @.  params[i].delta = clip(params[i].delta, clipvalue)
+        ∇ = params[i].delta
         @. w₁[i] = b₁ * w₁[i] + (1-b₁) * ∇
         @. w₂[i] = b₂ * w₂[i] + (1-b₂) * ∇ * ∇
         @. params[i].value -= μ * w₁[i] / sqrt(w₂[i] + ϵ)
