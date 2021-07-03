@@ -23,7 +23,7 @@ mlpmodel = Chain(
 # training function
 function train(Xtrain, Ytrain, Xtest, Ytest, mlpmodel)
     parameter = paramsof(mlpmodel)
-    optimizer = Adam(parameter;learnRate=1e-3,b1=0.9,b2=0.996)
+    optimizer = Adam(parameter;lr=1e-3,b1=0.9,b2=0.996)
     epoch     = 2
     batchsize = 32
     filesnums = size(Xtrain,3)

@@ -62,7 +62,7 @@ println(" loss: ", lossval1[end])
 # train a model with Momentum optimizer
 mlpmodel  = MLP(topology, operator)
 parameter = paramsof(mlpmodel)
-optimizer = Momentum(parameter;learnRate=lrate,inertia=0.9)
+optimizer = Momentum(parameter;lr=lrate,inertia=0.9)
 lossval2  = zeros(epoch,1)
 
 tic = time()
@@ -83,7 +83,7 @@ println(" loss: ", lossval2[end])
 # train a model with Adam optimizer
 mlpmodel  = MLP(topology, operator)
 parameter = paramsof(mlpmodel)
-optimizer = Adam(parameter;learnRate=1e-3,b1=0.9,b2=0.9)
+optimizer = Adam(parameter;lr=1e-3,b1=0.9,b2=0.9)
 lossval3  = zeros(epoch,1)
 tic = time()
 for i = 1:epoch
@@ -122,7 +122,7 @@ mlpmodel = Chain(
     dense(32,2)
 )
 parameter = paramsof(mlpmodel)
-optimizer = Adam(parameter;learnRate=1e-3,b1=0.9,b2=0.999)
+optimizer = Adam(parameter;lr=1e-3,b1=0.9,b2=0.999)
 lossval4  = zeros(epoch,1)
 tic = time()
 for i = 1:epoch

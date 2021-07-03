@@ -56,7 +56,7 @@ l1 = layer(y=log.(lossval), Geom.line,Theme(default_color=colorant"cyan"))
 
 mlpmodel  = MLP(topology, operator)
 paramter  = paramsof(mlpmodel)
-optimizer = Momentum(paramter,learnRate=lrate,inertia=0.9)
+optimizer = Momentum(paramter,lr=lrate,inertia=0.9)
 lossval   = zeros(epoch,1)
 tic = time()
 for i = 1:epoch
@@ -75,7 +75,7 @@ l2 = layer(y=log.(lossval), Geom.line,Theme(default_color=colorant"yellow"))
 
 mlpmodel  = MLP(topology, operator)
 paramter  = paramsof(mlpmodel)
-optimizer = Adam(paramter,learnRate=1e-3)
+optimizer = Adam(paramter,lr=1e-3)
 lossval   = zeros(epoch,1)
 tic = time()
 for i = 1:epoch

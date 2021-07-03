@@ -7,7 +7,7 @@ dense(64,1,relu)
 )
 
 params = paramsof(model)
-optimi = Adam(params;learnRate=1e-4)
+optimi = Adam(params;lr=1e-4)
 
 B = 32
 T = 100
