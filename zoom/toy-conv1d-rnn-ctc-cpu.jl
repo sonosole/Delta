@@ -39,7 +39,7 @@ for i=1:20
     # sequential forward propagation
     y2 = PackedSeqForward(chain2, y1);
     # computes ctc loss
-    logLikely = CRNN_Batch_CTCLoss_With_Softmax(y2, seqlabels);
+    logLikely = CRNN_Batch_CTC_With_Softmax(y2, seqlabels);
     println(logLikely);
     # backward gradients and update params
     backward();
