@@ -53,7 +53,7 @@ function Base.iterate(d::DataLoader, i=0)
     idxs  = d.indices[i+1 : next]
     batch = [d.data[k] for k in idxs]
 
-    if d.collate != nothing
+    if d.collate ≠ nothing
         return (d.collate(batch), next)
     else
         return (batch, next)

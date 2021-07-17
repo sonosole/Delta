@@ -17,9 +17,9 @@ include("./conv/0-conv.jl")
 include(  "./fc/0-fc.jl")
 include( "./rnn/0-rnns.jl")
 
-
+export gradsof
 export paramsof
 export nparamsof
 export weightsof
 export weightsof
-export gradsof
+export unbiasedof

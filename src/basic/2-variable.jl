@@ -77,7 +77,7 @@ end
 
 function zeroDelta(var::Variable{T}) where T
     # 要切断某些反向传播路径的时候将其初始化为零
-    if var.delta==nothing
+    if var.delta===nothing
         var.delta = Zeros(T, var.shape);
     end
 end
@@ -86,7 +86,7 @@ end
 function need2computeδ!(var::Variable{T}) where T
     # 需要反向传播的时候就需要初始化
     if !(var.isleaf && !var.keepsgrad)
-        if var.delta==nothing
+        if var.delta===nothing
             var.delta = Zeros(T, var.shape);
         end
         return true
