@@ -21,7 +21,7 @@ end
 
 function zerograds(parameters)
     for var in parameters
-        if var.delta != nothing
+        if var.delta !== nothing
             var.delta .= 0.0
         end
     end
