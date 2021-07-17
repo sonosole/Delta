@@ -32,7 +32,7 @@ end
 
 
 Base.length(c::Chain)     = length(c.blocks)
-Base.lastindex(c::Chain)  = length(m)
+Base.lastindex(c::Chain)  = length(c)
 Base.firstindex(c::Chain) = 1
 Base.getindex(c::Chain, k...)      = c.blocks[k...]
 Base.setindex!(c::Chain, v, k...) = (c.blocks[k...] = v)
@@ -60,11 +60,25 @@ function popitems(blocks::Vector{T}, list) where T
 end
 
 
+"""
+    unbiasedof(model::Chain)
+
+unbiased weights of Chain block
+"""
+function unbiasedof(model::Chain)
+    weights = Vector(undef, 0)
+    for m in model
+        append!(weights, unbiasedof(m))
+    end
+    return weights
+end
+
+
 function paramsof(c::Chain)
     params = Vector{Variable}(undef,0)
     for i = 1:length(c)
         p = paramsof(c[i])
-        if p != nothing
+        if p ≠ nothing
             append!(params, p)
         end
     end
@@ -90,18 +104,16 @@ function resethidden(c::Chain)
 end
 
 
-function forward(c::Chain, input::Variable)
-    x = forward(c[1], input)
-    for i = 2:length(c)
+function forward(c::Chain, x::Variable)
+    for i = 1:length(c)
         x = forward(c[i], x)
     end
     return x
 end
 
 
-function predict(c::Chain, input)
-    x = predict(c[1], input)
-    for i = 2:length(c)
+function predict(c::Chain, x)
+    for i = 1:length(c)
         x = predict(c[i], x)
     end
     return x

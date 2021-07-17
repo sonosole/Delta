@@ -39,6 +39,18 @@ function Base.show(io::IO, m::conv1d)
 end
 
 
+"""
+    unbiasedof(m::conv1d)
+
+unbiased weights of conv1d block
+"""
+function unbiasedof(m::conv1d)
+    weights = Vector(undef, 1)
+    weights[1] = m.w.value
+    return weights
+end
+
+
 function weightsof(m::conv1d)
     weights = Vector(undef, 2)
     weights[1] = m.w.value

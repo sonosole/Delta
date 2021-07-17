@@ -26,7 +26,6 @@ end
 
 mutable struct MLP <: Block
     layers::Vector{dense}
-
     function MLP(topology::Vector{Int}; type::Type=Array{Float32})
         n = length(topology) - 1
         layers = Vector{dense}(undef, n)
@@ -95,10 +94,36 @@ function predict(m::MLP, x)
 end
 
 
+"""
+    unbiasedof(m::dense)
+
+unbiased weights of dense block
+"""
+function unbiasedof(m::dense)
+    weights = Vector(undef, 1)
+    weights[1] = m.w.value
+    return weights
+end
+
+
 function weightsof(m::dense)
     weights = Vector(undef, 2)
     weights[1] = m.w.value
     weights[2] = m.b.value
+    return weights
+end
+
+
+"""
+    unbiasedof(m::MLP)
+
+unbiased weights of MLP block
+"""
+function unbiasedof(m::MLP)
+    weights = Vector(undef,0)
+    for i = 1:length(m)
+        append!(weights, unbiasedof(m[i]))
+    end
     return weights
 end
 

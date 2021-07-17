@@ -1,5 +1,3 @@
-export indrnn
-export INDRNN
 export uniform
 
 function uniform(dtype::Type, shape::Tuple; from=dtype(0.0), to=dtype(1.0))
@@ -70,9 +68,9 @@ function resethidden(m::indrnn)
 end
 
 
-function resethidden(m::INDRNN)
-    for i = 1:length(m)
-        m[i].h = nothing
+function resethidden(model::INDRNN)
+    for m in model
+        resethidden(m)
     end
 end
 
@@ -89,9 +87,9 @@ function forward(m::indrnn, x::Variable{T}) where T
 end
 
 
-function forward(m::INDRNN, x::Variable)
-    for i = 1:length(m)
-        x = forward(m[i], x)
+function forward(model::INDRNN, x::Variable)
+    for m in model
+        x = forward(m, x)
     end
     return x
 end
@@ -102,18 +100,30 @@ function predict(m::indrnn, x::T) where T
     w = m.w.value  # input's weights
     b = m.b.value  # input's bias
     u = m.u.value  # memory's weights
-    h = m.h != nothing ? m.h : Zeros(T, size(w,1), size(x,2))
+    h = m.h ≠ nothing ? m.h : Zeros(T, size(w,1), size(x,2))
     x = f(w*x + h .* u .+ b)
     m.h = x
     return x
 end
 
 
-function predict(m::INDRNN, x)
-    for i = 1:length(m)
-        x = predict(m[i], x)
+function predict(model::INDRNN, x)
+    for m in model
+        x = predict(m, x)
     end
     return x
+end
+
+
+"""
+    unbiasedof(m::indrnn)
+
+unbiased weights of indrnn block
+"""
+function unbiasedof(m::indrnn)
+    weights = Vector(undef, 1)
+    weights[1] = m.w.value
+    return weights
 end
 
 
@@ -122,6 +132,20 @@ function weightsof(m::indrnn)
     weights[1] = m.w.value
     weights[2] = m.b.value
     weights[3] = m.u.value
+    return weights
+end
+
+
+"""
+    unbiasedof(model::INDRNN)
+
+unbiased weights of INDRNN block
+"""
+function unbiasedof(model::INDRNN)
+    weights = Vector(undef, 0)
+    for m in model
+        append!(weights, unbiasedof(m))
+    end
     return weights
 end
 
@@ -212,9 +236,7 @@ end
 
 
 function to!(type::Type, m::indrnn)
-    m.w = to(type, m.w)
-    m.b = to(type, m.b)
-    m.u = to(type, m.u)
+    m = to(type, m)
     return nothing
 end
 

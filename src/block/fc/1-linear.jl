@@ -5,9 +5,9 @@ mutable struct linear <: Block
     b::Variable # bias of hidden units
     function linear(inputSize::Int, hiddenSize::Int; type::Type=Array{Float32})
         T = eltype(type)
-        a = sqrt(T(1/hiddenSize))
-        w = randn(T, hiddenSize, inputSize) .* a
-        b = randn(T, hiddenSize,         1) .* a
+        A = sqrt(T(1/hiddenSize))
+        w = randn(T, hiddenSize, inputSize) .* A
+        b = randn(T, hiddenSize,         1) .* A
         new(Variable{type}(w,true,true,true),
             Variable{type}(b,true,true,true))
     end
@@ -21,6 +21,16 @@ function Base.show(io::IO, m::linear)
     print(io, "linear($(SIZE[2]), $(SIZE[1]); type=$TYPE)")
 end
 
+"""
+    unbiasedof(m::linear)
+
+unbiased weights of linear block
+"""
+function unbiasedof(m::linear)
+    weights = Vector(undef, 1)
+    weights[1] = m.w.value
+    return weights
+end
 
 function weightsof(m::linear)
     weights = Vector(undef, 2)

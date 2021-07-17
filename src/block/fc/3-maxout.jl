@@ -26,6 +26,18 @@ function Base.show(io::IO, m::maxout)
 end
 
 
+"""
+    unbiasedof(m::maxout)
+
+unbiased weights of maxout block
+"""
+function unbiasedof(m::maxout)
+    weights = Vector(undef, 1)
+    weights[1] = m.w.value
+    return weights
+end
+
+
 function paramsof(m::maxout)
     params = Vector{Variable}(undef,2)
     params[1] = m.w
