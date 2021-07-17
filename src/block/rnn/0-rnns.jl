@@ -1,11 +1,18 @@
 include("./1-indrnn.jl")
+include("./2-indlstm.jl")
+
+export indrnn
+export INDRNN
+export indlstm
+export INDLSTM
 
 export resethidden
 export PadSeqPackBatch
 export PackedSeqPredict
 export PackedSeqForward
 
-global RNNLIST = [indrnn];
+global RNNLIST = [indrnn,
+                  indlstm];
 # global RNNLIST = [rnn, rin, lstm, indrnn, indlstm, RNN, RIN, LSTM, INDLSTM];
 
 
