@@ -26,7 +26,7 @@ end
     CTC(p::Array{T,2}, seq) where T -> target, lossvalue
 # inputs
 `p`: probability of softmax output\n
-`seq`: label seq like [2 3 6 5], 1 is blank, so minimum of it is 2.
+`seq`: label seq like [2 3 6 5], 1 is blank, so minimum of it is 2. If `p` has no label (e.g. pure noise or oov) then `seq` is []
 
 # outputs
 `target`: target of softmax's output\n
@@ -36,9 +36,9 @@ function CTC(p::Array{TYPE,2}, seq) where TYPE
     Log0 = LogZero(TYPE)   # approximate -Inf of TYPE
     S, T = size(p)         # assert p is a 2-D tensor
     L = length(seq)*2 + 1  # topology length with blanks
-    a = fill(Log0, L,T)    # 𝜶 = p(s[k,t], x[1:t])
-    b = fill(Log0, L,T)    # 𝛃 = p(x[t+1:T] | s[k,t])
-    r = zero(p)            # 𝜸 = p(s[k,t] | x[1:T])
+    a = fill(Log0, L,T)    # 𝜶 = p(s[k,t], x[1:t]), k in CTC topology's indexing
+    b = fill(Log0, L,T)    # 𝛃 = p(x[t+1:T] | s[k,t]), k in CTC topology's indexing
+    r = zero(p)            # 𝜸 = p(s[k,t] | x[1:T]), k in softmax's indexing
 
     if L>1
         a[1,1] = log(p[    1, 1])
@@ -114,7 +114,7 @@ end
 remove repeats and blanks of argmax(x, dims=1)
 """
 function CTCGreedySearch(x::Array)
-    # blank 映射到 1
+    # blank --> 1
     hyp = Vector{Int}(undef,0)
     idx = argmax(x,dims=1)
     for i = 1:length(idx)
@@ -136,18 +136,17 @@ end
 function DNN_CTC_With_Softmax(var::Variable{Array{T}}, seq) where T
     # for case batchsize==1
     p = softmax(var.value; dims=1)
-    L = length(seq) + 1
-    C = eltype(p)(L / var.shape[2])
+    L = length(seq) * 2 + 1
     r, loglikely = CTC(p, seq)
     if var.backprop
         function DNN_CTC_With_Softmax_Backward()
             if need2computeδ!(var)
-                var.delta += (p - r) .* C
+                var.delta += p - r
             end
         end
         push!(graph.backward, DNN_CTC_With_Softmax_Backward)
     end
-    return loglikely / (L * var.shape[2])
+    return loglikely / L
 end
 
 
@@ -170,12 +169,8 @@ function DNN_Batch_CTC_With_Softmax(var::Variable{Array{T}}, seq, inputLengths, 
     Threads.@threads for b = 1:batchsize
         IDI = sidI[b]:eidI[b]
         IDL = sidL[b]:eidL[b]
-        Tᵇ  = length(IDI)
-        Lᵇ  = length(IDL) + 1
         gamma[:,IDI], loglikely[b] = CTC(probs[:,IDI], seq[IDL])
-        gamma[:,IDI] .*= Lᵇ / Tᵇ
-        probs[:,IDI] .*= Lᵇ / Tᵇ
-        loglikely[b]  /= Lᵇ * Tᵇ
+        loglikely[b] /= length(IDL) * 2 + 1
     end
 
     if var.backprop
@@ -206,12 +201,10 @@ function RNN_Batch_CTC_With_Softmax(var::Variable{Array{T}}, seqlabels, inputLen
 
     Threads.@threads for b = 1:batchsize
         Tᵇ = inputLengths[b]
-        Lᵇ = labelLengths[b] + 1
+        Lᵇ = labelLengths[b]
         probs[:,1:Tᵇ,b] = softmax(var.value[:,1:Tᵇ,b]; dims=1)
         gamma[:,1:Tᵇ,b], loglikely[b] = CTC(probs[:,1:Tᵇ,b], seqlabels[b])
-        gamma[:,1:Tᵇ,b] .*= Lᵇ / Tᵇ
-        probs[:,1:Tᵇ,b] .*= Lᵇ / Tᵇ
-        loglikely[   b]  /= Lᵇ * Tᵇ
+        loglikely[   b] /= Lᵇ * 2 + 1
     end
 
     if var.backprop
@@ -239,11 +232,8 @@ function CRNN_Batch_CTC_With_Softmax(var::Variable{Array{T}}, seqlabels::Vector)
     loglikely = zeros(T, batchsize)
 
     Threads.@threads for b = 1:batchsize
-        L = length(seqlabels[b]) + 1
         gamma[:,:,b], loglikely[b] = CTC(probs[:,:,b], seqlabels[b])
-        gamma[:,:,b] .*= L / timesteps
-        probs[:,:,b] .*= L / timesteps
-        loglikely[b]  /= L * timesteps
+        loglikely[b] /= length(seqlabels[b])*2 + 1
     end
 
     if var.backprop
