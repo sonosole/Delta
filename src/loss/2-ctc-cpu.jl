@@ -23,7 +23,7 @@ end
 
 
 """
-    CTC(p::Array{T,2}, seq) where T -> target, lossvalue
+    CTC(p::Array{T,2}, seq) where T -> (target, lossvalue)
 # inputs
 `p`: probability of softmax output\n
 `seq`: label seq like [2 3 6 5], 1 is blank, so minimum of it is 2. If `p` has no label (e.g. pure noise or oov) then `seq` is []
@@ -120,7 +120,7 @@ function CTCGreedySearch(x::Array)
     for i = 1:length(idx)
         maxid = idx[i][1]
         if !((i!=1 && idx[i][1]==idx[i-1][1]) || (idx[i][1]==1))
-            push!(hyp,idx[i][1])
+            push!(hyp, maxid)
         end
     end
     return hyp
