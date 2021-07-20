@@ -17,6 +17,7 @@ fetchs a minibatch of data from a dataset and collates them into a batched sampl
 mutable struct DataLoader{T}
     data::T
     batchsize::Int
+    batchnums::Int
     droplast::Bool
     shuffle::Bool
     imax::Int
@@ -39,7 +40,8 @@ mutable struct DataLoader{T}
         end
         rest = mod(n, batchsize)
         imax = (droplast && rest!=0) ? (n - rest) : n
-        new{T}(dataset, batchsize, droplast, shuffle, imax, n, 1:n, collatefn)
+        batchnums = ceil(Int,imax/batchsize)
+        new{T}(dataset, batchsize, batchnums, droplast, shuffle, imax, n, 1:n, collatefn)
     end
 end
 
@@ -67,12 +69,29 @@ function Base.length(d::DataLoader)
 end
 
 
+function Base.getindex(d::DataLoader, k::Int)
+    k > batchnums && return nothing
+    if d.shuffle && k == 1
+        shuffle!(d.indices)
+    end
+    start = 1 + (k-1)*d.batchsize
+    final = min(k*d.batchsize, d.len)
+    batch = [d.data[k] for i in d.indices[start:final]]
+    if d.collate ≠ nothing
+        return d.collate(batch)
+    else
+        return batch
+    end
+end
+
+
 # pretty printing
 function Base.show(io::IO, d::DataLoader{T}) where T
     println("DataLoader{$T}")
     println("————————————————————————")
     println("     data →  $T")
     println("batchsize →  $(d.batchsize)")
+    println("batchnums →  $(d.batchnums)")
     println(" droplast →  $(d.droplast)")
     println("  shuffle →  $(d.shuffle)")
     println("     imax →  $(d.imax)")
