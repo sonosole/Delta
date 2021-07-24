@@ -40,7 +40,7 @@ mutable struct DataLoader{T}
         end
         rest = mod(n, batchsize)
         imax = (droplast && rest!=0) ? (n - rest) : n
-        batchnums = ceil(Int,imax/batchsize)
+        batchnums = ceil(Int, imax / batchsize)
         new{T}(dataset, batchsize, batchnums, droplast, shuffle, imax, n, 1:n, collatefn)
     end
 end
@@ -70,7 +70,7 @@ end
 
 
 function Base.getindex(d::DataLoader, k::Int)
-    k > batchnums && return nothing
+    k > d.batchnums && return nothing
     if d.shuffle && k == 1
         shuffle!(d.indices)
     end
