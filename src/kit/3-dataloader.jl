@@ -76,7 +76,7 @@ function Base.getindex(d::DataLoader, k::Int)
     end
     start = 1 + (k-1)*d.batchsize
     final = min(k*d.batchsize, d.len)
-    batch = [d.data[k] for i in d.indices[start:final]]
+    batch = [d.data[i] for i in d.indices[start:final]]
     if d.collate ≠ nothing
         return d.collate(batch)
     else
