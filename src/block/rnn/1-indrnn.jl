@@ -177,14 +177,14 @@ function gradsof(m::INDRNN)
 end
 
 
-function zerograds(m::indrnn)
+function zerograds!(m::indrnn)
     for v in gradsof(m)
         v .= zero(v)
     end
 end
 
 
-function zerograds(m::INDRNN)
+function zerograds!(m::INDRNN)
     for v in gradsof(m)
         v .= zero(v)
     end

@@ -41,11 +41,11 @@ for i=1:20
     # computes ctc loss
     logLikely = CRNN_Batch_CTC_With_Softmax(y2, seqlabels);
     println(logLikely);
-    # backward gradients and update params
+    # backward gradients and update! params
     backward();
-    update(optim1,p1,clipvalue=10.0);
-    update(optim2,p2,clipvalue=10.0);
+    update!(optim1,p1,clipvalue=10.0);
+    update!(optim2,p2,clipvalue=10.0);
     # zero gradients
-    zerograds(p1);
-    zerograds(p2);
+    zerograds!(p1);
+    zerograds!(p2);
 end

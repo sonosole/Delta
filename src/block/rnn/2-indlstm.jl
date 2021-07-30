@@ -266,14 +266,14 @@ function gradsof(model::INDLSTM)
 end
 
 
-function zerograds(m::indlstm)
+function zerograds!(m::indlstm)
     for v in gradsof(m)
         v .= zero(v)
     end
 end
 
 
-function zerograds(m::INDLSTM)
+function zerograds!(m::INDLSTM)
     for v in gradsof(m)
         v .= zero(v)
     end

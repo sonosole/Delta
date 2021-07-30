@@ -45,8 +45,8 @@ for i = 1:epoch
     outs = softmax(outs; dims=1)
     COST = crossEntropyCost(outs, Variable(label[:,ids[1:batch]]))
     backward()
-    update(paramter,lrate)
-    zerograds(paramter)
+    update!(paramter,lrate)
+    zerograds!(paramter)
     lossval[i] = COST
 end
 toc = time()
@@ -65,8 +65,8 @@ for i = 1:epoch
     outs = softmax(outs; dims=1)
     COST = crossEntropyCost(outs, Variable(label[:,ids[1:batch]]))
     backward()
-    update(optimizer,paramter)
-    zerograds(paramter)
+    update!(optimizer,paramter)
+    zerograds!(paramter)
     lossval[i] = COST
 end
 toc = time()
@@ -84,8 +84,8 @@ for i = 1:epoch
     outs = softmax(outs; dims=1)
     COST = crossEntropyCost(outs, Variable(label[:,ids[1:batch]]))
     backward()
-    update(optimizer,paramter)
-    zerograds(paramter)
+    update!(optimizer,paramter)
+    zerograds!(paramter)
     lossval[i] = COST
 end
 toc = time()
@@ -113,8 +113,8 @@ for i = 1:epoch
     outs = softmax(outs; dims=1)
     COST = crossEntropyCost(outs, Variable(label[:,ids[1:batch]]))
     backward()
-    update(parameter,lrate)
-    zerograds(parameter)
+    update!(parameter,lrate)
+    zerograds!(parameter)
     lossval[i] = COST
 end
 println(" sgd optimizer loss: ", lossval[end])

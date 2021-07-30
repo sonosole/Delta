@@ -48,7 +48,7 @@ function gradsof(m::linear)
 end
 
 
-function zerograds(m::linear)
+function zerograds!(m::linear)
     for v in gradsof(m)
         v .= 0.0
     end

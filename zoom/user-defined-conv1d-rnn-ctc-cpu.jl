@@ -77,8 +77,8 @@ for e = 1:epoch
     loglikely = CRNN_Batch_CTC_With_Softmax(y, seqlabels);
     println("iter $e loss = $loglikely");
     backward()
-    update(optim, asrparams, clipvalue=20.0)
-    zerograds(asrparams)
+    update!(optim, asrparams, clipvalue=20.0)
+    zerograds!(asrparams)
 end
 
 # 8. define predict calculation

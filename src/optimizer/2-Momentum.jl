@@ -20,7 +20,7 @@ function Base.show(io::IO, M::Momentum)
 end
 
 
-function update(m::Momentum, params::Vector{Variable}; clipfn::Function=LPInfNormClip, clipvalue=1e1)
+function update!(m::Momentum, params::Vector{Variable}; clipfn::Function=LPInfNormClip, clipvalue=1e1)
     vel = m.v
     lr  = m.lr
     ρ   = m.inertia

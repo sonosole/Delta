@@ -24,8 +24,8 @@ for e=1:epochs
     y = forward(model, Variable( reshape(x[:,T,:], 2,B) ) )
     COST = mseCost(y, Variable( reshape(s,1,B) ) )
     backward()
-    update(optimi, params; clipvalue=1e4)
-    zerograds(params)
+    update!(optimi, params; clipvalue=1e4)
+    zerograds!(params)
     lossval[e] = COST/B
 end
 

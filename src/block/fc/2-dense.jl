@@ -154,14 +154,14 @@ function gradsof(m::MLP)
 end
 
 
-function zerograds(m::dense)
+function zerograds!(m::dense)
     for v in gradsof(m)
         v .= 0.0
     end
 end
 
 
-function zerograds(m::MLP)
+function zerograds!(m::MLP)
     for v in gradsof(m)
         v .= 0.0
     end

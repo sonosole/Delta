@@ -49,8 +49,8 @@ for i = 1:epoch
     outs = forward(mlpmodel, x)
     COST = crossEntropyCost(softmax(outs;dims=1), l)
     backward()
-    update(parameter, lrate)
-    zerograds(parameter)
+    update!(parameter, lrate)
+    zerograds!(parameter)
     lossval1[i] = COST/N
 end
 toc = time()
@@ -70,8 +70,8 @@ for i = 1:epoch
     outs = forward(mlpmodel, x)
     COST = crossEntropyCost(softmax(outs;dims=1), l)
     backward()
-    update(optimizer,parameter)
-    zerograds(parameter)
+    update!(optimizer,parameter)
+    zerograds!(parameter)
     lossval2[i] = COST/N
 end
 toc = time()
@@ -90,8 +90,8 @@ for i = 1:epoch
     outs = forward(mlpmodel, x)
     COST = crossEntropyCost(softmax(outs;dims=1), l)
     backward()
-    update(optimizer,parameter)
-    zerograds(parameter)
+    update!(optimizer,parameter)
+    zerograds!(parameter)
     lossval3[i] = COST/N
 end
 toc = time()
@@ -129,8 +129,8 @@ for i = 1:epoch
     outs = forward(mlpmodel, x)
     COST = crossEntropyCost(softmax(outs;dims=1), l)
     backward()
-    update(optimizer, parameter)
-    zerograds(parameter)
+    update!(optimizer, parameter)
+    zerograds!(parameter)
     lossval4[i] = COST/N
 end
 toc = time()

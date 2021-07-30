@@ -13,8 +13,8 @@ function Base.show(io::IO, D::Descent)
 end
 
 
-function update(d::Descent, params::Vector{Variable})
+function update!(d::Descent, params::Vector{Variable})
     lrate = d.lr
     d.lr *= d.decay
-    update(params, lrate)
+    update!(params, lrate)
 end

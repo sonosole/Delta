@@ -28,7 +28,7 @@ function Base.show(io::IO, A::Adam)
 end
 
 
-function update(a::Adam, params::Vector{Variable}; clipfn::Function=LPInfNormClip, clipvalue=1.0)
+function update!(a::Adam, params::Vector{Variable}; clipfn::Function=LPInfNormClip, clipvalue=1.0)
     w₁ = a.w1
     w₂ = a.w2
     lr = a.lr

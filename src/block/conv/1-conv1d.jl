@@ -68,7 +68,7 @@ function gradsof(m::conv1d)
 end
 
 
-function zerograds(m::conv1d)
+function zerograds!(m::conv1d)
     for v in gradsof(m)
         v .= 0.0
     end

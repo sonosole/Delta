@@ -49,8 +49,8 @@ function train(Xtrain, Ytrain, Xtest, Ytest, mlpmodel)
             Cost = crossEntropyCost(prob, Variable(label))
             backward()
             if b%8==0
-                update(optimizer,parameter;clipvalue=50)
-                zerograds(parameter)
+                update!(optimizer,parameter;clipvalue=50)
+                zerograds!(parameter)
             end
             lossvalue[b] = Cost / batchsize
         end

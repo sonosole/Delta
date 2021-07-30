@@ -22,8 +22,8 @@ for i=1:epoch
     prob = softmax(outs, dims=1)
     COST = crossEntropyCost(prob, Variable(label))
     backward()
-    update(params, learnRate)
-    zerograds(params)
+    update!(params, learnRate)
+    zerograds!(params)
     println("loss: ", COST)
 end
 ```

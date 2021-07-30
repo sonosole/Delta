@@ -5,21 +5,21 @@ function clip(x, clipval)
 end
 
 
-function update(var::Variable, lr)
+function update!(var::Variable, lr)
     # update single Variable
     @. var.value -= lr * var.delta
 end
 
 
-function update(vars::Vector{Variable}, lr)
+function update!(vars::Vector{Variable}, lr)
     # update multi Variables
     for var in vars
-        update(var, lr)
+        update!(var, lr)
     end
 end
 
 
-function zerograds(parameters)
+function zerograds!(parameters)
     for var in parameters
         if var.delta !== nothing
             var.delta .= 0.0

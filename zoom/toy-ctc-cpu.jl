@@ -11,7 +11,7 @@ L = zeros(1, E)
 for i = 1:E
     L[i] = DNN_CTC_With_Softmax(P, [2 3 4 5 2 3 4 5])
     backward()
-    update(P, 1E-3)
+    update!(P, 1E-3)
 end
 
 lineplot(vec(L))
@@ -36,7 +36,7 @@ L = zeros(1, E)
 for i = 1:E
     L[i] = DNN_Batch_CTC_With_Softmax(P, seq, [T1 T2], [length(seq1) length(seq2)])
     backward()
-    update(P, 1E-3)
+    update!(P, 1E-3)
 end
 
 lineplot(vec(L))

@@ -19,7 +19,7 @@ function Base.show(io::IO, A::AdaGrad)
 end
 
 
-function update(m::AdaGrad, params::Vector{Variable}; clipfn::Function=LPInfNormClip, clipvalue=1e1)
+function update!(m::AdaGrad, params::Vector{Variable}; clipfn::Function=LPInfNormClip, clipvalue=1e1)
     w  = m.w
     lr = m.lr
     ϵ  = m.ϵ

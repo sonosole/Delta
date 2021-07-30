@@ -20,7 +20,7 @@ function Base.show(io::IO, R::RMSProp)
 end
 
 
-function update(m::RMSProp, params::Vector{Variable}; clipfn::Function=LPInfNormClip, clipvalue=1e1)
+function update!(m::RMSProp, params::Vector{Variable}; clipfn::Function=LPInfNormClip, clipvalue=1e1)
     w  = m.w
     ϵ  = m.ϵ
     lr = m.lr

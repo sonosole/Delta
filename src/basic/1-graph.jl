@@ -2,8 +2,8 @@ export Graph, graph
 export predict
 export forward
 export backward
-export update
-export zerograds
+export update!
+export zerograds!
 export clear
 
 
