@@ -1,12 +1,12 @@
 name = "Delta"
 uuid = "9e3a83e1-479c-4d1c-ae0a-a5bbc61f1663"
 license = "MIT"
-authors = ["Sole <sonosole@163.com>"]
-version = "0.1.0"
+authors = ["Taiyang Zhao <sonosole@163.com>"]
+version = "0.1.1"
 
 [deps]
 Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [compat]
-julia = "1.0.0"
+julia = "1.0 - 1.6"
