@@ -34,20 +34,21 @@ end
 """
 function CTC(p::Array{TYPE,2}, seq) where TYPE
     Log0 = LogZero(TYPE)   # approximate -Inf of TYPE
+    ZERO = TYPE(0)         # typed zero,e.g. Float32(0)
     S, T = size(p)         # assert p is a 2-D tensor
     L = length(seq)*2 + 1  # topology length with blanks
-    a = fill(Log0, L,T)    # 𝜶 = p(s[k,t], x[1:t]), k in CTC topology's indexing
-    b = fill(Log0, L,T)    # 𝛃 = p(x[t+1:T] | s[k,t]), k in CTC topology's indexing
-    r = zero(p)            # 𝜸 = p(s[k,t] | x[1:T]), k in softmax's indexing
+    a = fill!(Array{TYPE,2}(undef,L,T), Log0)    # 𝜶 = p(s[k,t], x[1:t]), k in CTC topology's indexing
+    b = fill!(Array{TYPE,2}(undef,L,T), Log0)    # 𝛃 = p(x[t+1:T] | s[k,t]), k in CTC topology's indexing
+    r = fill!(Array{TYPE,2}(undef,S,T), ZERO)    # 𝜸 = p(s[k,t] | x[1:T]), k in softmax's indexing
 
     if L>1
         a[1,1] = log(p[    1, 1])
         a[2,1] = log(p[seq[1],1])
-        b[L-1,T] = TYPE(0.0)
-        b[L-0,T] = TYPE(0.0)
+        b[L-1,T] = ZERO
+        b[L-0,T] = ZERO
     else
         a[1,1] = log(p[1,1])
-        b[L,T] = TYPE(0.0)
+        b[L,T] = ZERO
     end
 
     # --- forward in log scale ---
@@ -97,14 +98,26 @@ function CTC(p::Array{TYPE,2}, seq) where TYPE
     end
 
     g = exp.((a + b) .- logsum)
-    for s = 1:L
-        if mod(s,2)==1
-            r[1,:] .+= g[s,:]
-        else
-            i = div(s,2)
-            r[seq[i],:] .+= g[s,:]
-        end
+
+    # deprecated inefficient implementation, although it's easier to understand
+    # for s = 1:L
+    #     if mod(s,2)==1
+    #         r[1,:] .+= g[s,:]
+    #     else
+    #         i = div(s,2)
+    #         r[seq[i],:] .+= g[s,:]
+    #     end
+    # end
+
+    # reduce first line
+    r[1,:] .+= g[1,:]
+    # reduce rest lines
+    for n = 1:length(seq)
+        s = n<<1
+        r[seq[n],:] += g[s,  t]
+        r[1     ,:] += g[s+1,t]
     end
+
     return r, -logsum
 end
 
