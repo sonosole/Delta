@@ -6,16 +6,20 @@ export LogSumExp
 
 LogZero(T::DataType) = - floatmax(T)
 
-
-function LogSum2Exp(a::T1, b::T2) where {T1<:Real, T2<:Real}
-    Log0 = min(LogZero(T1), LogZero(T2))
-    if a <= Log0
-        a = Log0
+"""
+    LogSum2Exp(a::Real, b::Real) -> max(a,b) + log(1.0 + exp(-abs(a-b)))
+```julia
+julia> LogSum2Exp(Float32(1.2),Float64(3.3))
+3.4155195283818967
+```
+"""
+function LogSum2Exp(a::Real, b::Real)
+    isinf(a) && return b
+    isinf(b) && return a
+    if a < b
+        a, b = b, a
     end
-    if b <= Log0
-        b = Log0
-    end
-    return (max(a,b) + log(1.0 + exp(-abs(a-b))))
+    return (a + log(1.0 + exp(b-a)))
 end
 
 
