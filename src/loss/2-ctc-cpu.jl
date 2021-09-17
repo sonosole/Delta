@@ -92,30 +92,16 @@ function CTC(p::Array{TYPE,2}, seq) where TYPE
         end
     end
 
-    logsum = Log0
-    for s = 1:L
-        logsum = LogSum2Exp(logsum, a[s,1] + b[s,1])
-    end
-
+    logsum = LogSum3Exp(Log0, a[1,1] + b[1,1], a[2,1] + b[2,1])
     g = exp.((a + b) .- logsum)
-
-    # deprecated inefficient implementation, although it's easier to understand
-    # for s = 1:L
-    #     if mod(s,2)==1
-    #         r[1,:] .+= g[s,:]
-    #     else
-    #         i = div(s,2)
-    #         r[seq[i],:] .+= g[s,:]
-    #     end
-    # end
 
     # reduce first line
     r[1,:] .+= g[1,:]
     # reduce rest lines
     for n = 1:length(seq)
         s = n<<1
-        r[seq[n],:] += g[s,  t]
-        r[1     ,:] += g[s+1,t]
+        r[seq[n],:] .+= g[s,  t]
+        r[1     ,:] .+= g[s+1,t]
     end
 
     return r, -logsum
