@@ -2,7 +2,7 @@ name = "Delta"
 uuid = "9e3a83e1-479c-4d1c-ae0a-a5bbc61f1663"
 license = "MIT"
 authors = ["Taiyang Zhao <sonosole@163.com>"]
-version = "0.1.1"
+version = "0.1.2"
 
 [deps]
 Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
