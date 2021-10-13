@@ -56,7 +56,6 @@ function weightsof(m::conv1d)
     weights[1] = m.w.value
     weights[2] = m.b.value
     return weights
-
 end
 
 
