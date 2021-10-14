@@ -64,7 +64,7 @@ function CTC(p::Array{TYPE,2}, seq) where TYPE
             elseif s==2
                 a[s,t] = LogSum2Exp(a[s,t-1], a[s-1,t-1]) + log(p[seq[i],t])
             elseif seq[i]==seq[i-1]
-		a[s,t] = LogSum2Exp(a[s,t-1], a[s-1,t-1]) + log(p[seq[i],t])
+                a[s,t] = LogSum2Exp(a[s,t-1], a[s-1,t-1]) + log(p[seq[i],t])
             else
                 a[s,t] = LogSum3Exp(a[s,t-1], a[s-1,t-1], a[s-2,t-1]) + log(p[seq[i],t])
             end
@@ -152,8 +152,8 @@ end
 """
     DNN_Batch_CTC_With_Softmax(var::Variable, seq, inputLengths, labelLengths)
 
-`var`: 2-D Variable, resulted by a batch of concatenated input sequence.\n
-`seq`: 1-D Array, concatenated by a batch of input sequence label.\n
+`var`: 2-D Variable, resulted by a batch of concatenated sequential inputs.\n
+`seq`: 1-D Array, concatenated by a batch of sequential labels.\n
 `inputLengths`: 1-D Array which records each input sequence's length.\n
 `labelLengths`: 1-D Array which records input sequence label's length.
 """
@@ -185,14 +185,14 @@ end
 
 
 """
-    RNN_Batch_CTC_With_Softmax(var::Variable, seqlabels, inputLengths, labelLengths)
+    RNN_Batch_CTC_With_Softmax(var::Variable, seqlabels::Vector, inputLengths, labelLengths)
 
 `var`: 3-D Variable with shape (featdims,timesteps,batchsize), resulted by a batch of padded input sequence.\n
-`seqlabels`: 1-D Array concatenated by a batch of input sequence's label.\n
-`inputLengths`: 1-D Array which records each input sequence's length.\n
+`seqlabels`: a Vector contains a batch of sequential labels.\n
+`inputLengths`: 1-D Array which records each input's length.\n
 `labelLengths`: 1-D Array which records all labels' length.\n
 """
-function RNN_Batch_CTC_With_Softmax(var::Variable{Array{T}}, seqlabels, inputLengths, labelLengths) where T
+function RNN_Batch_CTC_With_Softmax(var::Variable{Array{T}}, seqlabels::Vector, inputLengths, labelLengths) where T
     batchsize = length(inputLengths)
     loglikely = zeros(T, batchsize)
     probs = zero(var.value)
