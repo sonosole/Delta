@@ -64,7 +64,7 @@ function CTC(p::Array{TYPE,2}, seq) where TYPE
             elseif s==2
                 a[s,t] = LogSum2Exp(a[s,t-1], a[s-1,t-1]) + log(p[seq[i],t])
             elseif seq[i]==seq[i-1]
-				a[s,t] = LogSum2Exp(a[s,t-1], a[s-1,t-1]) + log(p[seq[i],t])
+		a[s,t] = LogSum2Exp(a[s,t-1], a[s-1,t-1]) + log(p[seq[i],t])
             else
                 a[s,t] = LogSum3Exp(a[s,t-1], a[s-1,t-1], a[s-2,t-1]) + log(p[seq[i],t])
             end
@@ -85,7 +85,7 @@ function CTC(p::Array{TYPE,2}, seq) where TYPE
             elseif s==L-1
                 b[s,t] = LogSum2Exp(b[s,t+1] + log(p[seq[i],t+1]), b[s+1,t+1] + log(p[1,t+1]))
             elseif seq[i]==seq[i+1]
-				b[s,t] = LogSum2Exp(b[s,t+1] + log(p[seq[i],t+1]), b[s+1,t+1] + log(p[1,t+1]))
+		b[s,t] = LogSum2Exp(b[s,t+1] + log(p[seq[i],t+1]), b[s+1,t+1] + log(p[1,t+1]))
             else
                 b[s,t] = LogSum3Exp(b[s,t+1] + log(p[seq[i],t+1]), b[s+1,t+1] + log(p[1,t+1]), b[s+2,t+1] + log(p[seq[i+1],t+1]))
             end
@@ -100,8 +100,8 @@ function CTC(p::Array{TYPE,2}, seq) where TYPE
     # reduce rest lines
     for n = 1:length(seq)
         s = n<<1
-        r[seq[n],:] .+= g[s,  t]
-        r[1     ,:] .+= g[s+1,t]
+        r[seq[n],:] .+= g[s,  :]
+        r[1     ,:] .+= g[s+1,:]
     end
 
     return r, -logsum
