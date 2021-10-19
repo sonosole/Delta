@@ -1,4 +1,4 @@
-mutable struct Adam <: Optimizer
+mutable struct AdamW <: Optimizer
     w1::Vector
     w2::Vector
     lr::AbstractFloat
@@ -9,8 +9,9 @@ mutable struct Adam <: Optimizer
     b1t::AbstractFloat
     b2t::AbstractFloat
     lrdecay::AbstractFloat
+    wtdecay::AbstractFloat
     name::String
-    function Adam(params::Vector{Variable}; lr=1e-3, b1=0.9, b2=0.999, epsilon=1e-8, lrdecay=1.0)
+    function AdamW(params::Vector{Variable}; lr=1e-3, b1=0.9, b2=0.999, epsilon=1e-8, lrdecay=1.0, wtdecay=0.01)
         num = length(params)
         w1  = Vector(undef,num)
         w2  = Vector(undef,num)
@@ -18,24 +19,24 @@ mutable struct Adam <: Optimizer
             w1[i] = Zeros(typeof(params[i].value), params[i].shape)
             w2[i] = Zeros(typeof(params[i].value), params[i].shape)
         end
-        new(w1,w2,lr, b1, b2, epsilon, 0, 1.0, 1.0, lrdecay, "Adam")
+        new(w1,w2,lr, b1, b2, epsilon, 0, 1.0, 1.0, lrdecay, wtdecay, "AdamW")
     end
 end
 
 
-function Base.show(io::IO, A::Adam)
-    print("Adam(lr=$(A.lr), β₁=$(A.b1), β₂=$(A.b2), ϵ=$(A.ϵ) lrdecay=$(A.lrdecay))");
+function Base.show(io::IO, A::AdamW)
+    print("AdamW(lr=$(A.lr), β₁=$(A.b1), β₂=$(A.b2), ϵ=$(A.ϵ) lrdecay=$(A.lrdecay))");
 end
 
 
-function update!(a::Adam, params::Vector{Variable}; clipfn::Function=LPInfNormClip, clipvalue=1.0)
+function update!(a::AdamW, params::Vector{Variable}; clipfn::Function=LPInfNormClip, clipvalue=1.0)
     w₁ = a.w1
     w₂ = a.w2
     lr = a.lr
     b₁ = a.b1
     b₂ = a.b2
     ϵ  = a.ϵ
-
+    λ  = a.wtdecay
     a.t   += 1
     a.b1t *= b₁
     a.b2t *= b₂
@@ -48,6 +49,6 @@ function update!(a::Adam, params::Vector{Variable}; clipfn::Function=LPInfNormCl
         ∇ = clipfn(params[i].delta, clipvalue)
         @. w₁[i] = b₁ * w₁[i] + (1-b₁) * ∇
         @. w₂[i] = b₂ * w₂[i] + (1-b₂) * ∇ * ∇
-        @. params[i].value += μ * w₁[i] / sqrt(w₂[i] + ϵ)
+        @. params[i].value += μ * w₁[i] / sqrt(w₂[i] + ϵ) - λ * params[i].value
     end
 end
