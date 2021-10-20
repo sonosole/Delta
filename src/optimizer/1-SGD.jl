@@ -3,7 +3,7 @@ mutable struct SGD <: Optimizer
     lrdecay::AbstractFloat
     name::String
     function SGD(;lr=1e-4, lrdecay=1.0)
-        new(lr, decay, "SGD")
+        new(lr, lrdecay, "SGD")
     end
 end
 
