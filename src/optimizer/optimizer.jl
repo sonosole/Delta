@@ -5,7 +5,7 @@ include("./2-Momentum.jl")
 include("./3-Adam.jl")
 include("./4-AdaGrad.jl")
 include("./5-RMSProp.jl")
-
+include("./6-AdamW.jl")
 
 export Optimizer
 export Descent
@@ -13,6 +13,7 @@ export Momentum
 export Adam
 export AdaGrad
 export RMSProp
+export AdamW
 export decay
 
 export normclip
