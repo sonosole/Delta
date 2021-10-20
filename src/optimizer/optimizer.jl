@@ -12,7 +12,7 @@ export Descent
 export Momentum
 export Adam
 export AdaGrad
-export RMSPropexport
+export RMSProp
 export AdamW
 export decay
 
