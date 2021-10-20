@@ -49,6 +49,6 @@ function update!(a::AdamW, params::Vector{Variable}; clipfn::Function=LPInfNormC
         ∇ = clipfn(params[i].delta, clipvalue)
         @. w₁[i] = b₁ * w₁[i] + (1-b₁) * ∇
         @. w₂[i] = b₂ * w₂[i] + (1-b₂) * ∇ * ∇
-        @. params[i].value += μ * (w₁[i] / sqrt(w₂[i] + ϵ) - λ * params[i].value)
+        @. params[i].value += μ * (w₁[i] / sqrt(w₂[i] + ϵ) + λ * params[i].value)
     end
 end
