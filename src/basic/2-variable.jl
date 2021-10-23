@@ -144,7 +144,7 @@ end
 
 
 function (v::Variable)(i...)
-    if v.delta!==nothing
+    if v.delta ≠ nothing
         return v.delta[i...]
     else
         return nothing
