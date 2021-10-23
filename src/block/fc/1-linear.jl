@@ -68,7 +68,7 @@ function xparamsof(m::linear)
     params[1] = ('w', m.w)
     params[2] = ('b', m.b)
     return params
-en
+end
 
 
 function nparamsof(m::linear)
