@@ -77,7 +77,7 @@ end
 
 function zeroDelta(var::Variable{T}) where T
     # 要切断某些反向传播路径的时候将其初始化为零
-    if var.delta===nothing
+    if var.delta === nothing
         var.delta = Zeros(T, var.shape);
     end
 end
@@ -216,3 +216,18 @@ export to, to!
 
 export need2computeδ!
 export ifNotKeepδThenFreeδ!
+
+export XVariable
+const  XVariable = Tuple{Char,Variable}
+
+# pretty printing
+function Base.show(io::IO, xvar::XVariable)
+    c, var = xvar
+    if  var.isleaf println(cyan("\n≡≡≡ Leaf Variable ($c) ≡≡≡")) end
+    if !var.isleaf println(cyan("\n≡≡≡ None Leaf Variable ≡≡≡")) end
+
+    print(blue("\nvalue is "))
+    display(var.value)
+    print(green("\ndelta is "))
+    display(var.delta)
+end
