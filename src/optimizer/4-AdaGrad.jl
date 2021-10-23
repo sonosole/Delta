@@ -19,12 +19,12 @@ function Base.show(io::IO, A::AdaGrad)
 end
 
 
-function update!(m::AdaGrad, params::Vector{Variable}; clipfn::Function=LPInfNormClip, clipvalue=1e1)
+function update!(m::AdaGrad, params::Vector{Variable}; clipfn::Function=LPInfNormClip, clipvalue=10.0)
     w  = m.w
     lr = m.lr
     ϵ  = m.ϵ
     for i = 1:length(params)
-        ∇ = clipfn(params[i].delta, clipvalue)
+        ∇ = clipfn(setNanInfZero(params[i].delta), clipvalue)
         @. w[i] += ∇ * ∇
         @. params[i].value += (-lr) / (sqrt(w[i]) + ϵ) * ∇
     end

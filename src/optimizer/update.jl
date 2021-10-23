@@ -7,7 +7,7 @@ end
 
 function update!(var::Variable, lr)
     # update single Variable
-    @. var.value -= lr * var.delta
+    @. var.value -= lr * setNanInfZero(var.delta)
 end
 
 

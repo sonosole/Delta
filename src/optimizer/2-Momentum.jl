@@ -20,13 +20,13 @@ function Base.show(io::IO, M::Momentum)
 end
 
 
-function update!(m::Momentum, params::Vector{Variable}; clipfn::Function=LPInfNormClip, clipvalue=1.0)
+function update!(m::Momentum, params::Vector{Variable}; clipfn::Function=LPInfNormClip, clipvalue=10.0)
     vel = m.v
     lr  = m.lr
     ρ   = m.inertia
     m.lr *= m.lrdecay
     for i = 1:length(params)
-        ∇ = clipfn(params[i].delta, clipvalue)
+        ∇ = clipfn(setNanInfZero(params[i].delta), clipvalue)
         @. vel[i] = ρ * vel[i] + ∇
         @. params[i].value += (-lr) * vel[i]
     end

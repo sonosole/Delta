@@ -29,7 +29,7 @@ function Base.show(io::IO, A::AdamW)
 end
 
 
-function update!(a::AdamW, params::Vector{Variable}; clipfn::Function=LPInfNormClip, clipvalue=1.0)
+function update!(a::AdamW, params::Vector{Variable}; clipfn::Function=LPInfNormClip, clipvalue=10.0)
     w₁ = a.w1
     w₂ = a.w2
     lr = a.lr
@@ -43,10 +43,10 @@ function update!(a::AdamW, params::Vector{Variable}; clipfn::Function=LPInfNormC
     a.lr  *= a.lrdecay
     b₁ᵗ = a.b1t
     b₂ᵗ = a.b2t
-
+    # biased or momery weights should not use weight decay strategies
     for i = 1:length(params)
         μ = - sqrt(1-b₂ᵗ) / (1-b₁ᵗ) * lr
-        ∇ = clipfn(params[i].delta, clipvalue)
+        ∇ = clipfn(setNanInfZero(params[i].delta), clipvalue)
         @. w₁[i] = b₁ * w₁[i] + (1-b₁) * ∇
         @. w₂[i] = b₂ * w₂[i] + (1-b₂) * ∇ * ∇
         @. params[i].value += μ * (w₁[i] / sqrt(w₂[i] + ϵ) + λ * params[i].value)
