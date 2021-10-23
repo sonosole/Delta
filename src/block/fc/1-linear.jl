@@ -63,6 +63,14 @@ function paramsof(m::linear)
 end
 
 
+function xparamsof(m::linear)
+    params = Vector{XVariable}(undef,2)
+    params[1] = ('w', m.w)
+    params[2] = ('b', m.b)
+    return params
+en
+
+
 function nparamsof(m::linear)
     lw = length(m.w)
     lb = length(m.b)
