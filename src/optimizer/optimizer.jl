@@ -33,6 +33,30 @@ function decay(params::Vector{Variable}; ratio=0.999)
 end
 
 
+"""
+    setNanInfZero(x)
+```julia
+x = randn(1,4)
+x[1] = Inf;
+x[2] =-Inf;
+x[3] = NaN;
+```
+```
+julia> x
+1×4 Array{Float64,2}:
+ Inf  -Inf  NaN  0.602655
+
+julia> x = setNanInfZero!(x)
+1×4 Array{Float64,2}:
+ 0.0  0.0  0.0  0.602655
+```
+ """
+function setNanInfZero(x)
+    x[ isnan.(x) .⊻ isinf.(x) ] .= 0.0
+    return x
+end
+
+
 function L2NormClip(x::AbstractArray, clipvalue)
     pnorm = sqrt(sum(x.^2) / length(x))
     scale = clipvalue / pnorm
