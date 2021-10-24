@@ -86,6 +86,18 @@ function paramsof(c::Chain)
 end
 
 
+function xparamsof(c::Chain)
+    params = Vector{XVariable}(undef,0)
+    for i = 1:length(c)
+        p = xparamsof(c[i])
+        if p ≠ nothing
+            append!(params, p)
+        end
+    end
+    return params
+end
+
+
 function nparamsof(c::Chain)
     k = 0
     for i = 1:length(c)

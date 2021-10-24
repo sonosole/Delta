@@ -301,10 +301,40 @@ function paramsof(m::indlstm)
 end
 
 
+function xparamsof(m::indlstm)
+    params = Vector{XVariable}(undef,12)
+    params[1] = ('w', m.wi)
+    params[2] = ('u', m.ui)
+    params[3] = ('b', m.bi)
+
+    params[4] = ('w', m.wf)
+    params[5] = ('u', m.uf)
+    params[6] = ('b', m.bf)
+
+    params[7] = ('w', m.wo)
+    params[8] = ('u', m.uo)
+    params[9] = ('b', m.bo)
+
+    params[10] = ('w', m.wc)
+    params[11] = ('u', m.uc)
+    params[12] = ('b', m.bc)
+    return params
+end
+
+
 function paramsof(model::INDLSTM)
     params = Vector{Variable}(undef,0)
     for m in model
         append!(params, paramsof(m))
+    end
+    return params
+end
+
+
+function xparamsof(model::INDLSTM)
+    params = Vector{XVariable}(undef,0)
+    for m in model
+        append!(params, xparamsof(m))
     end
     return params
 end

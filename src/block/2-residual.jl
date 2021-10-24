@@ -31,6 +31,15 @@ function paramsof(m::residual)
 end
 
 
+function xparamsof(m::residual)
+    params = Vector{XVariable}(undef,0)
+    for i = 1:length(m.blocks)
+        append!(params, xparamsof(m.blocks[i]))
+    end
+    return params
+end
+
+
 function forward(r::residual, input::Variable)
     x = forward(r.blocks[1], input)
     for i = 2:length(r.blocks)

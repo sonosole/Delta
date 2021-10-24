@@ -82,6 +82,14 @@ function paramsof(m::conv1d)
 end
 
 
+function xparamsof(m::conv1d)
+    params = Vector{XVariable}(undef,2)
+    params[1] = ('w', m.w)
+    params[2] = ('b', m.b)
+    return params
+end
+
+
 function nparamsof(m::conv1d)
     lw = length(m.w)
     lb = length(m.b)

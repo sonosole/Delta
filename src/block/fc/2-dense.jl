@@ -176,10 +176,27 @@ function paramsof(m::dense)
 end
 
 
+function xparamsof(m::dense)
+    params = Vector{XVariable}(undef,2)
+    params[1] = ('w', m.w)
+    params[2] = ('b', m.b)
+    return params
+end
+
+
 function paramsof(m::MLP)
     params = Vector{Variable}(undef,0)
     for i = 1:length(m)
         append!(params, paramsof(m[i]))
+    end
+    return params
+end
+
+
+function xparamsof(m::MLP)
+    params = Vector{XVariable}(undef,0)
+    for i = 1:length(m)
+        append!(params, xparamsof(m[i]))
     end
     return params
 end

@@ -13,6 +13,11 @@ function paramsof(m::dropout)
 end
 
 
+function xparamsof(m::dropout)
+    return nothing
+end
+
+
 function forward(d::dropout, var::Variable{T}) where T
     # 对网络激活节点进行灭活
     # 属于in-place操作,但是输入输出共享节点值引用

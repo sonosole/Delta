@@ -200,10 +200,28 @@ function paramsof(m::indrnn)
 end
 
 
+function xparamsof(m::indrnn)
+    params = Vector{XVariable}(undef,3)
+    params[1] = ('w', m.w)
+    params[2] = ('b', m.b)
+    params[3] = ('u', m.u)
+    return params
+end
+
+
 function paramsof(m::INDRNN)
     params = Vector{Variable}(undef,0)
     for i = 1:length(m)
         append!(params, paramsof(m[i]))
+    end
+    return params
+end
+
+
+function xparamsof(m::INDRNN)
+    params = Vector{XVariable}(undef,0)
+    for i = 1:length(m)
+        append!(params, xparamsof(m[i]))
     end
     return params
 end

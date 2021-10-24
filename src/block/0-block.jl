@@ -19,6 +19,7 @@ include( "./rnn/0-rnns.jl")
 
 export gradsof
 export paramsof
+export xparamsof
 export nparamsof
 export weightsof
 export weightsof
