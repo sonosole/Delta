@@ -175,7 +175,6 @@ function to(type::Type, var::Variable{T}, show::Bool=false) where T
             return Variable{type}(var.value, var.backprop, var.keepsgrad, var.isleaf)
         end
     end
-    return
 end
 
 
