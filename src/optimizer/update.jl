@@ -26,3 +26,13 @@ function zerograds!(parameters)
         end
     end
 end
+
+
+function zerograds!(O::Optimizer)
+    for xparam in O.xparams
+        c , θ = xparam
+        if θ.delta !== nothing
+            θ.delta .= 0.0
+        end
+    end
+end
