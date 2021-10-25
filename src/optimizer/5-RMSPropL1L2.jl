@@ -7,7 +7,7 @@ mutable struct RMSPropL1L2 <: Optimizer
     L1decay::AbstractFloat
     L2decay::AbstractFloat
     name::String
-    function RMSPropL1L2(xparams::Vector{Variable}; lr=1e-2, inertia=0.99, epsilon=1e-8, L1decay=0.001, L2decay=0.01)
+    function RMSPropL1L2(xparams::Vector{XVariable}; lr=1e-2, inertia=0.99, epsilon=1e-8, L1decay=0.001, L2decay=0.01)
         n = length(xparams)
         w = Vector(undef,n)
         for i = 1:n
