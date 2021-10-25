@@ -1,11 +1,32 @@
 abstract type Optimizer end
 
+# normal optimizers without weight decay
 include("./1-SGD.jl")
 include("./2-Momentum.jl")
 include("./3-Adam.jl")
 include("./4-AdaGrad.jl")
 include("./5-RMSProp.jl")
-include("./6-AdamW.jl")
+
+# L1 weight decay optimizers
+include("./1-SGDL1.jl")
+include("./2-MomentumL1.jl")
+include("./3-AdamL1.jl")
+include("./4-AdaGradL1.jl")
+include("./5-RMSPropL1.jl")
+
+# L2 weight decay optimizers
+include("./1-SGDL2.jl")
+include("./2-MomentumL2.jl")
+include("./3-AdamL2.jl")
+include("./4-AdaGradL2.jl")
+include("./5-RMSPropL2.jl")
+
+# L1/L2 weight decay optimizers
+include("./1-SGDL1L2.jl")
+include("./2-MomentumL1L2.jl")
+include("./3-AdamL1L2.jl")
+include("./4-AdaGradL1L2.jl")
+include("./5-RMSPropL1L2.jl")
 
 export Optimizer
 export SGD
