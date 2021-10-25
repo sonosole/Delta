@@ -1,4 +1,5 @@
 abstract type Optimizer end
+export Optimizer
 
 # normal optimizers without weight decay
 include("./1-SGD.jl")
@@ -6,6 +7,11 @@ include("./2-Momentum.jl")
 include("./3-Adam.jl")
 include("./4-AdaGrad.jl")
 include("./5-RMSProp.jl")
+export SGD
+export Momentum
+export Adam
+export AdaGrad
+export RMSProp
 
 # L1 weight decay optimizers
 include("./1-SGDL1.jl")
@@ -13,6 +19,11 @@ include("./2-MomentumL1.jl")
 include("./3-AdamL1.jl")
 include("./4-AdaGradL1.jl")
 include("./5-RMSPropL1.jl")
+export SGDL1
+export MomentumL1
+export AdamL1
+export AdaGradL1
+export RMSPropL1
 
 # L2 weight decay optimizers
 include("./1-SGDL2.jl")
@@ -20,6 +31,11 @@ include("./2-MomentumL2.jl")
 include("./3-AdamL2.jl")
 include("./4-AdaGradL2.jl")
 include("./5-RMSPropL2.jl")
+export SGDL2
+export MomentumL2
+export AdamL2
+export AdaGradL2
+export RMSPropL2
 
 # L1/L2 weight decay optimizers
 include("./1-SGDL1L2.jl")
@@ -27,16 +43,14 @@ include("./2-MomentumL1L2.jl")
 include("./3-AdamL1L2.jl")
 include("./4-AdaGradL1L2.jl")
 include("./5-RMSPropL1L2.jl")
+export SGDL1L2
+export MomentumL1L2
+export AdamL1L2
+export AdaGradL1L2
+export RMSPropL1L2
 
-export Optimizer
-export SGD
-export Momentum
-export Adam
-export AdaGrad
-export RMSProp
-export AdamW
+
 export decay
-
 export normclip
 export LpNormClip
 export L2NormClip
@@ -44,6 +58,7 @@ export L1NormClip
 export L0NormClip
 export LPInfNormClip
 export LNInfNormClip
+export setNanInfZero
 export lrarray
 
 
