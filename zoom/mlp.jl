@@ -4,11 +4,10 @@ network at once over and over again to optimizes the
 parameters of network.
 =#
 
-using UnicodePlots
-
 # first class data and lable
-input1 = 3*randn(2,2000);
-label1 = zeros(2,2000);
+using Plots
+input1 = 3*randn(2,1024);
+label1 = zeros(2,1024);
 label1[1,:] .= 1.0;
 
 # second class data and lable
@@ -17,7 +16,7 @@ input2 = zeros(2,length(t));
 label2 = zeros(2,length(t));
 label2[2,:] .= 1.0;
 for i = 1:length(t)
-    r = randn() + 17.0;
+    r = randn() + 18.0;
     input2[1,i] = r * cos(t[i]);
     input2[2,i] = r * sin(t[i]);
 end
@@ -25,116 +24,119 @@ end
 # make model's input and label
 input = hcat(input1,input2)
 label = hcat(label1,label2)
-x = Variable(input)
-l = Variable(label)
+x = Variable(input);
+l = Variable(label);
 N = size(x,2)
 
-dst = densityplot(input2[1,:],input2[2,:],color=:red);
-densityplot!(dst,input1[1,:],input1[2,:],color=:yellow)
+scatter(input2[1,:],input2[2,:],color=:blue)
+scatter!(input1[1,:],input1[2,:],color=:red)
 
 
-epoch = 100
-lrate = 1e-5
+function runme(epoch, lr, opt)
+    mlpmodel  = Chain(dense(2,32),
+                      dense(32,32),
+                      dense(32,32),
+                      linear(32,2))
 
-# parameters for constructing a Multi-Layer-Perceptron
-topology  = [2, 32,32,32, 2]
-operator  = [relu, relu, relu, relu]
+    params  = xparamsof(mlpmodel)
+    optim   = opt(params;lr=lr)
+    lossval = zeros(epoch,1)
 
-# train a model with sgd
-mlpmodel  = MLP(topology, operator)
-parameter = paramsof(mlpmodel)
-lossval1  = zeros(epoch,1)
-tic = time()
-for i = 1:epoch
-    outs = forward(mlpmodel, x)
-    COST = crossEntropyCost(softmax(outs;dims=1), l)
-    backward()
-    update!(parameter, lrate)
-    zerograds!(parameter)
-    lossval1[i] = COST/N
+    for i = 1:epoch
+        outs = forward(mlpmodel, x)
+        COST = crossEntropyCost(softmax(outs;dims=1), l)
+        backward()
+        update!(optim)
+        zerograds!(optim)
+        lossval[i] = COST/N
+    end
+    return lossval
 end
-toc = time()
-println("\n======== SGD =========")
-println(" time: ", toc-tic," sec")
-println(" loss: ", lossval1[end])
 
+plot(vec(log.(runme(400, 1e-4, SGD))), color=:red,label="SGD");
+plot!(vec(log.(runme(400, 1e-4, Momentum))), color=:orange,label="Momentum");
+plot!(vec(log.(runme(400, 1e-4, Adam))), color=:green,label="Adam");
+plot!(vec(log.(runme(400, 1e-3, RMSProp))), color=:blue,label="RMSProp");
+plot!(vec(log.(runme(400, 1e-3, AdaGrad))), color=:cyan,label="AdaGrad")
 
-# train a model with Momentum optimizer
-mlpmodel  = MLP(topology, operator)
-parameter = paramsof(mlpmodel)
-optimizer = Momentum(parameter;lr=lrate,inertia=0.9)
-lossval2  = zeros(epoch,1)
+L1 = 1.0
+function runmeL1(epoch, lr, opt, L1)
+    mlpmodel  = Chain(dense(2,32),
+                      dense(32,32),
+                      dense(32,32),
+                      linear(32,2))
 
-tic = time()
-for i = 1:epoch
-    outs = forward(mlpmodel, x)
-    COST = crossEntropyCost(softmax(outs;dims=1), l)
-    backward()
-    update!(optimizer,parameter)
-    zerograds!(parameter)
-    lossval2[i] = COST/N
+    params  = xparamsof(mlpmodel)
+    optim   = opt(params;lr=lr,L1decay=L1)
+    lossval = zeros(epoch,1)
+
+    for i = 1:epoch
+        outs = forward(mlpmodel, x)
+        COST = crossEntropyCost(softmax(outs;dims=1), l)
+        backward()
+        update!(optim)
+        zerograds!(optim)
+        lossval[i] = COST/N
+    end
+    return lossval
 end
-toc = time()
-println("\n======== Momentum =========")
-println(" time: ", toc-tic," sec")
-println(" loss: ", lossval2[end])
+plot(vec(log.(runmeL1(400, 1e-4, SGDL1, L1))), color=:red,label="SGDL1")
+plot!(vec(log.(runmeL1(400, 1e-4, MomentumL1, L1))), color=:orange,label="MomentumL1")
+plot!(vec(log.(runmeL1(400, 1e-4, AdamL1, L1))), color=:green,label="AdamL1")
+plot!(vec(log.(runmeL1(400, 1e-3, RMSPropL1, L1))), color=:blue,label="RMSPropL1")
+plot!(vec(log.(runmeL1(400, 1e-3, AdaGradL1, L1))), color=:cyan,label="AdaGradL1")
 
+L2 = 1.0
+function runmeL2(epoch, lr, opt, L2)
+    mlpmodel  = Chain(dense(2,32),
+                      dense(32,32),
+                      dense(32,32),
+                      linear(32,2))
 
-# train a model with Adam optimizer
-mlpmodel  = MLP(topology, operator)
-parameter = paramsof(mlpmodel)
-optimizer = Adam(parameter;lr=1e-3,b1=0.9,b2=0.9)
-lossval3  = zeros(epoch,1)
-tic = time()
-for i = 1:epoch
-    outs = forward(mlpmodel, x)
-    COST = crossEntropyCost(softmax(outs;dims=1), l)
-    backward()
-    update!(optimizer,parameter)
-    zerograds!(parameter)
-    lossval3[i] = COST/N
+    params  = xparamsof(mlpmodel)
+    optim   = opt(params;lr=lr,L2decay=L2)
+    lossval = zeros(epoch,1)
+
+    for i = 1:epoch
+        outs = forward(mlpmodel, x)
+        COST = crossEntropyCost(softmax(outs;dims=1), l)
+        backward()
+        update!(optim)
+        zerograds!(optim)
+        lossval[i] = COST/N
+    end
+    return lossval
 end
-toc = time()
-println("\n======== Adam =========")
-println(" time: ", toc-tic," sec")
-println(" loss: ", lossval3[end])
+plot(vec(log.(runmeL2(400, 1e-4, SGDL2, L2))), color=:red,label="SGDL2")
+plot!(vec(log.(runmeL2(400, 1e-4, MomentumL2, L2))), color=:orange,label="MomentumL2")
+plot!(vec(log.(runmeL2(400, 1e-4, AdamL2, L2))), color=:green,label="AdamL2")
+plot!(vec(log.(runmeL2(400, 1e-3, RMSPropL2, L2))), color=:blue,label="RMSPropL2")
+plot!(vec(log.(runmeL2(400, 1e-3, AdaGradL2, L2))), color=:cyan,label="AdaGradL2")
 
+L1 = 1.0
+L2 = 1.0
+function runmeL1L2(epoch, lr, opt, L1, L2)
+    mlpmodel  = Chain(dense(2,32),
+                      dense(32,32),
+                      dense(32,32),
+                      linear(32,2))
 
-p1 = lineplot(vec(log.(lossval1)),color =:red,name ="sgd")
-p2 = lineplot(vec(log.(lossval2)),color =:yellow,name ="Momentum")
-p3 = lineplot(vec(log.(lossval3)),color =:green,name ="Adam")
+    params  = xparamsof(mlpmodel)
+    optim   = opt(params;lr=lr,L1decay=L1,L2decay=L2)
+    lossval = zeros(epoch,1)
 
-plt = lineplot(vec(log.(lossval1)),color =:red,name ="sgd")
-lineplot!(plt,vec(log.(lossval2)),color =:yellow,name ="Momentum")
-lineplot!(plt,vec(log.(lossval3)),color =:green,name ="Adam")
-
-
-
-# train a model with Adam optimizer with Dropout
-clear()
-mlpmodel = Chain(
-    dense(2,32),
-    dropout(0.1),
-    dense(32,32),
-    dropout(0.1),
-    dense(32,32),
-    dropout(0.1),
-    dense(32,2)
-)
-parameter = paramsof(mlpmodel)
-optimizer = Adam(parameter;lr=1e-3,b1=0.9,b2=0.999)
-lossval4  = zeros(epoch,1)
-tic = time()
-for i = 1:epoch
-    outs = forward(mlpmodel, x)
-    COST = crossEntropyCost(softmax(outs;dims=1), l)
-    backward()
-    update!(optimizer, parameter)
-    zerograds!(parameter)
-    lossval4[i] = COST/N
+    for i = 1:epoch
+        outs = forward(mlpmodel, x)
+        COST = crossEntropyCost(softmax(outs;dims=1), l)
+        backward()
+        update!(optim)
+        zerograds!(optim)
+        lossval[i] = COST/N
+    end
+    return lossval
 end
-toc = time()
-println("\n======== Adam with Dropout =========")
-println(" time: ", toc-tic," sec")
-println(" loss: ", lossval4[end])
-p4 = lineplot(vec(log.(lossval4)),color =:white,name ="Adam with Dropout")
+plot(vec(log.(runmeL1L2(400, 1e-4, SGDL1L2, L1, L2))),color=:red,label="SGDL1L2")
+plot!(vec(log.(runmeL1L2(400, 1e-4, MomentumL1L2, L1, L2))),color=:orange,label="MomentumL1L2")
+plot!(vec(log.(runmeL1L2(400, 1e-4, AdamL1L2, L1, L2))),color=:green,label="AdamL1L2")
+plot!(vec(log.(runmeL1L2(400, 1e-5, RMSPropL1L2, L1, L2))),color=:blue,label="RMSPropL1L2")
+plot!(vec(log.(runmeL1L2(400, 1e-5, AdaGradL1L2, L1, L2))),color=:cyan,label="AdaGradL1L2")
