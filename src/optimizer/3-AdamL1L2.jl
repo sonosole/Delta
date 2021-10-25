@@ -27,7 +27,7 @@ end
 
 
 function Base.show(io::IO, O::AdamL1L2)
-    print("AdamL1L2(lr=$(O.lr), β₁=$(O.b1), β₂=$(O.b2), ϵ=$(O.ϵ), L1decay=$(O.L1decay)), L2decay=$(O.L2decay)");
+    print("AdamL1L2(lr=$(O.lr), β₁=$(O.b1), β₂=$(O.b2), ϵ=$(O.ϵ), L1decay=$(O.L1decay), L2decay=$(O.L2decay))");
 end
 
 
