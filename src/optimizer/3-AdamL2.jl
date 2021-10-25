@@ -38,9 +38,9 @@ function update!(O::AdamL2; clipfn::Function=LPInfNormClip, clipvalue=10.0)
     b₂ = O.b2
     ϵ  = O.ϵ
     λ  = O.L2decay
-    a.t   += 1
-    a.b1t *= b₁
-    a.b2t *= b₂
+    O.t   += 1
+    O.b1t *= b₁
+    O.b2t *= b₂
     b₁ᵗ = O.b1t
     b₂ᵗ = O.b2t
 
