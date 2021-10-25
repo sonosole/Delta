@@ -1,20 +1,24 @@
 mutable struct SGD <: Optimizer
+    xparams::Vector{XVariable}
     lr::AbstractFloat
-    lrdecay::AbstractFloat
+    L1decay::AbstractFloat
     name::String
-    function SGD(;lr=1e-4, lrdecay=1.0)
-        new(lr, lrdecay, "SGD")
+    function SGD(xparams::Vector{XVariable}; lr=1e-4)
+        new(xparams, lr, "SGD")
     end
 end
 
 # pretty printing
-function Base.show(io::IO, S::SGD)
-    print("SGD(lr=$(S.lr), lrdecay=$(S.lrdecay))")
+function Base.show(io::IO, O::SGD)
+    print("SGD(lr=$(O.lr))")
 end
 
 
-function update!(s::SGD, params::Vector{Variable})
-    lrate = s.lr
-    s.lr *= s.decay
-    update!(params, lrate)
+function update!(O::SGD; clipfn::Function=LPInfNormClip, clipvalue=10.0)
+    μ = - O.lr
+    for i = 1:length(O.xparams)
+        c , θ = O.xparams[i]
+        ∇ = clipfn(setNanInfZero(θ.delta), clipvalue)
+        @. θ.value += μ * ∇
+    end
 end

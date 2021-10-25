@@ -1,31 +1,34 @@
 mutable struct AdaGrad <: Optimizer
+    xparams::Vector{XVariable}
     w::Vector
     lr::AbstractFloat
     ϵ::AbstractFloat
     name::String
-    function AdaGrad(params::Vector{Variable}; lr=1e-2, epsilon=1e-10)
-        n = length(params)
+    function AdaGrad(xparams::Vector{XVariable}; lr=1e-2, epsilon=1e-10, L1decay=0.001)
+        n = length(xparams)
         w = Vector(undef,n)
         for i = 1:n
-           w[i] = Zeros(typeof(params[i].value), params[i].shape)
+            c , θ = xparams[i]
+            w[i] = Zeros(typeof(θ.value), θ.shape)
         end
-        new(w, lr, epsilon, "AdaGrad")
+        new(xparams, w, lr, epsilon, "AdaGrad")
     end
 end
 
 
-function Base.show(io::IO, A::AdaGrad)
-    print("AdaGrad(lr=$(A.lr), ϵ=$(A.ϵ))")
+function Base.show(io::IO, O::AdaGrad)
+    print("AdaGrad(lr=$(O.lr), ϵ=$(O.ϵ))")
 end
 
 
-function update!(m::AdaGrad, params::Vector{Variable}; clipfn::Function=LPInfNormClip, clipvalue=10.0)
-    w  = m.w
-    lr = m.lr
-    ϵ  = m.ϵ
-    for i = 1:length(params)
-        ∇ = clipfn(setNanInfZero(params[i].delta), clipvalue)
+function update!(O::AdaGrad; clipfn::Function=LPInfNormClip, clipvalue=10.0)
+    w = O.w
+    μ = - O.lr
+    ϵ = O.ϵ
+    for i = 1:length(O.xparams)
+        c , θ = O.xparams[i]
+        ∇ = clipfn(setNanInfZero(θ.delta), clipvalue)
         @. w[i] += ∇ * ∇
-        @. params[i].value += (-lr) / (sqrt(w[i]) + ϵ) * ∇
+        @. θ.value += μ / (sqrt(w[i]) + ϵ) * ∇
     end
 end

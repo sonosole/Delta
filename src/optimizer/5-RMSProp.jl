@@ -1,33 +1,37 @@
 mutable struct RMSProp <: Optimizer
+    xparams::Vector{XVariable}
     w::Vector
     lr::AbstractFloat
     ϵ::AbstractFloat
     inertia::AbstractFloat
     name::String
-    function RMSProp(params::Vector{Variable}; lr=1e-2, inertia=0.99, epsilon=1e-8)
-        n = length(params)
+    function RMSProp(xparams::Vector{XVariable}; lr=1e-2, inertia=0.99, epsilon=1e-8)
+        n = length(xparams)
         w = Vector(undef,n)
         for i = 1:n
-           w[i] = Zeros(typeof(params[i].value), params[i].shape)
+            c , θ = xparams[i]
+            w[i] = Zeros(typeof(θ.value), θ.shape)
         end
-        new(w, lr, epsilon, inertia, "RMSProp")
+        new(xparams, w, lr, epsilon, inertia, "RMSProp")
     end
 end
 
 
-function Base.show(io::IO, R::RMSProp)
-    print("RMSProp(lr=$(R.lr), ϵ=$(R.ϵ), inertia=$(R.inertia))")
+function Base.show(io::IO, O::RMSProp)
+    print("RMSProp(lr=$(O.lr), ϵ=$(O.ϵ), inertia=$(O.inertia))")
 end
 
 
-function update!(m::RMSProp, params::Vector{Variable}; clipfn::Function=LPInfNormClip, clipvalue=10.0)
-    w  = m.w
-    ϵ  = m.ϵ
-    lr = m.lr
-    ρ  = m.inertia
-    for i = 1:length(params)
-        ∇ = clipfn(setNanInfZero(params[i].delta), clipvalue)
+function update!(O::RMSProp; clipfn::Function=LPInfNormClip, clipvalue=10.0)
+    w = O.w
+    ϵ = O.ϵ
+    μ = - O.lr
+    ρ = O.inertia
+
+    for i = 1:length(O.xparams)
+        c , θ = O.xparams[i]
+        ∇ = clipfn(setNanInfZero(θ.delta), clipvalue)
         @. w[i] += ρ * w[i] + (1-ρ) * ∇ * ∇
-        @. params[i].value += (-lr) / (sqrt(w[i])+ϵ) * ∇
+        @. θ.value += μ / (sqrt(w[i])+ϵ) * ∇
     end
 end

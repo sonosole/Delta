@@ -1,33 +1,35 @@
 mutable struct Momentum <: Optimizer
+    xparams::Vector{XVariable}
     v::Vector
     lr::AbstractFloat
     inertia::AbstractFloat
-    lrdecay::AbstractFloat
     name::String
-    function Momentum(params::Vector{Variable}; lr=1e-4, inertia=0.9, lrdecay=1.0)
-        num = length(params)
+    function Momentum(xparams::Vector{XVariable}; lr=1e-4, inertia=0.9)
+        num = length(xparams)
         vel = Vector(undef,num)
         for i = 1:num
-           vel[i] = Zeros(typeof(params[i].value), params[i].shape)
+            c , θ = xparams[i]
+            vel[i] = Zeros(typeof(θ.value), θ.shape)
         end
-        new(vel, lr, inertia, lrdecay, "Momentum")
+        new(xparams, vel, lr, inertia, "Momentum")
     end
 end
 
 
-function Base.show(io::IO, M::Momentum)
-    print("Momentum(lr=$(M.lr), inertia=$(M.p), decay=$(M.decay))")
+function Base.show(io::IO, O::Momentum)
+    print("Momentum(lr=$(O.lr), inertia=$(O.inertia))")
 end
 
 
-function update!(m::Momentum, params::Vector{Variable}; clipfn::Function=LPInfNormClip, clipvalue=10.0)
-    vel = m.v
-    lr  = m.lr
-    ρ   = m.inertia
-    m.lr *= m.lrdecay
-    for i = 1:length(params)
-        ∇ = clipfn(setNanInfZero(params[i].delta), clipvalue)
+function update!(O::Momentum; clipfn::Function=LPInfNormClip, clipvalue=10.0)
+    vel = O.v
+    μ = - O.lr
+    ρ = O.inertia
+
+    for i = 1:length(O.xparams)
+        c , θ = O.xparams[i]
+        ∇ = clipfn(setNanInfZero(θ.delta), clipvalue)
         @. vel[i] = ρ * vel[i] + ∇
-        @. params[i].value += (-lr) * vel[i]
+        @. θ.value += μ * vel[i]
     end
 end
