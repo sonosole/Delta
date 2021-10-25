@@ -1,7 +1,6 @@
 mutable struct SGD <: Optimizer
     xparams::Vector{XVariable}
     lr::AbstractFloat
-    L1decay::AbstractFloat
     name::String
     function SGD(xparams::Vector{XVariable}; lr=1e-4)
         new(xparams, lr, "SGD")
