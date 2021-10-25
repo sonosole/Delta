@@ -18,7 +18,7 @@ end
 
 
 function Base.show(io::IO, O::MomentumL2)
-    print("MomentumL2(lr=$(O.lr), inertia=$(O.p), L2decay=$(O.L2decay))")
+    print("MomentumL2(lr=$(O.lr), inertia=$(O.inertia), L2decay=$(O.L2decay))")
 end
 
 
