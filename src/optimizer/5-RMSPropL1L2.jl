@@ -35,7 +35,7 @@ function update!(O::RMSPropL1L2; clipfn::Function=LPInfNormClip, clipvalue=10.0)
     for i = 1:length(O.xparams)
         c , θ = O.xparams[i]
         ∇ = clipfn(setNanInfZero(θ.delta), clipvalue)
-        @. w[i] += ρ * w[i] + (1-ρ) * ∇ * ∇
+        @. w[i] = ρ * w[i] + (1-ρ) * ∇ * ∇
         if c == 'w'
             @. θ.value += μ / (sqrt(w[i])+ϵ) * (∇ + λ₁ * sign(θ.value) + λ₂ * θ.value)
         else
