@@ -38,8 +38,8 @@ function CTC(p::Array{TYPE,2}, seq) where TYPE
     S, T = size(p)         # assert p is a 2-D tensor
     L = length(seq)*2 + 1  # topology length with blanks
     r = fill!(Array{TYPE,2}(undef,S,T), ZERO)        # 𝜸 = p(s[k,t] | x[1:T]), k in softmax's indexing
-    
-    if L !== 1
+
+    if L > 1
         a = fill!(Array{TYPE,2}(undef,L,T), Log0)    # 𝜶 = p(s[k,t], x[1:t]), k in CTC topology's indexing
         b = fill!(Array{TYPE,2}(undef,L,T), Log0)    # 𝛃 = p(x[t+1:T] | s[k,t]), k in CTC topology's indexing
         a[1,1] = log(p[    1, 1])
