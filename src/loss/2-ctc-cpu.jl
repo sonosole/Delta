@@ -37,18 +37,18 @@ function CTC(p::Array{TYPE,2}, seq) where TYPE
     ZERO = TYPE(0)         # typed zero,e.g. Float32(0)
     S, T = size(p)         # assert p is a 2-D tensor
     L = length(seq)*2 + 1  # topology length with blanks
-    a = fill!(Array{TYPE,2}(undef,L,T), Log0)    # 𝜶 = p(s[k,t], x[1:t]), k in CTC topology's indexing
-    b = fill!(Array{TYPE,2}(undef,L,T), Log0)    # 𝛃 = p(x[t+1:T] | s[k,t]), k in CTC topology's indexing
-    r = fill!(Array{TYPE,2}(undef,S,T), ZERO)    # 𝜸 = p(s[k,t] | x[1:T]), k in softmax's indexing
-
-    if L>1
+    r = fill!(Array{TYPE,2}(undef,S,T), ZERO)        # 𝜸 = p(s[k,t] | x[1:T]), k in softmax's indexing
+    
+    if L !== 1
+        a = fill!(Array{TYPE,2}(undef,L,T), Log0)    # 𝜶 = p(s[k,t], x[1:t]), k in CTC topology's indexing
+        b = fill!(Array{TYPE,2}(undef,L,T), Log0)    # 𝛃 = p(x[t+1:T] | s[k,t]), k in CTC topology's indexing
         a[1,1] = log(p[    1, 1])
         a[2,1] = log(p[seq[1],1])
         b[L-1,T] = ZERO
         b[L-0,T] = ZERO
     else
-        a[1,1] = log(p[1,1])
-        b[L,T] = ZERO
+        r[1,:] .= TYPE(1)
+        return r, - sum(log.(p[1,:]))
     end
 
     # --- forward in log scale ---
@@ -85,7 +85,7 @@ function CTC(p::Array{TYPE,2}, seq) where TYPE
             elseif s==L-1
                 b[s,t] = LogSum2Exp(b[s,t+1] + log(p[seq[i],t+1]), b[s+1,t+1] + log(p[1,t+1]))
             elseif seq[i]==seq[i+1]
-		b[s,t] = LogSum2Exp(b[s,t+1] + log(p[seq[i],t+1]), b[s+1,t+1] + log(p[1,t+1]))
+                b[s,t] = LogSum2Exp(b[s,t+1] + log(p[seq[i],t+1]), b[s+1,t+1] + log(p[1,t+1]))
             else
                 b[s,t] = LogSum3Exp(b[s,t+1] + log(p[seq[i],t+1]), b[s+1,t+1] + log(p[1,t+1]), b[s+2,t+1] + log(p[seq[i+1],t+1]))
             end
