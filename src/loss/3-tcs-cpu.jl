@@ -20,19 +20,19 @@ function TCS(p::Array{TYPE,2}, seq) where TYPE
     ZERO = TYPE(0)         # typed zero,e.g. Float32(0)
     S, T = size(p)         # assert p is a 2-D tensor
     L = length(seq)        # topology length
-    r = fill!(Array{TYPE,2}(undef,S,T), ZERO)      # 𝜸 = p(s[k,t] | x[1:T]), k in softmax's indexing
+    r = fill!(Array{TYPE,2}(undef,S,T), ZERO)  # 𝜸 = p(s[k,t] | x[1:T]), k in softmax's indexing
 
-	if L > 1
-        a = fill!(Array{TYPE,2}(undef,L,T), Log0)  # 𝜶 = p(s[k,t], x[1:t]), k in TCS topology's indexing
-        b = fill!(Array{TYPE,2}(undef,L,T), Log0)  # 𝛃 = p(x[t+1:T] | s[k,t]), k in TCS topology's indexing
-		a[1,1] = log(p[seq[1],1])
-		a[2,1] = log(p[seq[2],1])
-		b[L-1,T] = ZERO
-		b[L-0,T] = ZERO
-	else
+    if L == 1
         r[1,:] .= TYPE(1)
         return r, - sum(log.(p[seq[1],:]))
-	end
+    end
+
+    a = fill!(Array{TYPE,2}(undef,L,T), Log0)  # 𝜶 = p(s[k,t], x[1:t]), k in TCS topology's indexing
+    b = fill!(Array{TYPE,2}(undef,L,T), Log0)  # 𝛃 = p(x[t+1:T] | s[k,t]), k in TCS topology's indexing
+    a[1,1] = log(p[seq[1],1])
+    a[2,1] = log(p[seq[2],1])
+    b[L-1,T] = ZERO
+    b[L-0,T] = ZERO
 
     # --- forward in log scale ---
 	for t = 2:T
