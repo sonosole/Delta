@@ -75,6 +75,11 @@ function Base.show(io::IO, var::Variable{T}) where T
 end
 
 
+function clone(x::Variable; type::Type=Array{Float32})
+    return Variable{type}(copy(x.value), x.backprop, x.keepsgrad, x.isleaf)
+end
+
+
 function zeroDelta(var::Variable{T}) where T
     # 要切断某些反向传播路径的时候将其初始化为零
     if var.delta === nothing
@@ -212,7 +217,7 @@ export Variable
 export zeroDelta
 export Zeros
 export to, to!
-
+export clone
 export need2computeδ!
 export ifNotKeepδThenFreeδ!
 
