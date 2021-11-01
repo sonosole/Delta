@@ -104,3 +104,12 @@ function to!(type::Type, m::linear)
     m.b = to(type, m.b)
     return nothing
 end
+
+
+function clone(this::linear; type::Type=Array{Float32})
+    hiddenSize, inputSize = size(this.w)
+    cloned = linear(inputSize, hiddenSize; type=type)
+    cloned.w = clone(this.w, type=type)
+    cloned.b = clone(this.b, type=type)
+    return cloned
+end

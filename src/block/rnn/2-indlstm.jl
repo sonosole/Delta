@@ -397,3 +397,27 @@ function to!(type::Type, m::INDLSTM)
         to!(type, layer)
     end
 end
+
+
+function clone(this::indlstm; type::Type=Array{Float32})
+    hiddenSize, inputSize = size(this.w)
+    cloned = indlstm(inputSize, hiddenSize; type=type)
+
+    cloned.wi = clone(this.wi, type=type)
+    cloned.bi = clone(this.bi, type=type)
+    cloned.ui = clone(this.ui, type=type)
+
+    cloned.wf = clone(this.wf, type=type)
+    cloned.bf = clone(this.bf, type=type)
+    cloned.uf = clone(this.uf, type=type)
+
+    cloned.wo = clone(this.wo, type=type)
+    cloned.bo = clone(this.bo, type=type)
+    cloned.uo = clone(this.uo, type=type)
+
+    cloned.wc = clone(this.wc, type=type)
+    cloned.bc = clone(this.bc, type=type)
+    cloned.uc = clone(this.uc, type=type)
+
+    return cloned
+end

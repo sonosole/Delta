@@ -111,3 +111,12 @@ function to!(type::Type, m::maxout)
     m.b = to(type, m.b)
     return nothing
 end
+
+
+function clone(this::maxout; type::Type=Array{Float32})
+    hiddenSize, inputSize = size(this.w)
+    cloned = maxout(inputSize, hiddenSize; k=this.k, type=type)
+    cloned.w = clone(this.w, type=type)
+    cloned.b = clone(this.b, type=type)
+    return cloned
+end

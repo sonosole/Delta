@@ -245,3 +245,12 @@ function to!(type::Type, m::MLP)
         to!(type, layer)
     end
 end
+
+
+function clone(this::dense; type::Type=Array{Float32})
+    hiddenSize, inputSize = size(this.w)
+    cloned = dense(inputSize, hiddenSize, this.f, type=type)
+    cloned.w = clone(this.w, type=type)
+    cloned.b = clone(this.b, type=type)
+    return cloned
+end

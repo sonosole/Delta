@@ -252,3 +252,13 @@ function to!(type::Type, m::conv1d)
     m.b = to(type, m.b)
     return nothing
 end
+
+
+function clone(this::conv1d; type::Type=Array{Float32})
+    ochannels, filterSize = size(this.w)
+    ichannels = filterSize ÷ this.k
+    cloned = conv1d(ichannels, ochannels, this.k, stride=this.s, padding=this.p, type=type)
+    cloned.w = clone(this.w, type=type)
+    cloned.b = clone(this.b, type=type)
+    return cloned
+end

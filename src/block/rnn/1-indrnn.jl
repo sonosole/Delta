@@ -272,3 +272,13 @@ function to!(type::Type, m::INDRNN)
         to!(type, layer)
     end
 end
+
+
+function clone(this::indrnn; type::Type=Array{Float32})
+    hiddenSize, inputSize = size(this.w)
+    cloned = indrnn(inputSize, hiddenSize, this.f; type=type)
+    cloned.w = clone(this.w, type=type)
+    cloned.b = clone(this.b, type=type)
+    cloned.u = clone(this.u, type=type)
+    return cloned
+end
