@@ -21,7 +21,7 @@ mutable struct conv1d <: Block
         b = amplitude * randn(dtype, ochannels,          1)
         new(Variable{type}(w,true,true,true),
             Variable{type}(b,true,true,true),
-            kernel, stride, padding)
+            kernel, stride)
     end
     function conv1d(kernel::Int; stride::Int=1)
         new(nothing, nothing, kernel, stride)
