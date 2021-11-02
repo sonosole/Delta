@@ -1,8 +1,8 @@
 export linear
 
 mutable struct linear <: Block
-    w::Variable # input to hidden weights
-    b::Variable # bias of hidden units
+    w::VarOrNil # input to hidden weights
+    b::VarOrNil # bias of hidden units
     function linear(inputSize::Int, hiddenSize::Int; type::Type=Array{Float32})
         T = eltype(type)
         A = sqrt(T(1/hiddenSize))
@@ -11,6 +11,17 @@ mutable struct linear <: Block
         new(Variable{type}(w,true,true,true),
             Variable{type}(b,true,true,true))
     end
+    function linear()
+        new(nothing, nothing)
+    end
+end
+
+
+function clone(this::linear; type::Type=Array{Float32})
+    cloned = linear()
+    cloned.w = clone(this.w, type=type)
+    cloned.b = clone(this.b, type=type)
+    return cloned
 end
 
 
@@ -103,13 +114,4 @@ function to!(type::Type, m::linear)
     m.w = to(type, m.w)
     m.b = to(type, m.b)
     return nothing
-end
-
-
-function clone(this::linear; type::Type=Array{Float32})
-    hiddenSize, inputSize = size(this.w)
-    cloned = linear(inputSize, hiddenSize; type=type)
-    cloned.w = clone(this.w, type=type)
-    cloned.b = clone(this.b, type=type)
-    return cloned
 end
