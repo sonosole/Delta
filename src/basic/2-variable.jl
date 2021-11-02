@@ -76,7 +76,7 @@ end
 
 
 function clone(x::Variable; type::Type=Array{Float32})
-    return Variable{type}(copy(x.value), x.backprop, x.keepsgrad, x.isleaf)
+    return Variable{type}(type(x.value), x.backprop, x.keepsgrad, x.isleaf)
 end
 
 
@@ -221,8 +221,9 @@ export clone
 export need2computeδ!
 export ifNotKeepδThenFreeδ!
 
-export XVariable
-const  XVariable = Tuple{Char,Variable}
+export XVariable, VarOrNil
+const  XVariable = Tuple{Variable, Char}
+const  VarOrNil  = Union{Variable, Nothing}
 
 # pretty printing
 function Base.show(io::IO, xvar::XVariable)
