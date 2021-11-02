@@ -2,8 +2,8 @@ export maxout
 
 
 mutable struct maxout <: Block
-    w::Variable # input to middle hidden weights
-    b::Variable # bias of middle hidden units
+    w::VarOrNil # input to middle hidden weights
+    b::VarOrNil # bias of middle hidden units
     h::Int
     k::Int
     function maxout(inputSize::Int, hiddenSize::Int; k::Int=2, type::Type=Array{Float32})
@@ -15,7 +15,20 @@ mutable struct maxout <: Block
         new(Variable{type}(w,true,true,true),
             Variable{type}(b,true,true,true), hiddenSize, k)
     end
+    function maxout(hiddenSize::Int; k::Int=2)
+        @assert (k>=2) "# of affine layers should no less than 2"
+        new(nothing, nothing, hiddenSize, k)
+    end
 end
+
+
+function clone(this::maxout; type::Type=Array{Float32})
+    cloned = maxout(this.h, k=this.k)
+    cloned.w = clone(this.w, type=type)
+    cloned.b = clone(this.b, type=type)
+    return cloned
+end
+
 
 # pretty show
 function Base.show(io::IO, m::maxout)
@@ -110,13 +123,4 @@ function to!(type::Type, m::maxout)
     m.w = to(type, m.w)
     m.b = to(type, m.b)
     return nothing
-end
-
-
-function clone(this::maxout; type::Type=Array{Float32})
-    hiddenSize, inputSize = size(this.w)
-    cloned = maxout(inputSize, hiddenSize; k=this.k, type=type)
-    cloned.w = clone(this.w, type=type)
-    cloned.b = clone(this.b, type=type)
-    return cloned
 end
