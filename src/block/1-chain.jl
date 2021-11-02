@@ -13,21 +13,34 @@ Chain multiple blocks / functions together, so that they are called in sequence 
 mutable struct Chain
     blocks::Vector
     function Chain(sequence::Vector)
-        blocknum = length(sequence)
-        blocks = Vector(undef,blocknum)
-        for i = 1:blocknum
+        nblocks = length(sequence)
+        blocks = Vector(undef,nblocks)
+        for i = 1:nblocks
             blocks[i] = sequence[i]
         end
         new(blocks)
     end
     function Chain(sequence...)
-        blocknum = length(sequence)
-        blocks = Vector(undef,blocknum)
-        for i = 1:blocknum
+        nblocks = length(sequence)
+        blocks = Vector(undef,nblocks)
+        for i = 1:nblocks
             blocks[i] = sequence[i]
         end
         new(blocks)
     end
+    function Chain(nblocks::Int)
+        new(Vector(undef,nblocks))
+    end
+end
+
+
+function clone(this::Chain; type::Type=Array{Float32})
+    nblocks = length(this.blocks)
+    cloned  = Chain(nblocks)
+    for i = 1:nblocks
+        cloned[i] = clone(this[i], type=type)
+    end
+    return cloned
 end
 
 
