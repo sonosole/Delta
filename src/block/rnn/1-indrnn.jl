@@ -12,9 +12,9 @@ end
 
 
 mutable struct indrnn <: Block
-    w::Variable # input to hidden weights
-    b::Variable # bias of hidden units
-    u::Variable # recurrent weights
+    w::VarOrNil # input to hidden weights
+    b::VarOrNil # bias of hidden units
+    u::VarOrNil # recurrent weights
     f::Function # activation function
     h::Any      # hidden variable
     function indrnn(inputSize::Int, hiddenSize::Int, fn::Function=relu; type::Type=Array{Float32})
@@ -26,7 +26,20 @@ mutable struct indrnn <: Block
             Variable{type}(b,true,true,true),
             Variable{type}(u,true,true,true), fn, nothing)
     end
+    function indrnn(fn::Function)
+        new(nothing, nothing, nothing, fn, nothing)
+    end
 end
+
+
+function clone(this::indrnn; type::Type=Array{Float32})
+    cloned = indrnn(this.f)
+    cloned.w = clone(this.w, type=type)
+    cloned.b = clone(this.b, type=type)
+    cloned.u = clone(this.u, type=type)
+    return cloned
+end
+
 
 mutable struct INDRNN <: Block
     layers::Vector{indrnn}
@@ -271,14 +284,4 @@ function to!(type::Type, m::INDRNN)
     for layer in m
         to!(type, layer)
     end
-end
-
-
-function clone(this::indrnn; type::Type=Array{Float32})
-    hiddenSize, inputSize = size(this.w)
-    cloned = indrnn(inputSize, hiddenSize, this.f; type=type)
-    cloned.w = clone(this.w, type=type)
-    cloned.b = clone(this.b, type=type)
-    cloned.u = clone(this.u, type=type)
-    return cloned
 end
