@@ -9,16 +9,11 @@ Filter 3D-tensor of shape (ochannels, ichannels, kernel) but
 actually reshaped to 2D-tensor of shape (ochannels, ichannels*kernel) for convenient.
 """
 mutable struct conv1d <: Block
-    w::Variable # input to hidden weights
-    b::Variable # bias of hidden units
+    w::VarOrNil # input to hidden weights
+    b::VarOrNil # bias of hidden units
     k::Int      # kernel size
     s::Int      # stride size
-    p::Int      # padding size
-    function conv1d(ichannels::Int, ochannels::Int, kernel::Int;
-        stride::Int = 1,
-        padding::Int = 0,
-        type::Type=Array{Float32})
-
+    function conv1d(ichannels::Int, ochannels::Int, kernel::Int; stride::Int=1, type::Type=Array{Float32})
         dtype = eltype(type)
         filterSize = ichannels * kernel
         amplitude = sqrt(dtype(2/filterSize))
@@ -28,6 +23,17 @@ mutable struct conv1d <: Block
             Variable{type}(b,true,true,true),
             kernel, stride, padding)
     end
+    function conv1d(kernel::Int; stride::Int=1)
+        new(nothing, nothing, kernel, stride)
+    end
+end
+
+
+function clone(this::conv1d; type::Type=Array{Float32})
+    cloned = conv1d(this.k, stride=this.s)
+    cloned.w = clone(this.w, type=type)
+    cloned.b = clone(this.b, type=type)
+    return cloned
 end
 
 
@@ -251,14 +257,4 @@ function to!(type::Type, m::conv1d)
     m.w = to(type, m.w)
     m.b = to(type, m.b)
     return nothing
-end
-
-
-function clone(this::conv1d; type::Type=Array{Float32})
-    ochannels, filterSize = size(this.w)
-    ichannels = filterSize ÷ this.k
-    cloned = conv1d(ichannels, ochannels, this.k, stride=this.s, padding=this.p, type=type)
-    cloned.w = clone(this.w, type=type)
-    cloned.b = clone(this.b, type=type)
-    return cloned
 end
