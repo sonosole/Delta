@@ -222,7 +222,7 @@ export need2computeδ!
 export ifNotKeepδThenFreeδ!
 
 export XVariable, VarOrNil
-const  XVariable = Tuple{Variable, Char}
+const  XVariable = Tuple{Char, Variable}
 const  VarOrNil  = Union{Variable, Nothing}
 
 # pretty printing
