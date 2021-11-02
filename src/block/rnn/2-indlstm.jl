@@ -1,20 +1,20 @@
 mutable struct indlstm <: Block
     # input control gate params
-    wi::Variable
-    ui::Variable
-    bi::Variable
+    wi::VarOrNil
+    ui::VarOrNil
+    bi::VarOrNil
     # forget control gate params
-    wf::Variable
-    uf::Variable
-    bf::Variable
+    wf::VarOrNil
+    uf::VarOrNil
+    bf::VarOrNil
     # out control gate params
-    wo::Variable
-    uo::Variable
-    bo::Variable
+    wo::VarOrNil
+    uo::VarOrNil
+    bo::VarOrNil
     # new cell info params
-    wc::Variable
-    uc::Variable
-    bc::Variable
+    wc::VarOrNil
+    uc::VarOrNil
+    bc::VarOrNil
     h  # hidden variable
     c  #   cell variable
     function indlstm(inputSize::Int, hiddenSize::Int; type::Type=Array{Float32})
@@ -42,6 +42,35 @@ mutable struct indlstm <: Block
             Variable{type}(wo,true,true,true), Variable{type}(uo,true,true,true), Variable{type}(bo,true,true,true),
             Variable{type}(wc,true,true,true), Variable{type}(uc,true,true,true), Variable{type}(bc,true,true,true), nothing, nothing)
     end
+    function indlstm()
+        new(nothing, nothing, nothing,
+            nothing, nothing, nothing,
+            nothing, nothing, nothing,
+            nothing, nothing, nothing, nothing, nothing)
+    end
+end
+
+
+function clone(this::indlstm; type::Type=Array{Float32})
+    cloned = indlstm()
+    
+    cloned.wi = clone(this.wi, type=type)
+    cloned.bi = clone(this.bi, type=type)
+    cloned.ui = clone(this.ui, type=type)
+
+    cloned.wf = clone(this.wf, type=type)
+    cloned.bf = clone(this.bf, type=type)
+    cloned.uf = clone(this.uf, type=type)
+
+    cloned.wo = clone(this.wo, type=type)
+    cloned.bo = clone(this.bo, type=type)
+    cloned.uo = clone(this.uo, type=type)
+
+    cloned.wc = clone(this.wc, type=type)
+    cloned.bc = clone(this.bc, type=type)
+    cloned.uc = clone(this.uc, type=type)
+
+    return cloned
 end
 
 
@@ -396,28 +425,4 @@ function to!(type::Type, m::INDLSTM)
     for layer in m
         to!(type, layer)
     end
-end
-
-
-function clone(this::indlstm; type::Type=Array{Float32})
-    hiddenSize, inputSize = size(this.w)
-    cloned = indlstm(inputSize, hiddenSize; type=type)
-
-    cloned.wi = clone(this.wi, type=type)
-    cloned.bi = clone(this.bi, type=type)
-    cloned.ui = clone(this.ui, type=type)
-
-    cloned.wf = clone(this.wf, type=type)
-    cloned.bf = clone(this.bf, type=type)
-    cloned.uf = clone(this.uf, type=type)
-
-    cloned.wo = clone(this.wo, type=type)
-    cloned.bo = clone(this.bo, type=type)
-    cloned.uo = clone(this.uo, type=type)
-
-    cloned.wc = clone(this.wc, type=type)
-    cloned.bc = clone(this.bc, type=type)
-    cloned.uc = clone(this.uc, type=type)
-
-    return cloned
 end
