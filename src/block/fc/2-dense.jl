@@ -2,8 +2,8 @@ export dense
 export MLP
 
 mutable struct dense <: Block
-    w::Variable
-    b::Variable
+    w::VarOrNil
+    b::VarOrNil
     f::Function
     # type specilized may be CuArray/AFArray/ClArray/Array etc
     function dense(inputSize::Int, hiddenSize::Int, fn::Function=relu; type::Type=Array{Float32})
@@ -13,6 +13,17 @@ mutable struct dense <: Block
         b = randn(T, hiddenSize,         1) .* a
         new(Variable{type}(w,true,true,true), Variable{type}(b,true,true,true), fn)
     end
+    function dense(fn::Function)
+        new(nothing, nothing, fn)
+    end
+end
+
+
+function clone(this::dense; type::Type=Array{Float32})
+    cloned = dense(this.f)
+    cloned.w = clone(this.w, type=type)
+    cloned.b = clone(this.b, type=type)
+    return cloned
 end
 
 
@@ -244,13 +255,4 @@ function to!(type::Type, m::MLP)
     for layer in m
         to!(type, layer)
     end
-end
-
-
-function clone(this::dense; type::Type=Array{Float32})
-    hiddenSize, inputSize = size(this.w)
-    cloned = dense(inputSize, hiddenSize, this.f, type=type)
-    cloned.w = clone(this.w, type=type)
-    cloned.b = clone(this.b, type=type)
-    return cloned
 end
