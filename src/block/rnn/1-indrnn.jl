@@ -248,6 +248,16 @@ function nparamsof(m::indrnn)
 end
 
 
+function bytesof(model::indrnn, unit::String="MB")
+    n = nparamsof(model)
+    u = uppercase(unit)
+    if u == "KB" return n * sizeof(eltype(model.w)) / 1024 end
+    if u == "MB" return n * sizeof(eltype(model.w)) / 1048576 end
+    if u == "GB" return n * sizeof(eltype(model.w)) / 1073741824 end
+    if u == "TB" return n * sizeof(eltype(model.w)) / 1099511627776 end
+end
+
+
 function nparamsof(m::INDRNN)
     num = 0
     for i = 1:length(m)
@@ -256,6 +266,15 @@ function nparamsof(m::INDRNN)
     return num
 end
 
+
+function bytesof(model::INDRNN, unit::String="MB")
+    n = nparamsof(model)
+    u = uppercase(unit)
+    if u == "KB" return n * sizeof(eltype(model[1].w)) / 1024 end
+    if u == "MB" return n * sizeof(eltype(model[1].w)) / 1048576 end
+    if u == "GB" return n * sizeof(eltype(model[1].w)) / 1073741824 end
+    if u == "TB" return n * sizeof(eltype(model[1].w)) / 1099511627776 end
+end
 
 
 function to(type::Type, m::indrnn)

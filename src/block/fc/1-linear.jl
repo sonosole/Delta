@@ -89,6 +89,16 @@ function nparamsof(m::linear)
 end
 
 
+function bytesof(model::linear, unit::String="MB")
+    n = nparamsof(model)
+    u = uppercase(unit)
+    if u == "KB" return n * sizeof(eltype(model.w)) / 1024 end
+    if u == "MB" return n * sizeof(eltype(model.w)) / 1048576 end
+    if u == "GB" return n * sizeof(eltype(model.w)) / 1073741824 end
+    if u == "TB" return n * sizeof(eltype(model.w)) / 1099511627776 end
+end
+
+
 function forward(m::linear, x::Variable)
     w = m.w
     b = m.b
