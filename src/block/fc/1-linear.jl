@@ -75,10 +75,10 @@ end
 
 
 function xparamsof(m::linear)
-    params = Vector{XVariable}(undef,2)
-    params[1] = ('w', m.w)
-    params[2] = ('b', m.b)
-    return params
+    xparams = Vector{XVariable}(undef,2)
+    xparams[1] = ('w', m.w)
+    xparams[2] = ('b', m.b)
+    return xparams
 end
 
 

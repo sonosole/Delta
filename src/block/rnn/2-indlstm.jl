@@ -331,23 +331,23 @@ end
 
 
 function xparamsof(m::indlstm)
-    params = Vector{XVariable}(undef,12)
-    params[1] = ('w', m.wi)
-    params[2] = ('u', m.ui)
-    params[3] = ('b', m.bi)
+    xparams = Vector{XVariable}(undef,12)
+    xparams[1] = ('w', m.wi)
+    xparams[2] = ('u', m.ui)
+    xparams[3] = ('b', m.bi)
 
-    params[4] = ('w', m.wf)
-    params[5] = ('u', m.uf)
-    params[6] = ('b', m.bf)
+    xparams[4] = ('w', m.wf)
+    xparams[5] = ('u', m.uf)
+    xparams[6] = ('b', m.bf)
 
-    params[7] = ('w', m.wo)
-    params[8] = ('u', m.uo)
-    params[9] = ('b', m.bo)
+    xparams[7] = ('w', m.wo)
+    xparams[8] = ('u', m.uo)
+    xparams[9] = ('b', m.bo)
 
-    params[10] = ('w', m.wc)
-    params[11] = ('u', m.uc)
-    params[12] = ('b', m.bc)
-    return params
+    xparams[10] = ('w', m.wc)
+    xparams[11] = ('u', m.uc)
+    xparams[12] = ('b', m.bc)
+    return xparams
 end
 
 
@@ -361,11 +361,11 @@ end
 
 
 function xparamsof(model::INDLSTM)
-    params = Vector{XVariable}(undef,0)
+    xparams = Vector{XVariable}(undef,0)
     for m in model
-        append!(params, xparamsof(m))
+        append!(xparams, xparamsof(m))
     end
-    return params
+    return xparams
 end
 
 

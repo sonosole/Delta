@@ -214,11 +214,11 @@ end
 
 
 function xparamsof(m::indrnn)
-    params = Vector{XVariable}(undef,3)
-    params[1] = ('w', m.w)
-    params[2] = ('b', m.b)
-    params[3] = ('u', m.u)
-    return params
+    xparams = Vector{XVariable}(undef,3)
+    xparams[1] = ('w', m.w)
+    xparams[2] = ('b', m.b)
+    xparams[3] = ('u', m.u)
+    return xparams
 end
 
 
@@ -232,11 +232,11 @@ end
 
 
 function xparamsof(m::INDRNN)
-    params = Vector{XVariable}(undef,0)
+    xparams = Vector{XVariable}(undef,0)
     for i = 1:length(m)
-        append!(params, xparamsof(m[i]))
+        append!(xparams, xparamsof(m[i]))
     end
-    return params
+    return xparams
 end
 
 

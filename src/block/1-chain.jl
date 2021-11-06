@@ -53,9 +53,9 @@ Base.iterate(c::Chain, i=firstindex(c)) = i>length(c) ? nothing : (c[i], i+1)
 
 
 function Base.show(io::IO, c::Chain)
-    print(io,  "Chain\n(\n      ")
-    join(io, c.blocks, "\n      ")
-    print(io,               "\n)")
+    print(io,  "Chain(\n")
+    join(io,c.blocks, "\n")
+    println(io, "\n)")
 end
 
 
@@ -100,14 +100,14 @@ end
 
 
 function xparamsof(c::Chain)
-    params = Vector{XVariable}(undef,0)
+    xparams = Vector{XVariable}(undef,0)
     for i = 1:length(c)
         p = xparamsof(c[i])
         if p ≠ nothing
-            append!(params, p)
+            append!(xparams, p)
         end
     end
-    return params
+    return xparams
 end
 
 
