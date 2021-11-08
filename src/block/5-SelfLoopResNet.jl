@@ -1,3 +1,5 @@
+export SelfLoopResNet
+
 mutable struct SelfLoopResNet
     self::Union{Block,Nothing}
     degree::Int

@@ -1,3 +1,5 @@
+export SelfLoopCumulativeResNet
+
 mutable struct SelfLoopCumulativeResNet
     self::Union{Block,Nothing}
     degree::Int
