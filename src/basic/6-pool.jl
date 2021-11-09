@@ -43,19 +43,19 @@ function Base.sum(var::Variable{T}; dims::Union{Int,NTuple{N,Int}}) where {T,N}
 end
 
 
-function mean(var::Variable{T}; dims::Union{Int,NTuple{N,Int}}) where {T,N}
-    CST = eltype(var)(1.0) / prod([size(var, i) for i in dims])
-    out = Variable{T}(sum(var.value, dims=dims) .* CST, var.backprop)
-    if var.backprop
+function mean(x::Variable{T}; dims::Union{Int,NTuple{N,Int}}) where {T,N}
+    n = eltype(x)(1) / prod([size(x, i) for i in dims])
+    μ = Variable{T}(sum(x.value, dims=dims) .* n, x.backprop)
+    if x.backprop
         function meanBackward()
-            if need2computeδ!(var)
-                var.delta .+= out.delta .* CST
+            if need2computeδ!(x)
+                x.delta .+= μ.delta .* n
             end
-            ifNotKeepδThenFreeδ!(out);
+            ifNotKeepδThenFreeδ!(μ);
         end
         push!(graph.backward, meanBackward)
     end
-    return out
+    return μ
 end
 
 
@@ -90,21 +90,21 @@ function Base.minmax(x::AbstractArray; dims1::Int, dims2::Int)
 end
 
 
-function linearpool(var::Variable{T}; dims::Union{Int,NTuple{N,Int}}) where {T,N}
-    sum1 = sum(var.value .* var.value, dims=dims)     # Σ xᵢ·xᵢ
-    sum2 = sum(var.value,              dims=dims)     # Σ xᵢ
-    out  = Variable{T}(sum1 ./ sum2, var.backprop)
-    if var.backprop
-        TWO = eltype(var)(2.0)
+function linearpool(x::Variable{T}; dims::Union{Int,NTuple{N,Int}}) where {T,N}
+    Σxᵢ² = sum(x.value .* x.value, dims=dims)     # Σ xᵢ·xᵢ
+    Σxᵢ  = sum(x.value,            dims=dims)     # Σ xᵢ
+    y    = Variable{T}(Σxᵢ² ./ Σxᵢ, x.backprop)
+    if x.backprop
+        TWO = eltype(x)(2.0f0)
         function linearpoolBackward()
-            if need2computeδ!(var)
-                var.delta += (TWO .* var.value .- out.value) ./ sum2 .* out.delta
+            if need2computeδ!(x)
+                x.delta += (TWO .* x.value .- y.value) ./ Σxᵢ .* y.delta
             end
-            ifNotKeepδThenFreeδ!(out);
+            ifNotKeepδThenFreeδ!(y);
         end
         push!(graph.backward, linearpoolBackward)
     end
-    return out
+    return y
 end
 
 
@@ -113,22 +113,22 @@ function linearpool(x::AbstractArray; dims::Union{Int,NTuple{N,Int}}) where N
 end
 
 
-function exppool(var::Variable{T}; dims::Union{Int,NTuple{N,Int}}) where {T,N}
-    tmp  = exp.(var.value)
-    sum1 = sum(tmp .* var.value, dims=dims)         # Σ exp(xᵢ)·xᵢ
-    sum2 = sum(tmp,              dims=dims)         # Σ exp(xᵢ)
-    out  = Variable{T}(sum1 ./ sum2, var.backprop)
-    if var.backprop
-        ONE = eltype(var)(1.0)
+function exppool(x::Variable{T}; dims::Union{Int,NTuple{N,Int}}) where {T,N}
+    eˣ  = exp.(x.value)
+    Σeˣⁱxᵢ = sum(eˣ .* x.value, dims=dims)         # Σ exp(xᵢ)·xᵢ
+    Σeˣⁱ = sum(eˣ, dims=dims)                      # Σ exp(xᵢ)
+    y  = Variable{T}(Σeˣⁱxᵢ ./ Σeˣⁱ, x.backprop)
+    if x.backprop
+        ONE = eltype(x)(1.0f0)
         function exppoolBackward()
-            if need2computeδ!(var)
-                var.delta += tmp ./ sum2 .* (ONE .+ var.value .- out.value) .* out.delta
+            if need2computeδ!(x)
+                x.delta += eˣ ./ Σeˣⁱ .* (ONE .+ x.value .- y.value) .* y.delta
             end
-            ifNotKeepδThenFreeδ!(out);
+            ifNotKeepδThenFreeδ!(y);
         end
         push!(graph.backward, exppoolBackward)
     end
-    return out
+    return y
 end
 
 
