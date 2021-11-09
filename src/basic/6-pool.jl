@@ -1,4 +1,3 @@
-import Base.maximum
 function Base.maximum(var::Variable{T}; dims::Union{Int,NTuple{N,Int}}) where {T,N}
     out = Variable{T}(maximum(var.value, dims=dims), var.backprop)
     if var.backprop
@@ -14,7 +13,6 @@ function Base.maximum(var::Variable{T}; dims::Union{Int,NTuple{N,Int}}) where {T
     return out
 end
 
-import Base.minimum
 function Base.minimum(var::Variable{T}; dims::Union{Int,NTuple{N,Int}}) where {T,N}
     out = Variable{T}(minimum(var.value, dims=dims), var.backprop)
     if var.backprop
@@ -30,7 +28,6 @@ function Base.minimum(var::Variable{T}; dims::Union{Int,NTuple{N,Int}}) where {T
     return out
 end
 
-import Base.sum
 function Base.sum(var::Variable{T}; dims::Union{Int,NTuple{N,Int}}) where {T,N}
     out = Variable{T}(sum(var.value, dims=dims), var.backprop)
     if var.backprop
@@ -83,7 +80,6 @@ function maxmin(x::AbstractArray; dims1::Int, dims2::Int)
     return minimum( maximum(x, dims=dims1), dims=dims2)
 end
 
-import Base.minmax
 function Base.minmax(var::Variable{T}; dims1::Int, dims2::Int) where T
     return maxmin(var; dims1=dims2, dims2=dims1)
 end
