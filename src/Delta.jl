@@ -9,5 +9,6 @@ include("./loss/0-loss.jl")
 include("./optimizer/optimizer.jl")
 include("./optimizer/update.jl")
 include("./optimizer/regularize.jl")
+include("./normalizer/normalizers.jl")
 
 end  # moduleDelta
