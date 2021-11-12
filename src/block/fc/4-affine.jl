@@ -1,5 +1,3 @@
-export affine
-
 mutable struct affine <: Block
     w::VarOrNil # input to hidden weights
     function affine(inputSize::Int, hiddenSize::Int; type::Type=Array{Float32})
