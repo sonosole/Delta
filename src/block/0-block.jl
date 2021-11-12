@@ -20,8 +20,6 @@ include("./1-chain.jl")
 include("./2-residual.jl")
 include("./3-dropout.jl")
 include("./4-macro.jl")
-include("./5-SelfLoopResNet.jl")
-include("./6-SelfLoopCumulativeResNet.jl")
 
 include("./conv/0-conv.jl")
 include(  "./fc/0-fc.jl")
