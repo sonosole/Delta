@@ -24,12 +24,20 @@ Base.getindex(c::ResDense, k...)     =  c.blocks[k...]
 Base.setindex!(c::ResDense, v, k...) = (c.blocks[k...] = v)
 Base.iterate(c::ResDense, i=1) = i>3 ? nothing : (c[i], i+1)
 
-function xparamsof(m::ResDense)
-    params = Vector{XVariable}(undef,0)
+function paramsof(m::ResDense)
+    params = Vector{Variable}(undef,0)
     for i = 1:length(m)
-        append!(params, xparamsof(m[i]))
+        append!(params, paramsof(m[i]))
     end
     return params
+end
+
+function xparamsof(m::ResDense)
+    xparams = Vector{XVariable}(undef,0)
+    for i = 1:length(m)
+        append!(xparams, xparamsof(m[i]))
+    end
+    return xparams
 end
 
 function nparamsof(model::ResDense)
