@@ -34,6 +34,14 @@ mutable struct Chain
 end
 
 
+Base.length(c::Chain)     = length(c.blocks)
+Base.lastindex(c::Chain)  = length(c)
+Base.firstindex(c::Chain) = 1
+Base.getindex(c::Chain, k...)      = c.blocks[k...]
+Base.setindex!(c::Chain, v, k...) = (c.blocks[k...] = v)
+Base.iterate(c::Chain, i=firstindex(c)) = i>length(c) ? nothing : (c[i], i+1)
+
+
 function clone(this::Chain; type::Type=Array{Float32})
     nblocks = length(this.blocks)
     cloned  = Chain(nblocks)
@@ -42,14 +50,6 @@ function clone(this::Chain; type::Type=Array{Float32})
     end
     return cloned
 end
-
-
-Base.length(c::Chain)     = length(c.blocks)
-Base.lastindex(c::Chain)  = length(c)
-Base.firstindex(c::Chain) = 1
-Base.getindex(c::Chain, k...)      = c.blocks[k...]
-Base.setindex!(c::Chain, v, k...) = (c.blocks[k...] = v)
-Base.iterate(c::Chain, i=firstindex(c)) = i>length(c) ? nothing : (c[i], i+1)
 
 
 function Base.show(io::IO, c::Chain)
