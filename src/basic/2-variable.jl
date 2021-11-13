@@ -215,7 +215,7 @@ end
 
 export Variable
 export zeroDelta
-export Zeros
+export Zeros, Ones
 export to, to!
 export clone
 export need2computeδ!
