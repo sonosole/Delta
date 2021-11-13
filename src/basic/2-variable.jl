@@ -119,7 +119,7 @@ import Base.setindex!
 import Base.copy
 import Base.deepcopy
 
-
+Base.sizeof(x::Variable)         =  sizeof(x.value)
 Base.size(x::Variable)           =    size(x.value)
 Base.size(x::Variable, dim::Int) =    size(x.value, dim)
 Base.ndims(x::Variable)          =   ndims(x.value)
@@ -220,6 +220,7 @@ export to, to!
 export clone
 export need2computeδ!
 export ifNotKeepδThenFreeδ!
+export elsizeof
 
 export XVariable, VarOrNil
 const  XVariable = Tuple{Char, Variable}
@@ -236,3 +237,6 @@ function Base.show(io::IO, xvar::XVariable)
     print(green("\ndelta is "))
     display(var.delta)
 end
+
+
+elsizeof(x::Variable) = sizeof(eltype(x))
