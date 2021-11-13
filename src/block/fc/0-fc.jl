@@ -6,7 +6,7 @@ export affine
 export ResDense
 export SelfLoopResNet
 export SelfLoopCumulativeResNet
-
+export MeanNormResDense
 
 include("./1-linear.jl")
 include("./2-dense.jl")
@@ -15,3 +15,4 @@ include("./4-affine.jl")
 include("./5-ResDense.jl")
 include("./6-SelfLoopResNet.jl")
 include("./7-SelfLoopCumulativeResNet.jl")
+include("./8-MeanNormResDense.jl")
