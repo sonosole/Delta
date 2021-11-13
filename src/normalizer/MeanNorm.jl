@@ -68,6 +68,12 @@ function Base.show(io::IO, m::MeanNorm)
     print(io, "MeanNorm(size(β)=$SIZE; type=$TYPE)")
 end
 
+function paramsof(m::MeanNorm)
+    xparams = Vector{Variable}(undef,1)
+    xparams[1] = m.β
+    return xparams
+end
+
 function xparamsof(m::MeanNorm)
     xparams = Vector{XVariable}(undef,1)
     xparams[1] = ('b', m.β)
