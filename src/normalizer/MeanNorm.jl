@@ -4,7 +4,7 @@
 # Fields
     β        :: VarOrNil                        # shifting params
     μ        :: Union{AbstractArray,Nothing}    # running average
-    views    :: NTuple                          # views to get the statistical mean
+    views    :: Union{NTuple,Nothing}           # views to get the statistical mean
     training :: Bool                            # if trainning then true
     momentum :: AbstractFloat                   # smoothing const for moving average
 
@@ -15,13 +15,13 @@ mutable struct MeanNorm <: Normalizer
     β::VarOrNil                        # shifting params
     μ::Union{AbstractArray,Nothing}    # running average
     views::Union{NTuple,Nothing}
-    training::Union{Bool,Nothing}
-    momentum::Union{AbstractFloat,Nothing}
+    training::Bool
+    momentum::AbstractFloat
     function MeanNorm(;ndims::Int,
-                       keptdims::Union{Tuple,Int},    # must be unique and sorted and positive
-                       keptsize::Union{Tuple,Int},    # must be positive
-                       momentum::AbstractFloat=0.10,  # smoothing const
-                       type::Type=Array{Float32})
+                      keptdims::Union{Tuple,Int},    # must be unique and sorted and positive
+                      keptsize::Union{Tuple,Int},    # must be positive
+                      momentum::AbstractFloat=0.1,   # smoothing const
+                      type::Type=Array{Float32})
 
         @assert typeof(keptsize)==typeof(keptdims) "keptsize & keptdims shall be the same type"
         @assert ndims >= maximum(keptdims) "ndims >= maximum(keptdims) shall be met"
@@ -49,25 +49,23 @@ mutable struct MeanNorm <: Normalizer
         T = eltype(type);
         new(β, μ, views, true, T(momentum))
     end
-    function MeanNorm()
-        new(nothing, nothing, nothing, nothing, nothing)
+    function MeanNorm(training, momentum)
+        new(nothing, nothing, nothing, training, momentum)
     end
 end
 
 function clone(this::MeanNorm; type::Type=Array{Float32})
-    cloned = MeanNorm()
-    cloned.β =  clone(this.β, type=type)
-    cloned.μ =   type(this.μ)
-    cloned.views    = this.views
-    cloned.training = this.training
-    cloned.momentum = this.momentum
+    cloned = MeanNorm(this.training, this.momentum)
+    cloned.β = clone(this.β, type=type)
+    cloned.μ =  type(this.μ)
+    cloned.views =   this.views
     return cloned
 end
 
 function Base.show(io::IO, m::MeanNorm)
     SIZE = size(m.β.value)
     TYPE = typeof(m.β.value)
-    print(io, "MeanNorm(β=$SIZE; type=$TYPE)")
+    print(io, "MeanNorm(size(β)=$SIZE; type=$TYPE)")
 end
 
 function xparamsof(m::MeanNorm)
