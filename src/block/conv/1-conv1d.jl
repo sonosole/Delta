@@ -103,6 +103,12 @@ function nparamsof(m::conv1d)
 end
 
 
+function bytesof(model::conv1d, unit::String="MB")
+    n = nparamsof(model) * elsizeof(model.w)
+    return blocksize(n, uppercase(unit))
+end
+
+
 """
     conv1dReceptiveField(StrideKernelPair::Vector{NTuple{2,Int}})
 # Example

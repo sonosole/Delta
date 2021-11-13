@@ -85,12 +85,8 @@ function nparamsof(model::MeanNorm)
 end
 
 function bytesof(model::MeanNorm, unit::String="MB")
-    n = nparamsof(model)
-    u = lowercase(unit)
-    if u == "kb" return n * sizeof(eltype(model[1].w)) / 1024 end
-    if u == "mb" return n * sizeof(eltype(model[1].w)) / 1048576 end
-    if u == "gb" return n * sizeof(eltype(model[1].w)) / 1073741824 end
-    if u == "tb" return n * sizeof(eltype(model[1].w)) / 1099511627776 end
+    n = nparamsof(model) * sizeof(eltype(model.β))
+    return blocksize(n, uppercase(unit))
 end
 
 

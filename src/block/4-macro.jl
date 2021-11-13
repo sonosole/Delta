@@ -49,12 +49,8 @@ macro basic(xstruct, blocks)
         end
 
         function Delta.bytesof(model::NerualStruct, unit::String="MB")
-            n = nparamsof(model)
-            u = uppercase(unit)
-            if u == "KB" return n * sizeof(eltype(model[1].w)) / 1024 end
-            if u == "MB" return n * sizeof(eltype(model[1].w)) / 1048576 end
-            if u == "GB" return n * sizeof(eltype(model[1].w)) / 1073741824 end
-            if u == "TB" return n * sizeof(eltype(model[1].w)) / 1099511627776 end
+            n = nparamsof(model) * elsizeof(model[1].w)
+            return blocksize(n, uppercase(unit))
         end
     end
 end
@@ -100,12 +96,8 @@ macro extend(xstruct, blocks)
         end
 
         function Delta.bytesof(model::NerualStruct, unit::String="MB")
-            n = nparamsof(model)
-            u = uppercase(unit)
-            if u == "KB" return n * sizeof(eltype(model[1].w)) / 1024 end
-            if u == "MB" return n * sizeof(eltype(model[1].w)) / 1048576 end
-            if u == "GB" return n * sizeof(eltype(model[1].w)) / 1073741824 end
-            if u == "TB" return n * sizeof(eltype(model[1].w)) / 1099511627776 end
+            n = nparamsof(model) * elsizeof(model[1].w)
+            return blocksize(n, uppercase(unit))
         end
     end
 end
