@@ -10,5 +10,6 @@ include("./optimizer/optimizer.jl")
 include("./optimizer/update.jl")
 include("./optimizer/regularize.jl")
 include("./normalizer/normalizers.jl")
+include("./scaler/Scalers.jl")
 
 end  # moduleDelta
