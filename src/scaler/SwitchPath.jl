@@ -16,14 +16,15 @@ mutable struct SwitchPath <: Scaler
         scale = Variable{type}(Zeros(type, shape) .+ eltype(type)(7/slope), true, true, true);
         new(slope, scale)
     end
-    function SwitchPath(slope::AbstractFloat)
-        new(slope, nothing)
+    function SwitchPath()
+        new(1.0f0, nothing)
     end
 end
 
 
 function clone(this::SwitchPath; type::Type=Array{Float32})
-    cloned = SwitchPath(this.slope)
+    cloned = SwitchPath()
+    cloned.slope = this.slope
     cloned.scale = clone(this.scale, type=type)
     return cloned
 end
