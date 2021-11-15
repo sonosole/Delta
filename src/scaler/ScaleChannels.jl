@@ -79,5 +79,5 @@ end
 
 function predict(m::ScaleChannels, x::AbstractArray)
     k = m.scale.value
-    return x.value .* k
+    return x .* k
 end
