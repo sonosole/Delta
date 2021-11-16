@@ -10,7 +10,7 @@ Chain multiple blocks / functions together, so that they are called in sequence 
 # Examples
     julia> m = Chain(dense(256,128), lstm(128,64), dense(64,10));
 """
-mutable struct Chain
+mutable struct Chain <: Block
     blocks::Vector
     function Chain(sequence::Vector)
         nblocks = length(sequence)
@@ -35,9 +35,9 @@ end
 
 
 Base.length(c::Chain)     = length(c.blocks)
-Base.lastindex(c::Chain)  = length(c)
+Base.lastindex(c::Chain)  = length(c.blocks)
 Base.firstindex(c::Chain) = 1
-Base.getindex(c::Chain, k...)      = c.blocks[k...]
+Base.getindex(c::Chain, k...)     =  c.blocks[k...]
 Base.setindex!(c::Chain, v, k...) = (c.blocks[k...] = v)
 Base.iterate(c::Chain, i=firstindex(c)) = i>length(c) ? nothing : (c[i], i+1)
 
