@@ -49,9 +49,9 @@ function Base.show(io::IO, m::MeanNorm)
 end
 
 function paramsof(m::MeanNorm)
-    xparams = Vector{Variable}(undef,1)
-    xparams[1] = m.β
-    return xparams
+    params = Vector{Variable}(undef,1)
+    params[1] = m.β
+    return params
 end
 
 function xparamsof(m::MeanNorm)
