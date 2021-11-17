@@ -23,27 +23,7 @@ mutable struct MeanNorm <: Normalizer
                       momentum::AbstractFloat=0.1,   # smoothing const
                       type::Type=Array{Float32})
 
-        @assert typeof(keptsize)==typeof(keptdims) "keptsize & keptdims shall be the same type"
-        @assert ndims >= maximum(keptdims) "ndims >= maximum(keptdims) shall be met"
-        @assert ndims > length(keptdims) "this is no elements for statistical analysis"
-
-        if typeof(keptdims) <: Int
-            if keptdims == 0
-                if keptsize!=1
-                    @warn "keptsize should be 1 here, but got $keptsize"
-                end
-                shape = ntuple(i -> i==keptdims ? keptsize : 1, ndims);
-                views = ntuple(i -> i, ndims);
-            else
-                shape = ntuple(i -> i==keptdims ? keptsize : 1, ndims);
-                views = ntuple(i -> i>=keptdims ? i+1 : i, ndims-1);
-            end
-        else
-            array = [i for i in keptsize]
-            shape = ntuple(i -> i in keptdims ? popfirst!(array) : 1, ndims);
-            views = deleteat!(ntuple(i -> i, ndims), keptdims)
-        end
-
+        shape, views = ShapeAndViews(ndims, keptdims, keptsize);
         β = Variable{type}(Zeros(type, shape), true, true, true);
         μ = Zeros(type, shape);
         T = eltype(type);

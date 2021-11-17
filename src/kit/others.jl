@@ -29,6 +29,7 @@ end
 function ShapeAndViews(ndims::Int,                    # total dims
                        keptdims::Union{Tuple,Int},    # must be unique and sorted and positive
                        keptsize::Union{Tuple,Int})    # must be positive
+
     @assert typeof(keptsize)==typeof(keptdims) "keptsize & keptdims shall be the same type"
     @assert ndims >= maximum(keptdims) "ndims >= maximum(keptdims) shall be met"
     @assert ndims > length(keptdims) "this is no elements for statistical analysis"
