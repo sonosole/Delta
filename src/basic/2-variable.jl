@@ -108,16 +108,6 @@ function ifNotKeepδThenFreeδ!(var::Variable{T}) where T
 end
 
 
-import Base.size
-import Base.ndims
-import Base.length
-import Base.strides
-import Base.eltype
-import Base.similar
-import Base.getindex
-import Base.setindex!
-import Base.copy
-import Base.deepcopy
 
 Base.sizeof(x::Variable)         =  sizeof(x.value)
 Base.size(x::Variable)           =    size(x.value)
