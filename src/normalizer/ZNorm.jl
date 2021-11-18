@@ -133,7 +133,7 @@ function predict(b::ZNorm, x::AbstractArray)
 end
 
 
-function BatchNorm1d(nchannels::Int,
+function BatchNorm1d(nchannels::Int;
             epsilion::AbstractFloat=1e-10,
             momentum::AbstractFloat=0.900,
             type::Type=Array{Float32})
@@ -146,7 +146,7 @@ function BatchNorm1d(nchannels::Int,
 end
 
 
-function BatchNorm0d(nchannels::Int,
+function BatchNorm0d(nchannels::Int;
             epsilion::AbstractFloat=1e-10,
             momentum::AbstractFloat=0.900,
             type::Type=Array{Float32})
