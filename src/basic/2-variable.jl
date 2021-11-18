@@ -211,6 +211,7 @@ export clone
 export need2computeδ!
 export ifNotKeepδThenFreeδ!
 export elsizeof
+export value, delta
 
 export XVariable, VarOrNil
 const  XVariable = Tuple{Char, Variable}
@@ -230,3 +231,10 @@ end
 
 
 elsizeof(x::Variable) = sizeof(eltype(x))
+
+
+# lazy showing way of Variable's main vars
+@inline 𝐕(x::Variable) = x.value
+@inline 𝐃(x::Variable) = x.delta
+@inline value(x::Variable) = x.value
+@inline delta(x::Variable) = x.delta
