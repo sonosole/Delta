@@ -88,8 +88,8 @@ function forward(b::ZNorm, x::Variable{T}) where T
     ϵ = b.epsilion
     ρ = b.momentum
     v = b.views
-    μ = Statistics.mean(x.value, dims=v)
-    σ =  Statistics.std(x.value, dims=v, mean=μ, corrected=false)
+    μ = mean(x.value, dims=v)
+    σ =  std(x.value, dims=v, mean=μ, corrected=false)
     𝐗 = (x.value .- μ) ./ (σ .+ ϵ)
     y = Variable{T}(𝐗 .* γ.value .+ β.value, x.backprop)
 
