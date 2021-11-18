@@ -5,5 +5,6 @@ export Normalizer
 export MeanNorm
 include("./MeanNorm.jl")
 
-export ZNorm, BatchNorm1d, BatchNorm0d
+export ZNorm
+export BatchNorm0d, BatchNorm1d
 include("./ZNorm.jl")
