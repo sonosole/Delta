@@ -13,11 +13,13 @@ export matMulVec
 
 function Base.:+(x::Variable{T}, constant) where T
     # a matrix add a constant element by element
-    C = eltype(x.value)(constant)
-    y = Variable{T}(x.value .+ C, x.backprop)
+    C = eltype(ᵛ(x))(constant)
+    y = Variable{T}(ᵛ(x) .+ C, x.backprop)
     if x.backprop
         function matAddScalarBackward()
-            if need2computeδ!(x) x.delta += y.delta end
+            if need2computeδ!(x)
+                δ(x) .+= δ(y)
+            end
             ifNotKeepδThenFreeδ!(y);
         end
         push!(graph.backward, matAddScalarBackward)
@@ -33,11 +35,13 @@ end
 
 function Base.:-(x::Variable{T}, constant) where T
     # a matrix minus a constant element by element
-    C = eltype(x.value)(constant)
-    y = Variable{T}(x.value .- C, x.backprop)
+    C = eltype(ᵛ(x))(constant)
+    y = Variable{T}(ᵛ(x) .- C, x.backprop)
     if x.backprop
         function matMinusScalarBackward()
-            if need2computeδ!(x) x.delta += y.delta end
+            if need2computeδ!(x)
+                δ(x) .+= δ(y)
+            end
             ifNotKeepδThenFreeδ!(y);
         end
         push!(graph.backward, matMinusScalarBackward)
@@ -48,11 +52,13 @@ end
 
 function Base.:-(constant, x::Variable{T}) where T
     # a matrix minus a constant element by element
-    C = eltype(x.value)(constant)
-    y = Variable{T}(C .- x.value, x.backprop)
+    C = eltype(ᵛ(x))(constant)
+    y = Variable{T}(C .- ᵛ(x), x.backprop)
     if x.backprop
         function scalarMinusMatBackward()
-            if need2computeδ!(x) x.delta -= y.delta end
+            if need2computeδ!(x)
+                δ(x) .-= δ(y)
+            end
             ifNotKeepδThenFreeδ!(y);
         end
         push!(graph.backward, scalarMinusMatBackward)
@@ -63,11 +69,13 @@ end
 
 function Base.:*(x::Variable{T}, constant) where T
     # a matrix multiplies a constant element by element
-    C = eltype(x.value)(constant)
-    y = Variable{T}(x.value .* C, x.backprop)
+    C = eltype(ᵛ(x))(constant)
+    y = Variable{T}(ᵛ(x) .* C, x.backprop)
     if x.backprop
         function matMulScalarBackward()
-            if need2computeδ!(x) x.delta += y.delta .* constant end
+            if need2computeδ!(x)
+                δ(x) .+= δ(y) .* constant
+            end
             ifNotKeepδThenFreeδ!(y);
         end
         push!(graph.backward, matMulScalarBackward)
@@ -83,12 +91,12 @@ end
 
 function Base.:^(x::Variable{T}, n::Int) where T
     # 矩阵、列向量与常数按元素做幂指数运算
-    n = eltype(x.value)(n)
-    y = Variable{T}(x.value .^ n, x.backprop)
+    n = eltype(ᵛ(x))(n)
+    y = Variable{T}(ᵛ(x) .^ n, x.backprop)
     if x.backprop
         function powerBackward()
             if need2computeδ!(x)
-                x.delta += n .* y.value ./ x.value .* y.delta;
+                δ(x) .+= n .* ᵛ(y) ./ ᵛ(x) .* δ(y);
             end
             ifNotKeepδThenFreeδ!(y);
         end
@@ -104,11 +112,11 @@ function Base.:+(x::Variable{T1}, y::Variable{T2}) where {T1,T2}
    T = T1 <: T2 ? T1 : T2
    @assert (x.shape == y.shape) "2 inputs shall be the same size"
    backprop = (x.backprop || y.backprop)
-   z = Variable{T}(x.value + y.value, backprop)
+   z = Variable{T}(ᵛ(x) + ᵛ(y), backprop)
    if backprop
        function add2varBackward()
-           if need2computeδ!(x) x.delta += z.delta end
-           if need2computeδ!(y) y.delta += z.delta end
+           if need2computeδ!(x) δ(x) .+= δ(z) end
+           if need2computeδ!(y) δ(y) .+= δ(z) end
            ifNotKeepδThenFreeδ!(z);
        end
        push!(graph.backward, add2varBackward)
@@ -123,11 +131,11 @@ function Base.:-(x::Variable{T1}, y::Variable{T2}) where {T1,T2}
     T = T1 <: T2 ? T1 : T2
     @assert (x.shape == y.shape) "2 inputs shall be the same size"
     backprop = (x.backprop || y.backprop)
-    z = Variable{T}(x.value - y.value, backprop)
+    z = Variable{T}(ᵛ(x) - ᵛ(y), backprop)
     if backprop
         function minus2varBackward()
-            if need2computeδ!(x) x.delta += z.delta end
-            if need2computeδ!(y) y.delta -= z.delta end
+            if need2computeδ!(x) δ(x) .+= δ(z) end
+            if need2computeδ!(y) δ(y) .-= δ(z) end
             ifNotKeepδThenFreeδ!(z);
         end
         push!(graph.backward, minus2varBackward)
@@ -146,11 +154,11 @@ function dotAdd(x::Variable{T1}, y::Variable{T2}) where {T1,T2}
     T = T1 <: T2 ? T1 : T2
     @assert (x.shape == y.shape) "2 inputs shall be the same size"
     backprop = (x.backprop || y.backprop)
-    z = Variable{T}(x.value .+ y.value, backprop)
+    z = Variable{T}(ᵛ(x) .+ ᵛ(y), backprop)
     if backprop
         function dotAddBackward()
-            if need2computeδ!(x) x.delta += z.delta end
-            if need2computeδ!(y) y.delta += z.delta end
+            if need2computeδ!(x) δ(x) .+= δ(z) end
+            if need2computeδ!(y) δ(y) .+= δ(z) end
             ifNotKeepδThenFreeδ!(z);
         end
         push!(graph.backward, dotAddBackward)
@@ -169,11 +177,11 @@ function dotMul(x::Variable{T1}, y::Variable{T2}) where {T1,T2}
     T = T1 <: T2 ? T1 : T2
     @assert (x.shape == y.shape) "2 inputs shall be the same size"
     backprop = (x.backprop || y.backprop)
-    z = Variable{T}(x.value .* y.value, backprop)
+    z = Variable{T}(ᵛ(x) .* ᵛ(y), backprop)
     if backprop
         function dotMulBackward()
-            if need2computeδ!(x) x.delta += z.delta .* y.value end
-            if need2computeδ!(y) y.delta += z.delta .* x.value end
+            if need2computeδ!(x) δ(x) .+= δ(z) .* ᵛ(y) end
+            if need2computeδ!(y) δ(y) .+= δ(z) .* ᵛ(x) end
             ifNotKeepδThenFreeδ!(z);
         end
         push!(graph.backward, dotMulBackward)
@@ -191,11 +199,11 @@ function Base.:*(W::Variable{T1}, X::Variable{T2}) where {T1,T2}
     @assert T1 <: T2 || T1 >: T2
     T = T1 <: T2 ? T1 : T2
     backprop = (W.backprop || X.backprop)
-    Y = Variable{T}(W.value * X.value, backprop)
+    Y = Variable{T}(ᵛ(W) * ᵛ(X), backprop)
     if backprop
         function matMulBackward()
-            if need2computeδ!(W) W.delta += Y.delta  * X.value' end
-            if need2computeδ!(X) X.delta += W.value' * Y.delta  end
+            if need2computeδ!(W) δ(W) .+= δ(Y)  * ᵛ(X)' end
+            if need2computeδ!(X) δ(X) .+= ᵛ(W)' * δ(Y)  end
             ifNotKeepδThenFreeδ!(Y);
         end
         push!(graph.backward, matMulBackward)
@@ -216,14 +224,14 @@ function matAddVec(M::Variable{T1}, V::Variable{T2}) where {T1,T2}
     T = T1 <: T2 ? T1 : T2
     @assert (M.shape[1]==V.shape[1] && V.shape[2]==1)
     backprop = (M.backprop || V.backprop)
-    Z = Variable{T}(M.value .+ V.value, backprop)
+    Z = Variable{T}(ᵛ(M) .+ ᵛ(V), backprop)
     if backprop
         function matAddVecBackward()
             if need2computeδ!(M)
-                M.delta += Z.delta
+                δ(M) .+= δ(Z)
             end
             if need2computeδ!(V)
-                V.delta += sum(Z.delta, dims=2)
+                δ(V) .+= sum(δ(Z), dims=2)
             end
             ifNotKeepδThenFreeδ!(Z);
         end
@@ -245,11 +253,11 @@ function matMulVec(M::Variable{T1}, V::Variable{T2}) where {T1,T2}
     T = T1 <: T2 ? T1 : T2
     @assert (M.shape[1]==V.shape[1] && V.shape[2]==1)
     backprop = (M.backprop || V.backprop)
-    Z = Variable{T}(M.value .* V.value, backprop)
+    Z = Variable{T}(ᵛ(M) .* ᵛ(V), backprop)
     if backprop
         function matMulVecBackward()
-            if need2computeδ!(M) M.delta += Z.delta .* V.value end
-            if need2computeδ!(V) V.delta += sum(Z.delta .* M.value, dims=2) end
+            if need2computeδ!(M) δ(M) .+=     δ(Z) .* ᵛ(V)          end
+            if need2computeδ!(V) δ(V) .+= sum(δ(Z) .* ᵛ(M), dims=2) end
             ifNotKeepδThenFreeδ!(Z);
         end
         push!(graph.backward, matMulVecBackward)

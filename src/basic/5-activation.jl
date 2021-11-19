@@ -37,35 +37,35 @@ function relu(x::AbstractArray)
 end
 
 
-function relu!(var::Variable{T}) where T
-    out = Variable{T}(relu!(var.value), var.backprop)
-    if var.backprop
-        o2i = var.value .> 0.0
+function relu!(x::Variable{T}) where T
+    y = Variable{T}(relu!(x.value), x.backprop)
+    if x.backprop
+        ∇ = ᵛ(x) .> 0.0
         function reluBackward()
-            if need2computeδ!(var)
-                var.delta += out.delta .* o2i
+            if need2computeδ!(x)
+                δ(x) .+= δ(y) .* ∇
             end
-            ifNotKeepδThenFreeδ!(out);
+            ifNotKeepδThenFreeδ!(y);
         end
         push!(graph.backward, reluBackward)
     end
-    return out
+    return y
 end
 
 
-function relu(var::Variable{T}) where T
-    out = Variable{T}(relu(var.value), var.backprop)
-    if var.backprop
-        o2i = var.value .> 0.0
+function relu(x::Variable{T}) where T
+    y = Variable{T}(relu(ᵛ(x)), x.backprop)
+    if x.backprop
+        ∇ = ᵛ(x) .> 0.0
         function reluBackward()
-            if need2computeδ!(var)
-                var.delta += out.delta .* o2i
+            if need2computeδ!(x)
+                δ(x) .+= δ(y) .* ∇
             end
-            ifNotKeepδThenFreeδ!(out);
+            ifNotKeepδThenFreeδ!(y);
         end
         push!(graph.backward, reluBackward)
     end
-    return out
+    return y
 end
 
 export relu1, relu1!
@@ -83,35 +83,35 @@ function relu1(x::AbstractArray)
 end
 
 
-function relu1!(var::Variable{T}) where T
-    out = Variable{T}(relu1!(var.value), var.backprop)
-    if var.backprop
-        o2i = 0.0 .< var.value .< 1.0
+function relu1!(x::Variable{T}) where T
+    y = Variable{T}(relu1!(ᵛ(x)), x.backprop)
+    if x.backprop
+        ∇ = 0.0 .< ᵛ(x) .< 1.0
         function relu1Backward()
-            if need2computeδ!(var)
-                var.delta += out.delta .* o2i
+            if need2computeδ!(x)
+                δ(x) .+= δ(y) .* ∇
             end
-            ifNotKeepδThenFreeδ!(out);
+            ifNotKeepδThenFreeδ!(y);
         end
         push!(graph.backward, relu1Backward)
     end
-    return out
+    return y
 end
 
 
-function relu1(var::Variable{T}) where T
-    out = Variable{T}(relu1(var.value), var.backprop)
-    if var.backprop
-        o2i = 0.0 .< var.value .< 1.0
+function relu1(x::Variable{T}) where T
+    y = Variable{T}(relu1(ᵛ(x)), x.backprop)
+    if x.backprop
+        ∇ = 0.0 .< ᵛ(x) .< 1.0
         function relu1Backward()
-            if need2computeδ!(var)
-                var.delta += out.delta .* o2i
+            if need2computeδ!(x)
+                δ(x) .+= δ(y) .* ∇
             end
-            ifNotKeepδThenFreeδ!(out);
+            ifNotKeepδThenFreeδ!(y);
         end
         push!(graph.backward, relu1Backward)
     end
-    return out
+    return y
 end
 
 export relu6, relu6!
@@ -129,35 +129,35 @@ function relu6(x::AbstractArray)
 end
 
 
-function relu6!(var::Variable{T}) where T
-    out = Variable{T}(relu6!(var.value), var.backprop)
-    if var.backprop
-        o2i = 0.0 .< var.value .< 6.0
+function relu6!(x::Variable{T}) where T
+    y = Variable{T}(relu6!(ᵛ(x)), x.backprop)
+    if x.backprop
+        ∇ = 0.0 .< ᵛ(x) .< 6.0
         function relu1Backward()
-            if need2computeδ!(var)
-                var.delta += out.delta .* o2i
+            if need2computeδ!(x)
+                δ(x) .+= δ(y) .* ∇
             end
-            ifNotKeepδThenFreeδ!(out);
+            ifNotKeepδThenFreeδ!(y);
         end
         push!(graph.backward, relu1Backward)
     end
-    return out
+    return y
 end
 
 
-function relu6(var::Variable{T}) where T
-    out = Variable{T}(relu6(var.value), var.backprop)
-    if var.backprop
-        o2i = 0.0 .< var.value .< 6.0
+function relu6(x::Variable{T}) where T
+    y = Variable{T}(relu6(ᵛ(x)), x.backprop)
+    if x.backprop
+        ∇ = 0.0 .< ᵛ(x) .< 6.0
         function relu1Backward()
-            if need2computeδ!(var)
-                var.delta += out.delta .* o2i
+            if need2computeδ!(x)
+                δ(x) .+= δ(y) .* ∇
             end
-            ifNotKeepδThenFreeδ!(out);
+            ifNotKeepδThenFreeδ!(y);
         end
         push!(graph.backward, relu1Backward)
     end
-    return out
+    return y
 end
 
 export line, line!
@@ -175,36 +175,36 @@ function line(x::AbstractArray)
 end
 
 
-function line!(var::Variable{T}) where T
-    o2i = -1.0 .< var.value .< 1.0
-    var.value .*= o2i
-    out = Variable{T}(var.value, var.backprop)
-    if var.backprop
+function line!(x::Variable{T}) where T
+    ∇ = -1.0 .< ᵛ(x) .< 1.0
+    ᵛ(x) .*= ∇
+    y = Variable{T}(ᵛ(x), x.backprop)
+    if x.backprop
         function lineBackward()
-            if need2computeδ!(var)
-                var.delta += out.delta .* o2i
+            if need2computeδ!(x)
+                δ(x) .+= δ(y) .* ∇
             end
-            ifNotKeepδThenFreeδ!(out);
+            ifNotKeepδThenFreeδ!(y);
         end
         push!(graph.backward, lineBackward)
     end
-    return out
+    return y
 end
 
 
-function line(var::Variable{T}) where T
-    o2i = -1.0 .< var.value .< 1.0
-    out = Variable{T}(var.value .* o2i, var.backprop)
-    if var.backprop
+function line(x::Variable{T}) where T
+    ∇ = -1.0f0 .< ᵛ(x) .< 1.0f0
+    y = Variable{T}(ᵛ(x) .* ∇, x.backprop)
+    if x.backprop
         function lineBackward()
-            if need2computeδ!(var)
-                var.delta += out.delta .* o2i
+            if need2computeδ!(x)
+                δ(x) .+= δ(y) .* ∇
             end
-            ifNotKeepδThenFreeδ!(out);
+            ifNotKeepδThenFreeδ!(y);
         end
         push!(graph.backward, lineBackward)
     end
-    return out
+    return y
 end
 
 
@@ -226,35 +226,35 @@ function hardtanh(x::AbstractArray)
 end
 
 
-function hardtanh!(var::Variable{T}) where T
-    out = Variable{T}(hardtanh!(var.value), var.backprop)
-    if var.backprop
-        o2i = abs(var.value) .< 1.0
+function hardtanh!(x::Variable{T}) where T
+    y = Variable{T}(hardtanh!(ᵛ(x)), x.backprop)
+    if x.backprop
+        ∇ = abs(ᵛ(x)) .< 1.0f0
         function hardtanhBackward()
-            if need2computeδ!(var)
-                var.delta += out.delta .* o2i
+            if need2computeδ!(x)
+                δ(x) .+= δ(y) .* ∇
             end
-            ifNotKeepδThenFreeδ!(out);
+            ifNotKeepδThenFreeδ!(y);
         end
         push!(graph.backward, hardtanhBackward)
     end
-    return out
+    return y
 end
 
 
-function hardtanh(var::Variable{T}) where T
-    out = Variable{T}(hardtanh(var.value), var.backprop)
-    if var.backprop
-        o2i = abs(var.value) .< 1.0
+function hardtanh(x::Variable{T}) where T
+    y = Variable{T}(hardtanh(ᵛ(x)), x.backprop)
+    if x.backprop
+        ∇ = abs(ᵛ(x)) .< 1.0
         function hardtanhBackward()
-            if need2computeδ!(var)
-                var.delta += out.delta .* o2i
+            if need2computeδ!(x)
+                δ(x) .+= δ(y) .* ∇
             end
-            ifNotKeepδThenFreeδ!(out);
+            ifNotKeepδThenFreeδ!(y);
         end
         push!(graph.backward, hardtanhBackward)
     end
-    return out
+    return y
 end
 
 
@@ -272,42 +272,42 @@ function leakyrelu(x::AbstractArray)
 end
 
 
-function leakyrelu!(var::Variable{T}) where T
-    ZPONE = eltype(var)(0.1)
-    tempv = var.value .* ZPONE
-    @. var.value = max(var.value, tempv)
-    out = Variable{T}(var.value, var.backprop)
-    if var.backprop
-        mask1 = var.value .> tempv
+function leakyrelu!(x::Variable{T}) where T
+    ZPONE = eltype(x)(0.1)
+    tempv = ᵛ(x) .* ZPONE
+    ᵛ(x) .= max.(ᵛ(x), tempv)
+    y = Variable{T}(ᵛ(x), x.backprop)
+    if x.backprop
+        mask1 = ᵛ(x) .> tempv
         mask2 = .!mask1
         function leakyreluBackward()
-            if need2computeδ!(var)
-                var.delta = (mask1 + ZPONE .* mask2) .* out.delta
+            if need2computeδ!(x)
+                δ(x) .+= (mask1 .+ ZPONE .* mask2) .* δ(y)
             end
-            ifNotKeepδThenFreeδ!(out);
+            ifNotKeepδThenFreeδ!(y);
         end
         push!(graph.backward, leakyreluBackward)
     end
-    return out
+    return y
 end
 
 
-function leakyrelu(var::Variable{T}) where T
-    ZPONE = eltype(var)(0.1)
-    tempv = var.value .* ZPONE
-    mask1 = var.value .> tempv
+function leakyrelu(x::Variable{T}) where T
+    ZPONE = eltype(x)(0.1)
+    tempv = ᵛ(x) .* ZPONE
+    mask1 = ᵛ(x) .> tempv
     mask2 = .!mask1
-    out  = Variable{T}(max.(tempv, var.value), var.backprop)
-    if var.backprop
+    y = Variable{T}(max.(tempv, ᵛ(x)), x.backprop)
+    if x.backprop
         function leakyreluBackward()
-            if need2computeδ!(var)
-                var.delta = (mask1 + ZPONE .* mask2) .* out.delta
+            if need2computeδ!(x)
+                δ(x) .+= (mask1 + ZPONE .* mask2) .* δ(y)
             end
-            ifNotKeepδThenFreeδ!(out);
+            ifNotKeepδThenFreeδ!(y);
         end
         push!(graph.backward, leakyreluBackward)
     end
-    return out
+    return y
 end
 
 
@@ -325,35 +325,35 @@ function sigmoid(x::AbstractArray)
 end
 
 
-function sigmoid!(var::Variable{T}) where T
-    out = Variable{T}(sigmoid!(var.value), var.backprop)
-    if var.backprop
-        ONE = eltype(var)(1.0)
+function sigmoid!(x::Variable{T}) where T
+    y = Variable{T}(sigmoid!(ᵛ(x)), x.backprop)
+    if x.backprop
+        ONE = eltype(x)(1)
         function sigmoidBackward()
-            if need2computeδ!(var)
-                var.delta += out.value .* (ONE .- out.value) .* out.delta
+            if need2computeδ!(x)
+                δ(x) .+= ᵛ(y) .* (ONE .- ᵛ(y)) .* δ(y)
             end
-            ifNotKeepδThenFreeδ!(out);
+            ifNotKeepδThenFreeδ!(y);
         end
         push!(graph.backward, sigmoidBackward)
     end
-    return out
+    return y
 end
 
 
-function sigmoid(var::Variable{T}) where T
-    out = Variable{T}(sigmoid(var.value), var.backprop)
-    if var.backprop
-        ONE = eltype(var)(1.0)
+function sigmoid(x::Variable{T}) where T
+    y = Variable{T}(sigmoid(ᵛ(x)), x.backprop)
+    if x.backprop
+        ONE = eltype(x)(1.0)
         function sigmoidBackward()
-            if need2computeδ!(var)
-                var.delta += out.value .* (ONE .- out.value) .* out.delta
+            if need2computeδ!(x)
+                δ(x) .+= ᵛ(y) .* (ONE .- ᵛ(y)) .* δ(y)
             end
-            ifNotKeepδThenFreeδ!(out);
+            ifNotKeepδThenFreeδ!(y);
         end
         push!(graph.backward, sigmoidBackward)
     end
-    return out
+    return y
 end
 
 
@@ -371,45 +371,45 @@ function swish(x::AbstractArray)
 end
 
 
-function swish!(var::Variable{T}) where T
-    return dotMul(sigmoid(var), var)
+function swish!(x::Variable{T}) where T
+    return dotMul(sigmoid(x), x)
 end
 
 
-function swish(var::Variable{T}) where T
-    return dotMul(sigmoid(var), var)
+function swish(x::Variable{T}) where T
+    return dotMul(sigmoid(x), x)
 end
 
 
 export softmax
 
 function softmax(x::AbstractArray; dims::Union{Int,NTuple{N,Int}}) where N
-    out = exp.(x .- maximum(x, dims=dims))
-    SUM = eltype(x)(1.0) ./ sum(out, dims=dims)
-    return out .* SUM
+    y = exp.(x .- maximum(x, dims=dims))
+    SUM = eltype(x)(1.0) ./ sum(y, dims=dims)
+    return y .* SUM
 end
 
 
-function softmax(var::Variable{T}; dims::Union{Int,NTuple{N,Int}}) where {T,N}
-    out = Variable{T}(softmax(var.value; dims=dims), var.backprop)
-    if var.backprop
+function softmax(x::Variable{T}; dims::Union{Int,NTuple{N,Int}}) where {T,N}
+    y = Variable{T}(softmax(ᵛ(x); dims=dims), x.backprop)
+    if x.backprop
         function softmaxBackward()
-            if need2computeδ!(var)
-                ẏy = out.delta .* out.value;
-                var.delta += ẏy .- out.value .* sum(ẏy, dims=dims);
+            if need2computeδ!(x)
+                ẏy = δ(y) .* ᵛ(y);
+                δ(x) .+= ẏy .- ᵛ(y) .* sum(ẏy, dims=dims);
             end
-            ifNotKeepδThenFreeδ!(out);
+            ifNotKeepδThenFreeδ!(y);
         end
         push!(graph.backward, softmaxBackward)
     end
-    return out
+    return y
 end
 
 
 # -----------------
 # 不常用激活函数....
 # -----------------
-export softplus, softplus! 
+export softplus, softplus!
 function softplus!(x::AbstractArray)
     @. x = log(1.0 + exp(x))
 end
@@ -421,97 +421,97 @@ function softplus(x::AbstractArray)
 end
 
 
-function softplus!(var::Variable{T}) where T
-    out = Variable{T}(softplus(var.value), var.backprop)
-    if var.backprop
-        ONE = eltype(var)(1.0)
+function softplus!(x::Variable{T}) where T
+    y = Variable{T}(softplus(ᵛ(x)), x.backprop)
+    if x.backprop
+        ONE = eltype(x)(1.0)
         function softplusBackward()
-            if need2computeδ!(var)
-                var.delta += out.delta ./ (ONE .+ exp.(-var.value))
+            if need2computeδ!(x)
+                δ(x) .+= δ(y) ./ (ONE .+ exp.( - ᵛ(x) ))
             end
-            ifNotKeepδThenFreeδ!(out);
+            ifNotKeepδThenFreeδ!(y);
         end
         push!(graph.backward, softplusBackward)
     end
-    return out
+    return y
 end
 
 
-function softplus(var::Variable{T}) where T
-    out = Variable{T}(softplus(var.value), var.backprop)
-    if var.backprop
-        ONE = eltype(var)(1.0)
+function softplus(x::Variable{T}) where T
+    y = Variable{T}(softplus(ᵛ(x)), x.backprop)
+    if x.backprop
+        ONE = eltype(x)(1.0)
         function softplusBackward()
-            if need2computeδ!(var)
-                var.delta += out.delta ./ (ONE .+ exp.(-var.value))
+            if need2computeδ!(x)
+                δ(x) .+= δ(y) ./ (ONE .+ exp.( - ᵛ(x) ))
             end
-            ifNotKeepδThenFreeδ!(out);
+            ifNotKeepδThenFreeδ!(y);
         end
         push!(graph.backward, softplusBackward)
     end
-    return out
+    return y
 end
 
 
-export exp! 
-function exp!(var::Variable{T}) where T
-    out = Variable{T}(exp!(var.value), var.backprop)
-    if var.backprop
+export exp!
+function exp!(x::Variable{T}) where T
+    y = Variable{T}(exp!(ᵛ(x)), x.backprop)
+    if x.backprop
         function expBackward()
-            if need2computeδ!(var)
-                var.delta += out.value .* out.delta
+            if need2computeδ!(x)
+                δ(x) .+= ᵛ(y) .* δ(y)
             end
-            ifNotKeepδThenFreeδ!(out);
+            ifNotKeepδThenFreeδ!(y);
         end
         push!(graph.backward, expBackward)
     end
-    return out
+    return y
 end
 
 
-function Base.:exp(var::Variable{T}) where T
-    out = Variable{T}(exp(var.value), var.backprop)
-    if var.backprop
+function Base.:exp(x::Variable{T}) where T
+    y = Variable{T}(exp(ᵛ(x)), x.backprop)
+    if x.backprop
         function expBackward()
-            if need2computeδ!(var)
-                var.delta += out.value .* out.delta
+            if need2computeδ!(x)
+                δ(x) .+= ᵛ(y) .* δ(y)
             end
-            ifNotKeepδThenFreeδ!(out);
+            ifNotKeepδThenFreeδ!(y);
         end
         push!(graph.backward, expBackward)
     end
-    return out
+    return y
 end
 
 
 export log!
-function log!(var::Variable{T}) where T
-    out = Variable{T}(log(var.value), var.backprop)
-    if var.backprop
+function log!(x::Variable{T}) where T
+    y = Variable{T}(log(ᵛ(x)), x.backprop)
+    if x.backprop
         function logBackward()
-            if need2computeδ!(var)
-                var.delta += out.delta ./ var.value
+            if need2computeδ!(x)
+                δ(x) .+= δ(y) ./ ᵛ(x)
             end
-            ifNotKeepδThenFreeδ!(out);
+            ifNotKeepδThenFreeδ!(y);
         end
         push!(graph.backward, logBackward)
     end
-    return out
+    return y
 end
 
 
-function Base.:log(var::Variable{T}) where T
-    out = Variable{T}(log(var.value), var.backprop)
-    if var.backprop
+function Base.:log(x::Variable{T}) where T
+    y = Variable{T}(log(ᵛ(x)), x.backprop)
+    if x.backprop
         function logBackward()
-            if need2computeδ!(var)
-                var.delta += out.delta ./ var.value
+            if need2computeδ!(x)
+                δ(x) .+= δ(y) ./ ᵛ(x)
             end
-            ifNotKeepδThenFreeδ!(out);
+            ifNotKeepδThenFreeδ!(y);
         end
         push!(graph.backward, logBackward)
     end
-    return out
+    return y
 end
 
 
@@ -526,48 +526,48 @@ function Base.:abs(x::AbstractArray)
 end
 
 
-function abs!(var::Variable{T}) where T
-    out = Variable{T}(abs(var.value), var.backprop)
-    if var.backprop
+function abs!(x::Variable{T}) where T
+    y = Variable{T}(abs(ᵛ(x)), x.backprop)
+    if x.backprop
         function absBackward()
-            if need2computeδ!(var)
-                var.delta += sign.(var.value) .* out.delta
+            if need2computeδ!(x)
+                δ(x) .+= sign.(ᵛ(x)) .* δ(y)
             end
-            ifNotKeepδThenFreeδ!(out);
+            ifNotKeepδThenFreeδ!(y);
         end
         push!(graph.backward, absBackward)
     end
-    return out
+    return y
 end
 
 
-function Base.:abs(var::Variable{T}) where T
-    out = Variable{T}(abs(var.value), var.backprop)
-    if var.backprop
+function Base.:abs(x::Variable{T}) where T
+    y = Variable{T}(abs(ᵛ(x)), x.backprop)
+    if x.backprop
         function absBackward()
-            if need2computeδ!(var)
-                var.delta += sign.(var.value) .* out.delta
+            if need2computeδ!(x)
+                δ(x) .+= sign.(ᵛ(x)) .* δ(y)
             end
-            ifNotKeepδThenFreeδ!(out);
+            ifNotKeepδThenFreeδ!(y);
         end
         push!(graph.backward, absBackward)
     end
-    return out
+    return y
 end
 
 
-function Base.:reshape(var::Variable{T}, newsize) where T
-    out = Variable{T}( reshape(var.value, newsize), var.backprop )
-    if var.backprop
+function Base.:reshape(x::Variable{T}, newsize) where T
+    y = Variable{T}( reshape(ᵛ(x), newsize), x.backprop )
+    if x.backprop
         function reshapeBackward()
-            if need2computeδ!(var)
-                var.delta += reshape(out.delta, var.shape)
+            if need2computeδ!(x)
+                δ(x) .+= reshape(δ(y), x.shape)
             end
-            ifNotKeepδThenFreeδ!(out);
+            ifNotKeepδThenFreeδ!(y);
         end
         push!(graph.backward, reshapeBackward)
     end
-    return out
+    return y
 end
 
 
@@ -581,37 +581,37 @@ function Base.:exp2(x::AbstractArray)
 end
 
 
-function exp2!(var::Variable{T}) where T
+function exp2!(x::Variable{T}) where T
     # exp2 represents y = 2^x
-    out = Variable{T}(exp2!(var.value), var.backprop)
-    if var.backprop
-        TWO = eltype(var)(2.0)
+    y = Variable{T}(exp2!(ᵛ(x)), x.backprop)
+    if x.backprop
+        TWO = eltype(x)(2)
         function exp2Backward()
-            if need2computeδ!(var)
-                var.delta += log(TWO) .* out.value .* out.delta
+            if need2computeδ!(x)
+                δ(x) .+= log(TWO) .* ᵛ(y) .* δ(y)
             end
-            ifNotKeepδThenFreeδ!(out);
+            ifNotKeepδThenFreeδ!(y);
         end
         push!(graph.backward, exp2Backward)
     end
-    return out
+    return y
 end
 
 
-function Base.:exp2(var::Variable{T}) where T
+function Base.:exp2(x::Variable{T}) where T
     # EXP2 represents y = 2^x
-    out = Variable{T}(exp2(var.value), var.backprop)
-    if var.backprop
-        TWO = eltype(var)(2.0)
+    y = Variable{T}(exp2(ᵛ(x)), x.backprop)
+    if x.backprop
+        TWO = eltype(x)(2)
         function exp2Backward()
-            if need2computeδ!(var)
-                var.delta += log(TWO) .* out.value .* out.delta
+            if need2computeδ!(x)
+                δ(x) .+= log(TWO) .* ᵛ(y) .* δ(y)
             end
-            ifNotKeepδThenFreeδ!(out);
+            ifNotKeepδThenFreeδ!(y);
         end
         push!(graph.backward, exp2Backward)
     end
-    return out
+    return y
 end
 
 
@@ -625,37 +625,37 @@ function Base.:exp10(x::AbstractArray)
 end
 
 
-function exp10!(var::Variable{T}) where T
+function exp10!(x::Variable{T}) where T
     # EXP10 represents y = 10^x
-    out = Variable{T}(exp10!(var.value), var.backprop)
-    if var.backprop
-        TEN = eltype(var)(10.0)
+    y = Variable{T}(exp10!(ᵛ(x)), x.backprop)
+    if x.backprop
+        TEN = eltype(x)(10)
         function exp10Backward()
-            if need2computeδ!(var)
-                var.delta += log(TEN) .* out.value .* out.delta
+            if need2computeδ!(x)
+                δ(x) .+= log(TEN) .* ᵛ(y) .* δ(y)
             end
-            ifNotKeepδThenFreeδ!(out);
+            ifNotKeepδThenFreeδ!(y);
         end
         push!(graph.backward, exp10Backward)
     end
-    return out
+    return y
 end
 
 
-function Base.:exp10(var::Variable{T}) where T
+function Base.:exp10(x::Variable{T}) where T
     # EXP10 represents y = 10^x
-    out = Variable{T}(exp10(var.value), var.backprop)
-    if var.backprop
-        TEN = eltype(var)(10.0)
+    y = Variable{T}(exp10(ᵛ(x)), x.backprop)
+    if x.backprop
+        TEN = eltype(x)(10)
         function exp10Backward()
-            if need2computeδ!(var)
-                var.delta += log(TEN) .* out.value .* out.delta
+            if need2computeδ!(x)
+                δ(x) .+= log(TEN) .* ᵛ(y) .* δ(y)
             end
-            ifNotKeepδThenFreeδ!(out);
+            ifNotKeepδThenFreeδ!(y);
         end
         push!(graph.backward, exp10Backward)
     end
-    return out
+    return y
 end
 
 
@@ -669,35 +669,35 @@ function Base.:log2(x::AbstractArray)
 end
 
 
-function log2!(var::Variable{T}) where T
-    out = Variable{T}(log2(var.value), var.backprop)
-    if var.backprop
-        TWO = eltype(var)(2.0)
+function log2!(x::Variable{T}) where T
+    y = Variable{T}(log2(ᵛ(x)), x.backprop)
+    if x.backprop
+        TWO = eltype(x)(2)
         function log2Backward()
-            if need2computeδ!(var)
-                var.delta += out.delta ./ (log(TWO) .* var.value)
+            if need2computeδ!(x)
+                δ(x) .+= δ(y) ./ (log(TWO) .* ᵛ(x))
             end
-            ifNotKeepδThenFreeδ!(out);
+            ifNotKeepδThenFreeδ!(y);
         end
         push!(graph.backward, log2Backward)
     end
-    return out
+    return y
 end
 
 
-function Base.:log2(var::Variable{T}) where T
-    out = Variable{T}(log2(var.value), var.backprop)
-    if var.backprop
-        TWO = eltype(var)(2.0)
+function Base.:log2(x::Variable{T}) where T
+    y = Variable{T}(log2(ᵛ(x)), x.backprop)
+    if x.backprop
+        TWO = eltype(x)(2)
         function log2Backward()
-            if need2computeδ!(var)
-                var.delta += out.delta ./ (log(TWO) .* var.value)
+            if need2computeδ!(x)
+                δ(x) .+= δ(y) ./ (log(TWO) .* ᵛ(x))
             end
-            ifNotKeepδThenFreeδ!(out);
+            ifNotKeepδThenFreeδ!(y);
         end
         push!(graph.backward, log2Backward)
     end
-    return out
+    return y
 end
 
 
@@ -711,141 +711,141 @@ function Base.:log10(x::AbstractArray)
 end
 
 
-function log10!(var::Variable{T}) where T
-    out = Variable{T}(log10(var.value), var.backprop)
-    if var.backprop
-        TEN = eltype(var)(10.0)
+function log10!(x::Variable{T}) where T
+    y = Variable{T}(log10(ᵛ(x)), x.backprop)
+    if x.backprop
+        TEN = eltype(x)(10)
         function log10Backward()
-            if need2computeδ!(var)
-                var.delta += out.delta ./ (log(TEN) .* var.value)
+            if need2computeδ!(x)
+                δ(x) .+= δ(y) ./ (log(TEN) .* ᵛ(x))
             end
-            ifNotKeepδThenFreeδ!(out);
+            ifNotKeepδThenFreeδ!(y);
         end
         push!(graph.backward, log10Backward)
     end
-    return out
+    return y
 end
 
 
-function Base.:log10(var::Variable{T}) where T
-    out = Variable{T}(log10(var.value), var.backprop)
-    if var.backprop
-        TEN = eltype(var)(10.0)
+function Base.:log10(x::Variable{T}) where T
+    y = Variable{T}(log10(ᵛ(x)), x.backprop)
+    if x.backprop
+        TEN = eltype(x)(10)
         function log10Backward()
-            if need2computeδ!(var)
-                var.delta += out.delta ./ (log(TEN) .* var.value)
+            if need2computeδ!(x)
+                δ(x) .+= δ(y) ./ (log(TEN) .* ᵛ(x))
             end
-            ifNotKeepδThenFreeδ!(out);
+            ifNotKeepδThenFreeδ!(y);
         end
         push!(graph.backward, log10Backward)
     end
-    return out
+    return y
 end
 
 
-function sec!(var::Variable{T}) where T
+function sec!(x::Variable{T}) where T
     # SEC represents y = sec(x)
-    out = Variable{T}(sec(var.value), var.backprop)
-    if var.backprop
+    y = Variable{T}(sec(ᵛ(x)), x.backprop)
+    if x.backprop
         function secBackward()
-            if need2computeδ!(var)
-                var.delta += out.delta .* out.value .* tan.(var.value)
+            if need2computeδ!(x)
+                δ(x) .+= δ(y) .* ᵛ(y) .* tan.(ᵛ(x))
             end
-            ifNotKeepδThenFreeδ!(out);
+            ifNotKeepδThenFreeδ!(y);
         end
         push!(graph.backward, secBackward)
     end
-    return out
+    return y
 end
 
 
-function Base.:sec(var::Variable{T}) where T
+function Base.:sec(x::Variable{T}) where T
     # SEC represents y = sec(x)
-    out = Variable{T}(sec(var.value), var.backprop)
-    if var.backprop
+    y = Variable{T}(sec(ᵛ(x)), x.backprop)
+    if x.backprop
         function secBackward()
-            if need2computeδ!(var)
-                var.delta += out.delta .* out.value .* tan.(var.value)
+            if need2computeδ!(x)
+                δ(x) .+= δ(y) .* ᵛ(y) .* tan.(ᵛ(x))
             end
-            ifNotKeepδThenFreeδ!(out);
+            ifNotKeepδThenFreeδ!(y);
         end
         push!(graph.backward, secBackward)
     end
-    return out
+    return y
 end
 
 
-function sqrt!(var::Variable{T}) where T
-    out = Variable{T}(sqrt!(var.value), var.backprop)
-    if var.backprop
-        TOO = eltype(var)
+function sqrt!(x::Variable{T}) where T
+    y = Variable{T}(sqrt!(ᵛ(x)), x.backprop)
+    if x.backprop
+        TOO = eltype(x)
         TWO = TOO(2.000)
         EPS = TOO(1e-38)
         function sqrtBackward()
-            if need2computeδ!(var)
-                var.delta += out.delta ./ (TWO .* (out.value .+ EPS))
+            if need2computeδ!(x)
+                δ(x) .+= δ(y) ./ (TWO .* (ᵛ(y) .+ EPS))
             end
-            ifNotKeepδThenFreeδ!(out);
+            ifNotKeepδThenFreeδ!(y);
         end
         push!(graph.backward, sqrtBackward)
     end
-    return out
+    return y
 end
 
 
-function Base.:sqrt(var::Variable{T}) where T
-    out = Variable{T}(sqrt(var.value), var.backprop)
-    if var.backprop
-        TOO = eltype(var)
+function Base.:sqrt(x::Variable{T}) where T
+    y = Variable{T}(sqrt(ᵛ(x)), x.backprop)
+    if x.backprop
+        TOO = eltype(x)
         TWO = TOO(2.000)
         EPS = TOO(1e-38)
         function sqrtBackward()
-            if need2computeδ!(var)
-                var.delta += out.delta ./ (TWO .* (out.value .+ EPS))
+            if need2computeδ!(x)
+                δ(x) .+= δ(y) ./ (TWO .* (ᵛ(y) .+ EPS))
             end
-            ifNotKeepδThenFreeδ!(out);
+            ifNotKeepδThenFreeδ!(y);
         end
         push!(graph.backward, sqrtBackward)
     end
-    return out
+    return y
 end
 
 
 # -- tan serials --
 export tan!
-function tan!(var::Variable{T}) where T
-    out = Variable{T}(tan!(var.value), var.backprop)
-    if var.backprop
-        TOO = eltype(var)
+function tan!(x::Variable{T}) where T
+    y = Variable{T}(tan!(ᵛ(x)), x.backprop)
+    if x.backprop
+        TOO = eltype(x)
         ONE = TOO(1.0)
         TWO = TOO(2.0)
         function tanBackward()
-            if need2computeδ!(var)
-                var.delta += (ONE .+ out.value.^TWO) .* out.delta
+            if need2computeδ!(x)
+                δ(x) .+= (ONE .+ ᵛ(y).^TWO) .* δ(y)
             end
-            ifNotKeepδThenFreeδ!(out);
+            ifNotKeepδThenFreeδ!(y);
         end
         push!(graph.backward, tanBackward)
     end
-    return out
+    return y
 end
 
 
-function Base.:tan(var::Variable{T}) where T
-    out = Variable{T}(tan(var.value), var.backprop)
-    if var.backprop
-        TOO = eltype(var)
+function Base.:tan(x::Variable{T}) where T
+    y = Variable{T}(tan(ᵛ(x)), x.backprop)
+    if x.backprop
+        TOO = eltype(x)
         ONE = TOO(1.0)
         TWO = TOO(2.0)
         function tanBackward()
-            if need2computeδ!(var)
-                var.delta += (ONE .+ out.value.^TWO) .* out.delta
+            if need2computeδ!(x)
+                δ(x) .+= (ONE .+ ᵛ(y).^TWO) .* δ(y)
             end
-            ifNotKeepδThenFreeδ!(out);
+            ifNotKeepδThenFreeδ!(y);
         end
         push!(graph.backward, tanBackward)
     end
-    return out
+    return y
 end
 
 
@@ -860,78 +860,78 @@ function Base.:tand(x::AbstractArray)
 end
 
 
-function tand!(var::Variable{T}) where T
-    out = Variable{T}(tand!(var.value), var.backprop)
-    if var.backprop
-        TOO = eltype(var)
+function tand!(x::Variable{T}) where T
+    y = Variable{T}(tand!(ᵛ(x)), x.backprop)
+    if x.backprop
+        TOO = eltype(x)
         ONE = TOO(1.0)
         TWO = TOO(2.0)
         DPI = TOO(pi/180)
         function tandBackward()
-            if need2computeδ!(var)
-                var.delta += DPI .* (ONE .+ out.value.^TWO) .* out.delta
+            if need2computeδ!(x)
+                δ(x) .+= DPI .* (ONE .+ ᵛ(y).^TWO) .* δ(y)
             end
-            ifNotKeepδThenFreeδ!(out);
+            ifNotKeepδThenFreeδ!(y);
         end
         push!(graph.backward, tandBackward)
     end
-    return out
+    return y
 end
 
 
-function Base.:tand(var::Variable{T}) where T
-    out = Variable{T}(tand(var.value), var.backprop)
-    if var.backprop
-        TOO = eltype(var)
+function Base.:tand(x::Variable{T}) where T
+    y = Variable{T}(tand(ᵛ(x)), x.backprop)
+    if x.backprop
+        TOO = eltype(x)
         ONE = TOO(1.0)
         TWO = TOO(2.0)
         DPI = TOO(pi/180)
         function tandBackward()
-            if need2computeδ!(var)
-                var.delta += DPI .* (ONE .+ out.value.^TWO) .* out.delta
+            if need2computeδ!(x)
+                δ(x) .+= DPI .* (ONE .+ ᵛ(y).^TWO) .* δ(y)
             end
-            ifNotKeepδThenFreeδ!(out);
+            ifNotKeepδThenFreeδ!(y);
         end
         push!(graph.backward, tandBackward)
     end
-    return out
+    return y
 end
 
 
 export tanh!
-function tanh!(var::Variable{T}) where T
-    out = Variable{T}(tanh!(var.value), var.backprop)
-    if var.backprop
-        TOO = eltype(var)
+function tanh!(x::Variable{T}) where T
+    y = Variable{T}(tanh!(ᵛ(x)), x.backprop)
+    if x.backprop
+        TOO = eltype(x)
         ONE = TOO(1.0)
         TWO = TOO(2.0)
         function tanhBackward()
-            if need2computeδ!(var)
-                var.delta += (ONE .- out.value.^TWO) .* out.delta
+            if need2computeδ!(x)
+                δ(x) .+= (ONE .- ᵛ(y).^TWO) .* δ(y)
             end
-            ifNotKeepδThenFreeδ!(out);
+            ifNotKeepδThenFreeδ!(y);
         end
         push!(graph.backward, tanhBackward)
     end
-    return out
+    return y
 end
 
 
-function Base.:tanh(var::Variable{T}) where T
-    out = Variable{T}(tanh(var.value), var.backprop)
-    if var.backprop
-        TOO = eltype(var)
+function Base.:tanh(x::Variable{T}) where T
+    y = Variable{T}(tanh(ᵛ(x)), x.backprop)
+    if x.backprop
+        TOO = eltype(x)
         ONE = TOO(1.0)
         TWO = TOO(2.0)
         function tanhBackward()
-            if need2computeδ!(var)
-                var.delta += (ONE .- out.value.^TWO) .* out.delta
+            if need2computeδ!(x)
+                δ(x) .+= (ONE .- ᵛ(y).^TWO) .* δ(y)
             end
-            ifNotKeepδThenFreeδ!(out);
+            ifNotKeepδThenFreeδ!(y);
         end
         push!(graph.backward, tanhBackward)
     end
-    return out
+    return y
 end
 
 
@@ -946,45 +946,45 @@ function tanhshrink(x::AbstractArray)
 end
 
 
-function tanhshrink!(var::Variable{T}) where T
-    return var - tanh(var)
+function tanhshrink!(x::Variable{T}) where T
+    return x - tanh(x)
 end
 
 
-function tanhshrink(var::Variable{T}) where T
-    return var - tanh(var)
+function tanhshrink(x::Variable{T}) where T
+    return x - tanh(x)
 end
 
 
 # # -- sin serials --
 export sin!
-function sin!(var::Variable{T}) where T
-    out = Variable{T}(sin(var.value), var.backprop)
-    if var.backprop
+function sin!(x::Variable{T}) where T
+    y = Variable{T}(sin(ᵛ(x)), x.backprop)
+    if x.backprop
         function sinBackward()
-            if need2computeδ!(var)
-                var.delta += cos.(var.value) .* out.delta;
+            if need2computeδ!(x)
+                δ(x) .+= cos.(ᵛ(x)) .* δ(y);
             end
-            ifNotKeepδThenFreeδ!(out);
+            ifNotKeepδThenFreeδ!(y);
         end
         push!(graph.backward, sinBackward)
     end
-    return out
+    return y
 end
 
 
-function Base.:sin(var::Variable{T}) where T
-    out = Variable{T}(sin(var.value), var.backprop)
-    if var.backprop
+function Base.:sin(x::Variable{T}) where T
+    y = Variable{T}(sin(ᵛ(x)), x.backprop)
+    if x.backprop
         function sinBackward()
-            if need2computeδ!(var)
-                var.delta += cos.(var.value) .* out.delta
+            if need2computeδ!(x)
+                δ(x) .+= cos.(ᵛ(x)) .* δ(y)
             end
-            ifNotKeepδThenFreeδ!(out);
+            ifNotKeepδThenFreeδ!(y);
         end
         push!(graph.backward, sinBackward)
     end
-    return out
+    return y
 end
 
 
@@ -999,35 +999,35 @@ function Base.:sinc(x::AbstractArray)
 end
 
 
-function sinc!(var::Variable{T}) where T
+function sinc!(x::Variable{T}) where T
     # sinc represents y = sin(pi*x)/(pi*x)
-    out = Variable{T}(sinc(var.value), var.backprop)
-    if var.backprop
+    y = Variable{T}(sinc(ᵛ(x)), x.backprop)
+    if x.backprop
         function sincBackward()
-            if need2computeδ!(var)
-                var.delta += cosc.(var.value) .* out.delta
+            if need2computeδ!(x)
+                δ(x) .+= cosc.(ᵛ(x)) .* δ(y)
             end
-            ifNotKeepδThenFreeδ!(out);
+            ifNotKeepδThenFreeδ!(y);
         end
         push!(graph.backward, sincBackward)
     end
-    return out
+    return y
 end
 
 
-function Base.:sinc(var::Variable{T}) where T
+function Base.:sinc(x::Variable{T}) where T
     # sinc represents y = sin(pi*x)/(pi*x)
-    out = Variable{T}(sinc(var.value), var.backprop)
-    if var.backprop
+    y = Variable{T}(sinc(ᵛ(x)), x.backprop)
+    if x.backprop
         function sincBackward()
-            if need2computeδ!(var)
-                var.delta += cosc.(var.value) .* out.delta
+            if need2computeδ!(x)
+                δ(x) .+= cosc.(ᵛ(x)) .* δ(y)
             end
-            ifNotKeepδThenFreeδ!(out);
+            ifNotKeepδThenFreeδ!(y);
         end
         push!(graph.backward, sincBackward)
     end
-    return out
+    return y
 end
 
 
@@ -1042,35 +1042,35 @@ function Base.:sind(x::AbstractArray)
 end
 
 
-function sind!(var::Variable{T}) where T
-    out = Variable{T}(sind(var.value), var.backprop)
-    if var.backprop
-        DPI = eltype(var)(pi/180)
+function sind!(x::Variable{T}) where T
+    y = Variable{T}(sind(ᵛ(x)), x.backprop)
+    if x.backprop
+        DPI = eltype(x)(pi/180)
         function sindBackward()
-            if need2computeδ!(var)
-                var.delta += DPI .* cosd.(var.value) .* out.delta
+            if need2computeδ!(x)
+                δ(x) .+= DPI .* cosd.(ᵛ(x)) .* δ(y)
             end
-            ifNotKeepδThenFreeδ!(out);
+            ifNotKeepδThenFreeδ!(y);
         end
         push!(graph.backward, sindBackward)
     end
-    return out
+    return y
 end
 
 
-function Base.:sind(var::Variable{T}) where T
-    out = Variable{T}(sind(var.value), var.backprop)
-    if var.backprop
-        DPI = eltype(var)(pi/180)
+function Base.:sind(x::Variable{T}) where T
+    y = Variable{T}(sind(ᵛ(x)), x.backprop)
+    if x.backprop
+        DPI = eltype(x)(pi/180)
         function sindBackward()
-            if need2computeδ!(var)
-                var.delta += DPI .* cosd.(var.value) .* out.delta
+            if need2computeδ!(x)
+                δ(x) .+= DPI .* cosd.(ᵛ(x)) .* δ(y)
             end
-            ifNotKeepδThenFreeδ!(out);
+            ifNotKeepδThenFreeδ!(y);
         end
         push!(graph.backward, sindBackward)
     end
-    return out
+    return y
 end
 
 
@@ -1085,35 +1085,35 @@ function Base.:sinpi(x::AbstractArray)
 end
 
 
-function sinpi!(var::Variable{T}) where T
-    out = Variable{T}(sinpi(var.value), var.backprop)
-    if var.backprop
-        PI = eltype(var)(pi)
+function sinpi!(x::Variable{T}) where T
+    y = Variable{T}(sinpi(ᵛ(x)), x.backprop)
+    if x.backprop
+        PI = eltype(x)(pi)
         function sinpiBackward()
-            if need2computeδ!(var)
-                var.delta += PI .* cospi.(var.value) .* out.delta
+            if need2computeδ!(x)
+                δ(x) .+= PI .* cospi.(ᵛ(x)) .* δ(y)
             end
-            ifNotKeepδThenFreeδ!(out);
+            ifNotKeepδThenFreeδ!(y);
         end
         push!(graph.backward, sinpiBackward)
     end
-    return out
+    return y
 end
 
 
-function Base.:sinpi(var::Variable{T}) where T
-    out = Variable{T}(sinpi(var.value), var.backprop)
-    if var.backprop
-        PI = eltype(var)(pi)
+function Base.:sinpi(x::Variable{T}) where T
+    y = Variable{T}(sinpi(ᵛ(x)), x.backprop)
+    if x.backprop
+        PI = eltype(x)(pi)
         function sinpiBackward()
-            if need2computeδ!(var)
-                var.delta += PI .* cospi.(var.value) .* out.delta
+            if need2computeδ!(x)
+                δ(x) .+= PI .* cospi.(ᵛ(x)) .* δ(y)
             end
-            ifNotKeepδThenFreeδ!(out);
+            ifNotKeepδThenFreeδ!(y);
         end
         push!(graph.backward, sinpiBackward)
     end
-    return out
+    return y
 end
 
 
@@ -1128,73 +1128,73 @@ function linearsin(x::AbstractArray)
 end
 
 
-function linearsin!(var::Variable{T}) where T
-    return sin(var) + var
+function linearsin!(x::Variable{T}) where T
+    return sin(x) + x
 end
 
 
-function linearsin(var::Variable{T}) where T
-    return sin(var) + var
+function linearsin(x::Variable{T}) where T
+    return sin(x) + x
 end
 
 
 export cos!
-function cos!(var::Variable{T}) where T
-    out = Variable{T}(cos(var.value), var.backprop)
-    if var.backprop
+function cos!(x::Variable{T}) where T
+    y = Variable{T}(cos(ᵛ(x)), x.backprop)
+    if x.backprop
         function cosBackward()
-            if need2computeδ!(var)
-                var.delta += - sin.(var.value) .* out.delta
+            if need2computeδ!(x)
+                δ(x) .+= - sin.(ᵛ(x)) .* δ(y)
             end
-            ifNotKeepδThenFreeδ!(out);
+            ifNotKeepδThenFreeδ!(y);
         end
         push!(graph.backward, cosBackward)
     end
-    return out
+    return y
 end
 
 
-function Base.:cos(var::Variable{T}) where T
-    out = Variable{T}(cos(var.value), var.backprop)
-    if var.backprop
+function Base.:cos(x::Variable{T}) where T
+    y = Variable{T}(cos(ᵛ(x)), x.backprop)
+    if x.backprop
         function cosBackward()
-            if need2computeδ!(var)
-                var.delta += - sin.(var.value) .* out.delta
+            if need2computeδ!(x)
+                δ(x) .+= - sin.(ᵛ(x)) .* δ(y)
             end
-            ifNotKeepδThenFreeδ!(out);
+            ifNotKeepδThenFreeδ!(y);
         end
         push!(graph.backward, cosBackward)
     end
-    return out
+    return y
 end
 
 
 export inv!
-function inv!(var::Variable{T}) where T
-    out = Variable{T}(inv!(var.value), var.backprop)
-    if var.backprop
+function inv!(x::Variable{T}) where T
+    y = Variable{T}(inv!(ᵛ(x)), x.backprop)
+    if x.backprop
         function invBackward()
-            if need2computeδ!(var)
-                var.delta += - out.delta .* out.value .* out.value;
+            if need2computeδ!(x)
+                δ(x) .+= - δ(y) .* ᵛ(y) .* ᵛ(y);
             end
-            ifNotKeepδThenFreeδ!(out);
+            ifNotKeepδThenFreeδ!(y);
         end
         push!(graph.backward, invBackward)
     end
-    return out
+    return y
 end
 
 
-function inv(var::Variable{T}) where T
-    out = Variable{T}(inv(var.value), var.backprop)
-    if var.backprop
+function inv(x::Variable{T}) where T
+    y = Variable{T}(inv(ᵛ(x)), x.backprop)
+    if x.backprop
         function invBackward()
-            if need2computeδ!(var)
-                var.delta += - out.delta .* out.value .* out.value
+            if need2computeδ!(x)
+                δ(x) .+= - δ(y) .* ᵛ(y) .* ᵛ(y)
             end
-            ifNotKeepδThenFreeδ!(out);
+            ifNotKeepδThenFreeδ!(y);
         end
         push!(graph.backward, invBackward)
     end
-    return out
+    return y
 end

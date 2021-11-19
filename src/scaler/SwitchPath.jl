@@ -55,15 +55,15 @@ end
 
 
 function forward(m::SwitchPath, x::Variable{T}) where T
-    k = m.slope
-    a = m.scale
-    C = 1 / (1 + exp(-k * a.value))
-    y = Variable{T}(x.value .* C, x.backprop)
+    k = m.slope  # f(x) = σ(k*x)
+    a = m.scale  # scale param
+    G = 1 / (1 + exp(-k * ᵛ(a)))
+    y = Variable{T}(ᵛ(x) .* G, x.backprop)
 
     if x.backprop
         function SwitchPathBackward()
-            if need2computeδ!(x) x.delta  +=     y.delta .* C          end
-            if need2computeδ!(k) a.delta .+= sum(y.delta .* (k - k*C)) end
+            if need2computeδ!(x) δ(x) .+=     δ(y) .* G                      end
+            if need2computeδ!(a) δ(a) .+= sum(δ(y) .* k .* (1 .- G) .* ᵛ(y)) end
             ifNotKeepδThenFreeδ!(y);
         end
         push!(graph.backward, SwitchPathBackward)
@@ -75,6 +75,6 @@ end
 function predict(m::SwitchPath, x::AbstractArray)
     k = m.slope
     a = m.scale
-    C = 1 / (1 + exp(-k * a.value))
-    return x.value .* C
+    C = 1 / (1 + exp(-k * ᵛ(a)))
+    return ᵛ(x) .* C
 end

@@ -88,10 +88,10 @@ function forward(b::ZNorm, x::Variable{T}) where T
     ϵ = b.epsilion
     ρ = b.momentum
     v = b.views
-    μ = mean(x.value, dims=v)
-    σ =  std(x.value, dims=v, mean=μ, corrected=false)
-    𝐗 = (x.value .- μ) ./ (σ .+ ϵ)
-    y = Variable{T}(𝐗 .* γ.value .+ β.value, x.backprop)
+    μ = mean(ᵛ(x), dims=v)
+    σ =  std(ᵛ(x), dims=v, mean=μ, corrected=false)
+    𝐗 = (ᵛ(x) .- μ) ./ (σ .+ ϵ)
+    y = Variable{T}(𝐗 .* ᵛ(γ) .+ ᵛ(β), x.backprop)
 
     if y.backprop
         Σ = σ .* σ
@@ -102,18 +102,17 @@ function forward(b::ZNorm, x::Variable{T}) where T
                 n     = length(σ)/length(x)
                 σ¯¹   = 1 ./ (σ .+ ϵ)
                 σ¯³   = (σ¯¹).^3
-                Γ     = γ.value
-                Δ     = x.value .- μ
-                ∂𝐋∂𝐗  = y.delta .* Γ
+                Δ     = ᵛ(x) .- μ
+                ∂𝐋∂𝐗  = δ(y) .* ᵛ(γ)
                 Δ∂𝐋∂𝐗 = Δ .* ∂𝐋∂𝐗
                 SumΔ∂𝐋∂𝐗  = sum(Δ∂𝐋∂𝐗, dims=v)
 
-                x.delta .+= σ¯¹ .* ∂𝐋∂𝐗
-                x.delta .-= σ¯³ .* n   .* SumΔ∂𝐋∂𝐗 .* Δ
-                x.delta .+= σ¯³ .* n^2 .* SumΔ∂𝐋∂𝐗 .* sum(Δ, dims=v) .- σ¯¹ .* n .* sum(∂𝐋∂𝐗, dims=v)
+                δ(x) .+= σ¯¹ .* ∂𝐋∂𝐗
+                δ(x) .-= σ¯³ .* n   .* SumΔ∂𝐋∂𝐗 .* Δ
+                δ(x) .+= σ¯³ .* n^2 .* SumΔ∂𝐋∂𝐗 .* sum(Δ, dims=v) .- σ¯¹ .* n .* sum(∂𝐋∂𝐗, dims=v)
 
-                if need2computeδ!(γ) γ.delta .+= sum(y.delta .* 𝐗, dims=v) end
-                if need2computeδ!(β) β.delta .+= sum(y.delta,      dims=v) end
+                if need2computeδ!(γ) δ(γ) .+= sum(δ(y) .* 𝐗, dims=v) end
+                if need2computeδ!(β) δ(β) .+= sum(δ(y),      dims=v) end
             end
             ifNotKeepδThenFreeδ!(y);
         end
@@ -125,8 +124,8 @@ end
 
 function predict(b::ZNorm, x::AbstractArray)
     ϵ = b.epsilion
-    γ = b.γ.value
-    β = b.β.value
+    γ = ᵛ(b.γ)
+    β = ᵛ(b.β)
     μ = b.μ
     σ = b.σ
     return @. (x - μ) / sqrt(σ + ϵ) * γ + β

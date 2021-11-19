@@ -63,12 +63,12 @@ end
 
 function forward(m::ScaleChannels, x::Variable{T}) where T
     k = m.scale
-    y = Variable{T}(x.value .* k.value, x.backprop)
+    y = Variable{T}(ᵛ(x) .* ᵛ(k), x.backprop)
 
     if x.backprop
         function ScaleChannelsBackward()
-            if need2computeδ!(x) x.delta  +=     y.delta .* k.value                end
-            if need2computeδ!(k) k.delta .+= sum(y.delta .* x.value, dims=m.views) end
+            if need2computeδ!(x) δ(x) .+=     δ(y) .* ᵛ(k)                end
+            if need2computeδ!(k) δ(k) .+= sum(δ(y) .* ᵛ(x), dims=m.views) end
             ifNotKeepδThenFreeδ!(y);
         end
         push!(graph.backward, ScaleChannelsBackward)

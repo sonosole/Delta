@@ -1,55 +1,55 @@
-function Base.maximum(var::Variable{T}; dims::Union{Int,NTuple{N,Int}}) where {T,N}
-    out = Variable{T}(maximum(var.value, dims=dims), var.backprop)
-    if var.backprop
-        mask = var.value .== out.value
+function Base.maximum(x::Variable{T}; dims::Union{Int,NTuple{N,Int}}) where {T,N}
+    y = Variable{T}(maximum(ᵛ(x), dims=dims), x.backprop)
+    if x.backprop
+        mask = ᵛ(x) .== ᵛ(y)
         function maximumBackward()
-            if need2computeδ!(var)
-                var.delta += out.delta .* mask
+            if need2computeδ!(x)
+                δ(x) .+= δ(y) .* mask
             end
-            ifNotKeepδThenFreeδ!(out);
+            ifNotKeepδThenFreeδ!(y);
         end
         push!(graph.backward, maximumBackward)
     end
-    return out
+    return y
 end
 
-function Base.minimum(var::Variable{T}; dims::Union{Int,NTuple{N,Int}}) where {T,N}
-    out = Variable{T}(minimum(var.value, dims=dims), var.backprop)
-    if var.backprop
-        mask = var.value .== out.value
+function Base.minimum(x::Variable{T}; dims::Union{Int,NTuple{N,Int}}) where {T,N}
+    y = Variable{T}(minimum(ᵛ(x), dims=dims), x.backprop)
+    if x.backprop
+        mask = ᵛ(x) .== ᵛ(y)
         function minimumBackward()
-            if need2computeδ!(var)
-                var.delta += out.delta .* mask
+            if need2computeδ!(x)
+                δ(x) .+= δ(y) .* mask
             end
-            ifNotKeepδThenFreeδ!(out);
+            ifNotKeepδThenFreeδ!(y);
         end
         push!(graph.backward, minimumBackward)
     end
-    return out
+    return y
 end
 
-function Base.sum(var::Variable{T}; dims::Union{Int,NTuple{N,Int}}) where {T,N}
-    out = Variable{T}(sum(var.value, dims=dims), var.backprop)
-    if var.backprop
+function Base.sum(x::Variable{T}; dims::Union{Int,NTuple{N,Int}}) where {T,N}
+    y = Variable{T}(sum(ᵛ(x), dims=dims), x.backprop)
+    if x.backprop
         function sumBackward()
-            if need2computeδ!(var)
-                var.delta .+= out.delta
+            if need2computeδ!(x)
+                δ(x) .+= δ(y)
             end
-            ifNotKeepδThenFreeδ!(out)
+            ifNotKeepδThenFreeδ!(y)
         end
         push!(graph.backward, sumBackward)
     end
-    return out
+    return y
 end
 
 
 function mean(x::Variable{T}; dims::Union{Int,NTuple{N,Int}}) where {T,N}
     n = eltype(x)(1) / prod([size(x, i) for i in dims])
-    μ = Variable{T}(sum(x.value, dims=dims) .* n, x.backprop)
+    μ = Variable{T}(sum(ᵛ(x), dims=dims) .* n, x.backprop)
     if x.backprop
         function meanBackward()
             if need2computeδ!(x)
-                x.delta .+= μ.delta .* n
+                δ(x) .+= δ(μ) .* n
             end
             ifNotKeepδThenFreeδ!(μ);
         end
@@ -59,20 +59,20 @@ function mean(x::Variable{T}; dims::Union{Int,NTuple{N,Int}}) where {T,N}
 end
 
 
-function maxmin(var::Variable{T}; dims1::Int, dims2::Int) where T
-    tmp = minimum(maximum(var.value, dims=dims1), dims=dims2)
-    out = Variable{T}(tmp, var.backprop)
-    if var.backprop
-        mask = var.value .== out.value
+function maxmin(x::Variable{T}; dims1::Int, dims2::Int) where T
+    t = minimum(maximum(ᵛ(x), dims=dims1), dims=dims2)
+    y = Variable{T}(t, x.backprop)
+    if x.backprop
+        mask = ᵛ(x) .== ᵛ(y)
         function maxminBackward()
-            if need2computeδ!(var)
-                var.delta .+= out.delta .* mask
+            if need2computeδ!(x)
+                δ(x) .+= δ(y) .* mask
             end
-            ifNotKeepδThenFreeδ!(out);
+            ifNotKeepδThenFreeδ!(y);
         end
         push!(graph.backward, maxminBackward)
     end
-    return out
+    return y
 end
 
 
@@ -80,8 +80,8 @@ function maxmin(x::AbstractArray; dims1::Int, dims2::Int)
     return minimum( maximum(x, dims=dims1), dims=dims2)
 end
 
-function Base.minmax(var::Variable{T}; dims1::Int, dims2::Int) where T
-    return maxmin(var; dims1=dims2, dims2=dims1)
+function Base.minmax(x::Variable{T}; dims1::Int, dims2::Int) where T
+    return maxmin(x; dims1=dims2, dims2=dims1)
 end
 
 
@@ -91,14 +91,14 @@ end
 
 
 function linearpool(x::Variable{T}; dims::Union{Int,NTuple{N,Int}}) where {T,N}
-    Σxᵢ² = sum(x.value .* x.value, dims=dims)     # Σ xᵢ·xᵢ
-    Σxᵢ  = sum(x.value,            dims=dims)     # Σ xᵢ
+    Σxᵢ² = sum(ᵛ(x) .* ᵛ(x), dims=dims)     # Σ xᵢ·xᵢ
+    Σxᵢ  = sum(ᵛ(x),         dims=dims)     # Σ xᵢ
     y    = Variable{T}(Σxᵢ² ./ Σxᵢ, x.backprop)
     if x.backprop
         TWO = eltype(x)(2.0f0)
         function linearpoolBackward()
             if need2computeδ!(x)
-                x.delta += (TWO .* x.value .- y.value) ./ Σxᵢ .* y.delta
+                δ(x) .+= (TWO .* ᵛ(x) .- ᵛ(y)) ./ Σxᵢ .* δ(y)
             end
             ifNotKeepδThenFreeδ!(y);
         end
@@ -114,15 +114,15 @@ end
 
 
 function exppool(x::Variable{T}; dims::Union{Int,NTuple{N,Int}}) where {T,N}
-    eˣ  = exp.(x.value)
-    Σeˣⁱxᵢ = sum(eˣ .* x.value, dims=dims)         # Σ exp(xᵢ)·xᵢ
-    Σeˣⁱ = sum(eˣ, dims=dims)                      # Σ exp(xᵢ)
+    eˣ  = exp.(ᵛ(x))
+    Σeˣⁱxᵢ = sum(eˣ .* ᵛ(x), dims=dims)   # Σ exp(xᵢ)·xᵢ
+    Σeˣⁱ = sum(eˣ, dims=dims)             # Σ exp(xᵢ)
     y  = Variable{T}(Σeˣⁱxᵢ ./ Σeˣⁱ, x.backprop)
     if x.backprop
         ONE = eltype(x)(1.0f0)
         function exppoolBackward()
             if need2computeδ!(x)
-                x.delta += eˣ ./ Σeˣⁱ .* (ONE .+ x.value .- y.value) .* y.delta
+                δ(x) .+= eˣ ./ Σeˣⁱ .* (ONE .+ ᵛ(x) .- ᵛ(y)) .* δ(y)
             end
             ifNotKeepδThenFreeδ!(y);
         end

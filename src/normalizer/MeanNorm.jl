@@ -76,17 +76,17 @@ function forward(M::MeanNorm, x::Variable{T}) where T
     ρ = M.momentum  # smoothing const
     v = M.views
     n = length(β) / length(x)
-    μₓ = sum(x.value, dims=v) .* n
-    y  = Variable{T}(x.value .- μₓ .+ β.value, x.backprop)
+    μₓ = sum(ᵛ(x), dims=v) .* n
+    y  = Variable{T}(ᵛ(x) .- μₓ .+ ᵛ(β), x.backprop)
 
     if x.backprop
         @. μ = (1 - ρ) * μ + ρ * μₓ    # running mean
         function MeanNormBackward()
             if need2computeδ!(x)
-                x.delta += y.delta .- sum(y.delta, dims=v) .* n
+                δ(x) .+= δ(y) .- sum(δ(y), dims=v) .* n
             end
             if need2computeδ!(β)
-                β.delta += sum(y.delta, dims=v)
+                δ(β) .+= sum(δ(y), dims=v)
             end
             ifNotKeepδThenFreeδ!(y);
         end
@@ -97,7 +97,7 @@ end
 
 
 function predict(M::MeanNorm, x::AbstractArray)
-    β = M.β.value   # learned shifting param
-    μ = M.μ         # statistical mean param
+    β = ᵛ(M.β)   # learned shifting param
+    μ =   M.μ    # statistical mean param
     return x .- μ .+ β
 end
