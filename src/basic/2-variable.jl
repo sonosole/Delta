@@ -236,5 +236,6 @@ elsizeof(x::Variable) = sizeof(eltype(x))
 # lazy showing way of Variable's main vars
 @inline ᵛ(x::Variable) = x.value
 @inline ᵟ(x::Variable) = x.delta
+@inline δ(x::Variable) = x.delta
 @inline value(x::Variable) = x.value
 @inline delta(x::Variable) = x.delta
