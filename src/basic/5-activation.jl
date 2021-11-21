@@ -38,7 +38,7 @@ end
 
 
 function relu!(x::Variable{T}) where T
-    y = Variable{T}(relu!(x.value), x.backprop)
+    y = Variable{T}(relu!(ᵛ(x)), x.backprop)
     if x.backprop
         ∇ = ᵛ(x) .> 0.0
         function reluBackward()
