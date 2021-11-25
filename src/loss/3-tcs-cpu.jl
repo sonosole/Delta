@@ -6,12 +6,13 @@ export RNN_Batch_TCS_With_Softmax
 
 """
     TCS(p::Array{T,2}, seq) where T -> target, lossvalue
-# inputs
+# Inputs
 `p`: probability of softmax output\n
 `seq`: label seq like [1 2 3 1 2 3 1 2 6 1 2 5 1], of which 1 is background state 2 is foreground state.
-       If `p` has no label (e.g. pure noise or oov) then `seq` is [1]
+       If `p` has no label (e.g. pure noise or oov) then `seq` is [1]. 当然, [x y a x y b x y c x] 这样的
+       标注也是合法的, 其中 x 是背景状态索引, y 是前景状态索引, a/b/c 是非背景非前景的其他状态索引.
 
-# outputs
+# Outputs
 `target`: target of softmax's output\n
 `lossvalue`: negative log-likelyhood
 """
@@ -23,7 +24,7 @@ function TCS(p::Array{TYPE,2}, seq) where TYPE
     r = fill!(Array{TYPE,2}(undef,S,T), ZERO)  # 𝜸 = p(s[k,t] | x[1:T]), k in softmax's indexing
 
     if L == 1
-        r[1,:] .= TYPE(1)
+        r[seq[1],:] .= TYPE(1)
         return r, - sum(log.(p[seq[1],:]))
     end
 
