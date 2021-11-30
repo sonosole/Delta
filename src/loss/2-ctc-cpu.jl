@@ -26,7 +26,7 @@ end
     CTC(p::Array{T,2}, seq; blank=1) where T -> (target, lossvalue)
 # Inputs
     p   : probability of softmax output\n
-    seq : label seq like [9 3 6 15] which contains no blank. If p 
+    seq : label seq like [9 3 6 15] which contains no blank. If p
           has no label (e.g. pure noise or oov) then seq is []
 # Outputs
     target    : target of softmax's output\n
@@ -112,13 +112,13 @@ end
     CTCGreedySearch(x::Array; blank=1, dims=1)
 remove repeats and blanks of argmax(x, dims=dims)
 """
-function CTCGreedySearch(x::Array; blank=1, dims=1)
+function CTCGreedySearch(x::Array; blank::Int=1, dims=1)
     hyp = Vector{Int}(undef, 0)
     idx = argmax(x, dims=dims)
     for i = 1:length(idx)
-        previous = idx[i-1][1]
-        current  = idx[i  ][1]
-        if !((i!=1 && current==previous) || (current==blank))
+        previous = idx[i≠1 ? i-1 : i][1]
+        current  = idx[i][1]
+        if !((i≠1 && current==previous) || (current==blank))
             push!(hyp, current)
         end
     end
