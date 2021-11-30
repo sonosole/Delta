@@ -5,18 +5,36 @@ export DNN_Batch_TCS_With_Softmax
 export RNN_Batch_TCS_With_Softmax
 
 """
-    TCS(p::Array{T,2}, seq) where T -> target, lossvalue
-# Inputs
-`p`: probability of softmax output\n
-`seq`: label seq like [1 2 3 1 2 3 1 2 6 1 2 5 1], of which 1 is background state 2 is foreground state.
-       If `p` has no label (e.g. pure noise or oov) then `seq` is [1]. 当然, [x y a x y b x y c x] 这样的
-       标注也是合法的, 其中 x 是背景状态索引, y 是前景状态索引, a/b/c 是非背景非前景的其他状态索引.
+    seqtcs(seq, background::Int=1, foreground::Int=2) -> newseq
+expand `seq` with `background` and `foreground`'s indexes. For example, if `seq` is [i,j,k], then
+`newseq` is [B,F,i,B,F,j,B,F,k,B], of which B is `background` index and F is `foreground` index.
 
-# Outputs
-`target`: target of softmax's output\n
-`lossvalue`: negative log-likelyhood
+# Example
+    julia> seqtcs([7,3,5], 2, 4)'
+    1×10 LinearAlgebra.Adjoint{Int64,Array{Int64,1}}:
+     2  4  7  2  4  3  2  4  5  2
 """
-function TCS(p::Array{TYPE,2}, seq) where TYPE
+function seqtcs(seq, background::Int=1, foreground::Int=2)
+    L = length(seq)       # sequence length
+    N = 3 * L + 1         # topology length
+    label = zeros(Int, N)
+    label[1:3:N] .= background
+    label[2:3:N] .= foreground
+    label[3:3:N] .= seq
+    return label
+end
+
+"""
+    TCS(p::Array{T,2}, seqlabel; background::Int=1, foreground::Int=2) -> target, lossvalue
+# Inputs
++ `p`        : probability of softmax output
++ `seqlabel` : like [i,j,k], i/j/k is neither background state nor foreground state. If `p` has no label (e.g. pure noise or oov) then `seq` is [].
+# Outputs
++ `target`    : target of softmax's output
++ `lossvalue` : negative log-likelyhood
+"""
+function TCS(p::Array{TYPE,2}, seqlabel; background::Int=1, foreground::Int=2) where TYPE
+    seq  = seqtcs(seqlabel, background, foreground)
     Log0 = LogZero(TYPE)   # approximate -Inf of TYPE
     ZERO = TYPE(0)         # typed zero,e.g. Float32(0)
     S, T = size(p)         # assert p is a 2-D tensor
@@ -30,8 +48,8 @@ function TCS(p::Array{TYPE,2}, seq) where TYPE
 
     a = fill!(Array{TYPE,2}(undef,L,T), Log0)  # 𝜶 = p(s[k,t], x[1:t]), k in TCS topology's indexing
     b = fill!(Array{TYPE,2}(undef,L,T), Log0)  # 𝛃 = p(x[t+1:T] | s[k,t]), k in TCS topology's indexing
-    a[1,1] = log(p[seq[1],1])
-    a[2,1] = log(p[seq[2],1])
+    a[1,1] = log(p[seq[1],1])  # background entrance
+    a[2,1] = log(p[seq[2],1])  # foreground entrance
     b[L-1,T] = ZERO
     b[L-0,T] = ZERO
 
@@ -90,15 +108,20 @@ function TCS(p::Array{TYPE,2}, seq) where TYPE
 end
 
 
-function TCSGreedySearch(x::Array)
-	# Backgroud  --> 1 index
-    # Foreground --> 2 index
-    hyp = []
-    idx = argmax(x,dims=1)
+"""
+    TCSGreedySearch(x::Array; background::Int=1, foreground::Int=2, dims=1)
+remove repeats and background/foreground of argmax(x, dims=dims)
+"""
+function TCSGreedySearch(x::Array; background::Int=1, foreground::Int=2, dims=1)
+    hyp = Vector{Int}(undef, 0)
+    idx = argmax(x,dims=dims)
     for i = 1:length(idx)
-        maxid = idx[i][1]
-        if !((i!=1 && idx[i][1]==idx[i-1][1]) || (idx[i][1]==1) || (idx[i][1]==2))
-            push!(hyp, maxid)
+        previous = idx[i≠1 ? i-1 : i][1]
+        current  = idx[i][1]
+        if !((current==previous && i≠1) ||
+             (current==background) ||
+             (current==foreground))
+            push!(hyp, current)
         end
     end
     return hyp
@@ -106,32 +129,44 @@ end
 
 
 """
-    DNN_Batch_TCS_With_Softmax(var::Variable{Array{T}}, seq, inputLengths, labelLengths) where T
-
-`var`: 2-D Variable, resulted by a batch of concatenated input sequence.\n
-`seq`: 1-D Array, concatenated by a batch of sequential labels.\n
-`inputLengths`: 1-D Array which records each input sequence's length.\n
-`labelLengths`: 1-D Array which records input sequence label's length.
+    DNN_Batch_TCS_With_Softmax(x::Variable{Array{T}},
+                               seqlabels::Vector,
+                               inputlens;
+                               background::Int=1,
+                               foreground::Int=2,
+                               weight=1.0) where T
+# Inputs
+`x`         : 2-D Variable, a batch of concatenated input sequence.\n
+`seqlabels` : a batch of sequential labels, like [[i,j,k],[x,y],...]\n
+`inputlens` : records each input sequence's length, like [20,17,...]\n
+`weight`    : weight for TCS loss
 """
-function DNN_Batch_TCS_With_Softmax(var::Variable{Array{T}}, seq, inputLengths, labelLengths) where T
-    batchsize = length(inputLengths)
+function DNN_Batch_TCS_With_Softmax(x::Variable{Array{T}},
+                                    seqlabels::Vector,
+                                    inputlens;
+                                    background::Int=1,
+                                    foreground::Int=2,
+                                    weight=1.0) where T
+    batchsize = length(seqlabels)
     loglikely = zeros(T, batchsize)
-    probs = softmax(var.value; dims=1)
-    gamma = zero(probs)
-    sidI,eidI = indexbounds(inputLengths)  # starting and ending indexes of inputs
-    sidL,eidL = indexbounds(labelLengths)  # starting and ending indexes of labels
+    I, F = indexbounds(inputlens)
+    p = softmax(ᵛ(x); dims=1)
+    r = zero(ᵛ(x))
 
     Threads.@threads for b = 1:batchsize
-        IDI = sidI[b]:eidI[b]
-        IDL = sidL[b]:eidL[b]
-        gamma[:,IDI], loglikely[b] = TCS(probs[:,IDI], seq[IDL])
-        loglikely[b] /= length(IDL)
+        span = I[b]:F[b]
+        r[:,span], loglikely[b] = TCS(p[:,span], seqlabels[b], background=background, foreground=foreground)
+        loglikely[b] /= length(seqlabels[b]) * 3 + 1
     end
 
-    if var.backprop
+    if x.backprop
         function DNN_Batch_TCS_With_Softmax_Backward()
-            if need2computeδ!(var)
-                var.delta += probs - gamma
+            if need2computeδ!(x)
+                if weight==1.0
+                    δ(x) .+=  p - r
+                else
+                    δ(x) .+= (p - r) .* weight
+                end
             end
         end
         push!(graph.backward, DNN_Batch_TCS_With_Softmax_Backward)
@@ -141,31 +176,45 @@ end
 
 
 """
-    RNN_Batch_TCS_With_Softmax(var::Variable{Array{T}}, seqlabels, inputLengths, labelLengths) where T
-
-`var`: 3-D Variable with shape (featdims,timesteps,batchsize), resulted by a batch of padded input sequence.\n
-`seqlabels`: a Vector contains multiple 1-D sequential labels.\n
-`inputLengths`: 1-D Array which records each input sequence's length.\n
-`labelLengths`: 1-D Array which records all labels' length.\n
+    RNN_Batch_TCS_With_Softmax(x::Variable{Array{T}},
+                               seqlabels::Vector,
+                               inputlens;
+                               background::Int=1,
+                               foreground::Int=2,
+                               weight=1.0) where T
+# Inputs
+`x`         : 3-D Variable with shape (featdims,timesteps,batchsize), a batch of padded input sequence.\n
+`seqlabels` : a batch of sequential labels, like [[i,j,k],[x,y],...]\n
+`inputlens` : records each input sequence's length, like [20,17,...]\n
+`weight`    : weight for TCS loss
 """
-function RNN_Batch_TCS_With_Softmax(var::Variable{Array{T}}, seqlabels, inputLengths, labelLengths) where T
-    batchsize = length(inputLengths)
+function RNN_Batch_TCS_With_Softmax(x::Variable{Array{T}},
+                                    seqlabels::Vector,
+                                    inputlens;
+                                    background::Int=1,
+                                    foreground::Int=2,
+                                    weight=1.0) where T
+    batchsize = length(seqlabels)
     loglikely = zeros(T, batchsize)
-    probs = zero(var.value)
-    gamma = zero(var.value)
+    p = zero(ᵛ(x))
+    r = zero(ᵛ(x))
 
     Threads.@threads for b = 1:batchsize
-        Tᵇ = inputLengths[b]
-        Lᵇ = labelLengths[b]
-        probs[:,1:Tᵇ,b] = softmax(var.value[:,1:Tᵇ,b]; dims=1)
-        gamma[:,1:Tᵇ,b], loglikely[b] = TCS(probs[:,1:Tᵇ,b], seqlabels[b])
-        loglikely[   b] /= Lᵇ
+        Tᵇ = inputlens[b]
+        Lᵇ = length(seqlabels[b])
+        p[:,1:Tᵇ,b] = softmax(x.value[:,1:Tᵇ,b]; dims=1)
+        r[:,1:Tᵇ,b], loglikely[b] = TCS(p[:,1:Tᵇ,b], seqlabels[b], background=background, foreground=foreground)
+        loglikely[   b] /= Lᵇ * 3 + 1
     end
 
-    if var.backprop
+    if x.backprop
         function RNN_Batch_TCS_With_Softmax_Backward()
-            if need2computeδ!(var)
-                var.delta += probs - gamma
+            if need2computeδ!(x)
+                if weight==1.0
+                    δ(x) .+=  p - r
+                else
+                    δ(x) .+= (p - r) .* weight
+                end
             end
         end
         push!(graph.backward, RNN_Batch_TCS_With_Softmax_Backward)
@@ -173,22 +222,40 @@ function RNN_Batch_TCS_With_Softmax(var::Variable{Array{T}}, seqlabels, inputLen
     return sum(loglikely)/batchsize
 end
 
-
-function CRNN_Batch_TCS_With_Softmax(var::Variable{Array{T}}, seqlabels::Vector) where T
-    featdims, timesteps, batchsize = size(var)
-    probs = softmax(var.value; dims=1)
-    gamma = zero(var.value)
+"""
+    CRNN_Batch_TCS_With_Softmax(x::Variable{Array{T}},
+                                seqlabels::Vector;
+                                background::Int=1,
+                                foreground::Int=2,
+                                weight=1.0) where T
+# Main Inputs
+`x`            : 3-D Variable with shape (featdims,timesteps,batchsize), resulted by a batch of padded input sequence.\n
+`seqlabels`    : a batch of sequential labels, like [[i,j,k],[x,y],...]\n
+`weight`       : weight for TCS loss
+"""
+function CRNN_Batch_TCS_With_Softmax(x::Variable{Array{T}},
+                                     seqlabels::Vector;
+                                     background::Int=1,
+                                     foreground::Int=2,
+                                     weight=1.0) where T
+    featdims, timesteps, batchsize = size(x)
     loglikely = zeros(T, batchsize)
+    p = softmax(ᵛ(x); dims=1)
+    r = zero(ᵛ(x))
 
     Threads.@threads for b = 1:batchsize
-        gamma[:,:,b], loglikely[b] = TCS(probs[:,:,b], seqlabels[b])
-        loglikely[b] /= length(seqlabels[b])
+        r[:,:,b], loglikely[b] = TCS(p[:,:,b], seqlabels[b], background=background, foreground=foreground)
+        loglikely[b] /= length(seqlabels[b]) * 3 + 1
     end
 
-    if var.backprop
+    if x.backprop
         function CRNN_Batch_TCS_With_Softmax_Backward()
-            if need2computeδ!(var)
-                var.delta += probs - gamma
+            if need2computeδ!(x)
+                if weight==1.0
+                    δ(x) .+=  p - r
+                else
+                    δ(x) .+= (p - r) .* weight
+                end
             end
         end
         push!(graph.backward, CRNN_Batch_TCS_With_Softmax_Backward)
