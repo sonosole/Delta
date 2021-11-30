@@ -90,15 +90,20 @@ function TCS(p::Array{TYPE,2}, seq) where TYPE
 end
 
 
-function TCSGreedySearch(x::Array)
-	# Backgroud  --> 1 index
-    # Foreground --> 2 index
-    hyp = []
-    idx = argmax(x,dims=1)
+"""
+    TCSGreedySearch(x::Array; background::Int=1, foreground::Int=2, dims=1)
+remove repeats and background/foreground of argmax(x, dims=dims)
+"""
+function TCSGreedySearch(x::Array; background::Int=1, foreground::Int=2, dims=1)
+    hyp = Vector{Int}(undef, 0)
+    idx = argmax(x,dims=dims)
     for i = 1:length(idx)
-        maxid = idx[i][1]
-        if !((i!=1 && idx[i][1]==idx[i-1][1]) || (idx[i][1]==1) || (idx[i][1]==2))
-            push!(hyp, maxid)
+        previous = idx[i≠1 ? i-1 : i][1]
+        current  = idx[i][1]
+        if !((current==previous && i≠1) ||
+             (current==background) ||
+             (current==foreground))
+            push!(hyp, current)
         end
     end
     return hyp
