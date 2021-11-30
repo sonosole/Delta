@@ -5,18 +5,38 @@ export DNN_Batch_TCS_With_Softmax
 export RNN_Batch_TCS_With_Softmax
 
 """
-    TCS(p::Array{T,2}, seq) where T -> target, lossvalue
+    seqtcs(seq, background::Int=1, foreground::Int=2) -> newseq
+expand seq with background and foreground's indexes.
+If seq is [i,j,k], then newseq is [B F i B F j B F k B], of
+which is B is background index and F is foreground index.
+
+# Example
+    julia> seqtcs([7,3,5], 2, 4)'
+    1×10 LinearAlgebra.Adjoint{Int64,Array{Int64,1}}:
+     2  4  7  2  4  3  2  4  5  2
+"""
+function seqtcs(seq, background::Int=1, foreground::Int=2)
+    L = length(seq)       # sequence length
+    N = 3 * L + 1         # topology length
+    label = zeros(Int, N)
+    label[1:3:N] .= background
+    label[2:3:N] .= foreground
+    label[3:3:N] .= seq
+    return label
+end
+
+"""
+    TCS(p::Array{T,2}, seqlabel; background::Int=1, foreground::Int=2) -> target, lossvalue
 # Inputs
 `p`: probability of softmax output\n
-`seq`: label seq like [1 2 3 1 2 3 1 2 6 1 2 5 1], of which 1 is background state 2 is foreground state.
-       If `p` has no label (e.g. pure noise or oov) then `seq` is [1]. 当然, [x y a x y b x y c x] 这样的
-       标注也是合法的, 其中 x 是背景状态索引, y 是前景状态索引, a/b/c 是非背景非前景的其他状态索引.
-
+`seqlabel`: seqlabel is like [i,j,k], of which i/j/k is neither background state nor foreground state.
+            If `p` has no label (e.g. pure noise or oov) then `seq` is [].
 # Outputs
 `target`: target of softmax's output\n
 `lossvalue`: negative log-likelyhood
 """
-function TCS(p::Array{TYPE,2}, seq) where TYPE
+function TCS(p::Array{TYPE,2}, seqlabel; background::Int=1, foreground::Int=2) where TYPE
+    seq  = seqtcs(seqlabel, background, foreground)
     Log0 = LogZero(TYPE)   # approximate -Inf of TYPE
     ZERO = TYPE(0)         # typed zero,e.g. Float32(0)
     S, T = size(p)         # assert p is a 2-D tensor
@@ -30,8 +50,8 @@ function TCS(p::Array{TYPE,2}, seq) where TYPE
 
     a = fill!(Array{TYPE,2}(undef,L,T), Log0)  # 𝜶 = p(s[k,t], x[1:t]), k in TCS topology's indexing
     b = fill!(Array{TYPE,2}(undef,L,T), Log0)  # 𝛃 = p(x[t+1:T] | s[k,t]), k in TCS topology's indexing
-    a[1,1] = log(p[seq[1],1])
-    a[2,1] = log(p[seq[2],1])
+    a[1,1] = log(p[seq[1],1])  # background entrance
+    a[2,1] = log(p[seq[2],1])  # foreground entrance
     b[L-1,T] = ZERO
     b[L-0,T] = ZERO
 
