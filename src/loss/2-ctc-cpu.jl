@@ -46,7 +46,7 @@ function CTC(p::Array{TYPE,2}, seq; blank=1) where TYPE
 
     a = fill!(Array{TYPE,2}(undef,L,T), Log0)    # 𝜶 = p(s[k,t], x[1:t]), k in CTC topology's indexing
     b = fill!(Array{TYPE,2}(undef,L,T), Log0)    # 𝛃 = p(x[t+1:T] | s[k,t]), k in CTC topology's indexing
-    a[1,1] = log(p[    1, 1])
+    a[1,1] = log(p[blank, 1])
     a[2,1] = log(p[seq[1],1])
     b[L-1,T] = ZERO
     b[L-0,T] = ZERO
