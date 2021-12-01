@@ -49,6 +49,10 @@ export AdamL1L2
 export AdaGradL1L2
 export RMSPropL1L2
 
+# auto gradient clipping
+include("./auto-grad-cliper.jl")
+export AutoGradCliper
+export AutoGradNormCliper
 
 export decay
 export normclip
