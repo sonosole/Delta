@@ -27,12 +27,11 @@ end
 """
     TCS(p::Array{T,2}, seqlabel; background::Int=1, foreground::Int=2) -> target, lossvalue
 # Inputs
-`p`        : probability of softmax output\n
-`seqlabel` : seqlabel is like [i,j,k], of which i/j/k is neither background state nor foreground state.\n
-             If `p` has no label (e.g. pure noise or oov) then `seq` is [].
++ `p`        : probability of softmax output
++ `seqlabel` : like [i,j,k], i/j/k is neither background state nor foreground state. If `p` has no label (e.g. pure noise or oov) then `seq` is [].
 # Outputs
-`target`    : target of softmax's output\n
-`lossvalue` : negative log-likelyhood
++ `target`    : target of softmax's output
++ `lossvalue` : negative log-likelyhood
 """
 function TCS(p::Array{TYPE,2}, seqlabel; background::Int=1, foreground::Int=2) where TYPE
     seq  = seqtcs(seqlabel, background, foreground)
@@ -130,42 +129,43 @@ end
 
 
 """
-    DNN_Batch_TCS_With_Softmax(x::Variable{Array{T}}, seq, inputLengths, labelLengths;
+    DNN_Batch_TCS_With_Softmax(x::Variable{Array{T}},
+                               seqlabels::Vector,
+                               inputlens;
                                background::Int=1,
                                foreground::Int=2,
                                weight=1.0) where T
 # Inputs
-`x`   : 2-D Variable, resulted by a batch of concatenated input sequence.\n
-`seq` : 1-D Array, concatenated by a batch of sequential labels.\n
-`inputLengths` : 1-D Array which records each input sequence's length.\n
-`labelLengths` : 1-D Array which records input sequence label's length.\n
-`weight`       : weight for TCS loss
+`x`         : 2-D Variable, a batch of concatenated input sequence.\n
+`seqlabels` : a batch of sequential labels, like [[i,j,k],[x,y],...]\n
+`inputlens` : records each input sequence's length, like [20,17,...]\n
+`weight`    : weight for TCS loss
 """
-function DNN_Batch_TCS_With_Softmax(x::Variable{Array{T}}, seq, inputLengths, labelLengths;
+function DNN_Batch_TCS_With_Softmax(x::Variable{Array{T}},
+                                    seqlabels::Vector,
+                                    inputlens;
                                     background::Int=1,
                                     foreground::Int=2,
                                     weight=1.0) where T
-    batchsize = length(inputLengths)
+    batchsize = length(seqlabels)
     loglikely = zeros(T, batchsize)
-    probs = softmax(ᵛ(x); dims=1)
-    gamma = zero(probs)
-    sidI,eidI = indexbounds(inputLengths)  # starting and ending indexes of inputs
-    sidL,eidL = indexbounds(labelLengths)  # starting and ending indexes of labels
+    I, F = indexbounds(inputlens)
+    p = softmax(ᵛ(x); dims=1)
+    r = zero(ᵛ(x))
 
     Threads.@threads for b = 1:batchsize
-        IDI = sidI[b]:eidI[b]
-        IDL = sidL[b]:eidL[b]
-        gamma[:,IDI], loglikely[b] = TCS(probs[:,IDI], seq[IDL], background=background, foreground=foreground)
-        loglikely[b] /= length(IDL)
+        span = I[b]:F[b]
+        r[:,span], loglikely[b] = TCS(p[:,span], seqlabels[b], background=background, foreground=foreground)
+        loglikely[b] /= length(seqlabels[b]) * 3 + 1
     end
 
     if x.backprop
         function DNN_Batch_TCS_With_Softmax_Backward()
             if need2computeδ!(x)
                 if weight==1.0
-                    δ(x) .+=  probs - gamma
+                    δ(x) .+=  p - r
                 else
-                    δ(x) .+= (probs - gamma) .* weight
+                    δ(x) .+= (p - r) .* weight
                 end
             end
         end
@@ -176,41 +176,44 @@ end
 
 
 """
-    RNN_Batch_TCS_With_Softmax(x::Variable{Array{T}}, seqlabels, inputLengths, labelLengths;
+    RNN_Batch_TCS_With_Softmax(x::Variable{Array{T}},
+                               seqlabels::Vector,
+                               inputlens;
                                background::Int=1,
                                foreground::Int=2,
                                weight=1.0) where T
 # Inputs
-`x`            : 3-D Variable with shape (featdims,timesteps,batchsize), resulted by a batch of padded input sequence.\n
-`seqlabels`    : a Vector contains multiple 1-D sequential labels.\n
-`inputLengths` : 1-D Array which records each input sequence's length.\n
-`labelLengths` : 1-D Array which records all labels' length.\n
-`weight`       : weight for TCS loss
+`x`         : 3-D Variable with shape (featdims,timesteps,batchsize), a batch of padded input sequence.\n
+`seqlabels` : a batch of sequential labels, like [[i,j,k],[x,y],...]\n
+`inputlens` : records each input sequence's length, like [20,17,...]\n
+`weight`    : weight for TCS loss
 """
-function RNN_Batch_TCS_With_Softmax(x::Variable{Array{T}}, seqlabels, inputLengths, labelLengths;
+function RNN_Batch_TCS_With_Softmax(x::Variable{Array{T}},
+                                    seqlabels::Vector,
+                                    inputlens;
                                     background::Int=1,
                                     foreground::Int=2,
                                     weight=1.0) where T
-    batchsize = length(inputLengths)
+    batchsize = length(seqlabels)
     loglikely = zeros(T, batchsize)
-    probs = zero(ᵛ(x))
-    gamma = zero(ᵛ(x))
+    p = zero(ᵛ(x))
+    r = zero(ᵛ(x))
 
     Threads.@threads for b = 1:batchsize
-        Tᵇ = inputLengths[b]
-        Lᵇ = labelLengths[b]
-        probs[:,1:Tᵇ,b] = softmax(x.value[:,1:Tᵇ,b]; dims=1)
-        gamma[:,1:Tᵇ,b], loglikely[b] = TCS(probs[:,1:Tᵇ,b], seqlabels[b], background=background, foreground=foreground)
-        loglikely[   b] /= Lᵇ
+        Tᵇ = inputlens[b]
+        Lᵇ = length(seqlabels[b])
+        p[:,1:Tᵇ,b] = softmax(x.value[:,1:Tᵇ,b]; dims=1)
+        r[:,1:Tᵇ,b], loglikely[b] = TCS(p[:,1:Tᵇ,b], seqlabels[b], background=background, foreground=foreground)
+        loglikely[   b] /= Lᵇ * 3 + 1
     end
 
     if x.backprop
         function RNN_Batch_TCS_With_Softmax_Backward()
             if need2computeδ!(x)
                 if weight==1.0
-                    δ(x) .+=  probs - gamma
+                    δ(x) .+=  p - r
                 else
-                    δ(x) .+= (probs - gamma) .* weight
+                    δ(x) .+= (p - r) .* weight
                 end
             end
         end
@@ -220,36 +223,38 @@ function RNN_Batch_TCS_With_Softmax(x::Variable{Array{T}}, seqlabels, inputLengt
 end
 
 """
-    CRNN_Batch_TCS_With_Softmax(x::Variable{Array{T}}, seqlabels::Vector;
+    CRNN_Batch_TCS_With_Softmax(x::Variable{Array{T}},
+                                seqlabels::Vector;
                                 background::Int=1,
                                 foreground::Int=2,
                                 weight=1.0) where T
 # Main Inputs
 `x`            : 3-D Variable with shape (featdims,timesteps,batchsize), resulted by a batch of padded input sequence.\n
-`seqlabels`    : a Vector contains multiple 1-D sequential labels.\n
+`seqlabels`    : a batch of sequential labels, like [[i,j,k],[x,y],...]\n
 `weight`       : weight for TCS loss
 """
-function CRNN_Batch_TCS_With_Softmax(x::Variable{Array{T}}, seqlabels::Vector;
+function CRNN_Batch_TCS_With_Softmax(x::Variable{Array{T}},
+                                     seqlabels::Vector;
                                      background::Int=1,
                                      foreground::Int=2,
                                      weight=1.0) where T
     featdims, timesteps, batchsize = size(x)
-    probs = softmax(ᵛ(x); dims=1)
-    gamma = zero(ᵛ(x))
     loglikely = zeros(T, batchsize)
+    p = softmax(ᵛ(x); dims=1)
+    r = zero(ᵛ(x))
 
     Threads.@threads for b = 1:batchsize
-        gamma[:,:,b], loglikely[b] = TCS(probs[:,:,b], seqlabels[b], background=background, foreground=foreground)
-        loglikely[b] /= length(seqlabels[b])
+        r[:,:,b], loglikely[b] = TCS(p[:,:,b], seqlabels[b], background=background, foreground=foreground)
+        loglikely[b] /= length(seqlabels[b]) * 3 + 1
     end
 
     if x.backprop
         function CRNN_Batch_TCS_With_Softmax_Backward()
             if need2computeδ!(x)
                 if weight==1.0
-                    δ(x) .+=  probs - gamma
+                    δ(x) .+=  p - r
                 else
-                    δ(x) .+= (probs - gamma) .* weight
+                    δ(x) .+= (p - r) .* weight
                 end
             end
         end
