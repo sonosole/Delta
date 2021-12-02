@@ -215,7 +215,7 @@ function RNN_Batch_CTC_With_Softmax(x::Variable{Array{T}}, seqlabels::Vector, in
         Lᵇ = length(seqlabels[b])
         p[:,1:Tᵇ,b] = softmax(x.value[:,1:Tᵇ,b]; dims=1)
         r[:,1:Tᵇ,b], loglikely[b] = CTC(p[:,1:Tᵇ,b], seqlabels[b], blank=blank)
-        loglikely[   b] /= Lᵇ * 2 + 1
+        loglikely[b] /= Lᵇ * 2 + 1
     end
 
     if x.backprop
