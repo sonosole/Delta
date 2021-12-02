@@ -6,9 +6,14 @@ export RNN_Batch_CTC_With_Softmax
 export CRNN_Batch_CTC_With_Softmax
 export indexbounds
 
-
+"""
+    indexbounds(lengthArray)
+`lengthArray` records length of each sequence, i.e. labels or features
+# example
+    julia> indexbounds([2,0,3,2])
+    ([1; 3; 3; 6], [2; 2; 5; 7])
+"""
 function indexbounds(lengthArray)
-    # assert lengthArray has no 0 element
     acc = 0
     num = length(lengthArray)
     s = ones(Int,num,1)
@@ -128,13 +133,13 @@ end
 
 """
     DNN_CTC_With_Softmax(x::Variable, seq; blank=1, weight=1.0)
+for case batchsize==1 for test case
 
 `x`      : 2-D Variable, input sequence.\n
 `seq`    : 1-D Array, input sequence's label.\n
 `weight` : weight for CTC loss
 """
 function DNN_CTC_With_Softmax(x::Variable{Array{T}}, seq; blank=1, weight=1.0) where T
-    # for case batchsize==1
     p = softmax(ᵛ(x); dims=1)
     L = length(seq) * 2 + 1
     r, loglikely = CTC(p, seq, blank=blank)
@@ -155,36 +160,33 @@ end
 
 
 """
-    DNN_Batch_CTC_With_Softmax(x::Variable, seq, inputLengths, labelLengths)
+    DNN_Batch_CTC_With_Softmax(x::Variable{Array{T}}, seqlabels::Vector, inputlens; blank=1, weight=1.0) where T
 
-`x`: 2-D Variable, resulted by a batch of concatenated sequential inputs.\n
-`seq`: 1-D Array, concatenated by a batch of sequential labels.\n
-`inputLengths`: 1-D Array which records each input sequence's length.\n
-`labelLengths`: 1-D Array which records input sequence label's length.\n
-`weight`      : weight for CTC loss
+`x`         : 2-D Variable, a batch of concatenated sequential inputs.\n
+`seqlabels` : a batch of sequential labels, like [[i,j,k],[x,y],...]\n
+`inputlens` : records each input sequence's length, like [20,17,...]\n
+`weight`    : weight for CTC loss
 """
-function DNN_Batch_CTC_With_Softmax(x::Variable{Array{T}}, seq, inputLengths, labelLengths; blank=1, weight=1.0) where T
+function DNN_Batch_CTC_With_Softmax(x::Variable{Array{T}}, seqlabels::Vector, inputlens; blank=1, weight=1.0) where T
     batchsize = length(inputLengths)
     loglikely = zeros(T, batchsize)
-    probs = softmax(ᵛ(x); dims=1)
-    gamma = zero(probs)
-    sidI,eidI = indexbounds(inputLengths)
-    sidL,eidL = indexbounds(labelLengths)
+    I, F = indexbounds(inputlens)
+    p = softmax(ᵛ(x); dims=1)
+    r = zero(p)
 
     Threads.@threads for b = 1:batchsize
-        IDI = sidI[b]:eidI[b]
-        IDL = sidL[b]:eidL[b]
-        gamma[:,IDI], loglikely[b] = CTC(probs[:,IDI], seq[IDL], blank=blank)
-        loglikely[b] /= length(IDL) * 2 + 1
+        span = I[b]:F[b]
+        r[:,span], loglikely[b] = CTC(p[:,span], seqlabels[b], blank=blank)
+        loglikely[b] /= length(seqlabels[b]) * 2 + 1
     end
 
     if x.backprop
         function DNN_Batch_CTC_With_Softmax_Backward()
             if need2computeδ!(x)
                 if weight==1.0
-                    δ(x) .+=  probs - gamma
+                    δ(x) .+=  p - r
                 else
-                    δ(x) .+= (probs - gamma) .* weight
+                    δ(x) .+= (p - r) .* weight
                 end
             end
         end
@@ -195,25 +197,24 @@ end
 
 
 """
-    RNN_Batch_CTC_With_Softmax(x::Variable, seqlabels::Vector, inputLengths, labelLengths; blank=1, weight=1.0) where T
+    RNN_Batch_CTC_With_Softmax(x::Variable, seqlabels::Vector, inputlens; blank=1, weight=1.0) where T
 
-`x`: 3-D Variable with shape (featdims,timesteps,batchsize), resulted by a batch of padded input sequence.\n
-`seqlabels`: a Vector contains a batch of sequential labels.\n
-`inputLengths`: 1-D Array which records each input's length.\n
-`labelLengths`: 1-D Array which records all labels' length.\n
-`weight`      : weight for CTC loss
+`x`         : 3-D Variable with shape (featdims,timesteps,batchsize), a batch of padded input sequence.\n
+`seqlabels` : a batch of sequential labels, like [[i,j,k],[x,y],...]\n
+`inputlens` : each input's length, like [19,97,...]\n
+`weight`    : weight for CTC loss
 """
-function RNN_Batch_CTC_With_Softmax(x::Variable{Array{T}}, seqlabels::Vector, inputLengths, labelLengths; blank=1, weight=1.0) where T
-    batchsize = length(inputLengths)
+function RNN_Batch_CTC_With_Softmax(x::Variable{Array{T}}, seqlabels::Vector, inputlens; blank=1, weight=1.0) where T
+    batchsize = length(inputlens)
     loglikely = zeros(T, batchsize)
-    probs = zero(ᵛ(x))
-    gamma = zero(ᵛ(x))
+    p = zero(ᵛ(x))
+    r = zero(ᵛ(x))
 
     Threads.@threads for b = 1:batchsize
-        Tᵇ = inputLengths[b]
-        Lᵇ = labelLengths[b]
-        probs[:,1:Tᵇ,b] = softmax(x.value[:,1:Tᵇ,b]; dims=1)
-        gamma[:,1:Tᵇ,b], loglikely[b] = CTC(probs[:,1:Tᵇ,b], seqlabels[b], blank=blank)
+        Tᵇ = inputlens[b]
+        Lᵇ = length(seqlabels[b])
+        p[:,1:Tᵇ,b] = softmax(x.value[:,1:Tᵇ,b]; dims=1)
+        r[:,1:Tᵇ,b], loglikely[b] = CTC(p[:,1:Tᵇ,b], seqlabels[b], blank=blank)
         loglikely[   b] /= Lᵇ * 2 + 1
     end
 
@@ -221,9 +222,9 @@ function RNN_Batch_CTC_With_Softmax(x::Variable{Array{T}}, seqlabels::Vector, in
         function RNN_Batch_CTC_With_Softmax_Backward()
             if need2computeδ!(x)
                 if weight==1.0
-                    δ(x) .+= probs - gamma
+                    δ(x) .+=  p - r
                 else
-                    δ(x) .+= (probs - gamma) .* weight
+                    δ(x) .+= (p - r) .* weight
                 end
             end
         end
@@ -236,28 +237,28 @@ end
 """
     CRNN_CTCLoss_With_Softmax(x::Variable{Array{T}}, seqlabels::Vector) where T -> LogLikely
 
-`x`       : 3-D Variable (featdims,timesteps,batchsize), resulted by a batch of padded input sequence.\n
+`x`         : 3-D Variable (featdims,timesteps,batchsize), a batch of padded input sequence.\n
 `seqlabels` : a vector contains a batch of 1-D Array labels.\n
 `weight`    : weight for CTC loss
 """
 function CRNN_Batch_CTC_With_Softmax(x::Variable{Array{T}}, seqlabels::Vector; blank=1, weight=1.0) where T
     featdims, timesteps, batchsize = size(x)
-    probs = softmax(ᵛ(x); dims=1)
-    gamma = zero(ᵛ(x))
+    p = softmax(ᵛ(x); dims=1)
+    r = zero(ᵛ(x))
     loglikely = zeros(T, batchsize)
 
     Threads.@threads for b = 1:batchsize
-        gamma[:,:,b], loglikely[b] = CTC(probs[:,:,b], seqlabels[b], blank=blank)
-        loglikely[b] /= length(seqlabels[b])*2 + 1
+        r[:,:,b], loglikely[b] = CTC(p[:,:,b], seqlabels[b], blank=blank)
+        loglikely[b] /= length(seqlabels[b]) * 2 + 1
     end
 
     if x.backprop
         function CRNN_Batch_CTC_With_Softmax_Backward()
             if need2computeδ!(x)
                 if weight==1.0
-                    δ(x) .+=  probs - gamma
+                    δ(x) .+=  p - r
                 else
-                    δ(x) .+= (probs - gamma) .* weight
+                    δ(x) .+= (p - r) .* weight
                 end
             end
         end
