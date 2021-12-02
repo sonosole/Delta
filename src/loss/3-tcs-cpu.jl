@@ -1,4 +1,4 @@
-export TCS
+export TCS, seqtcs
 export TCSGreedySearch
 export CRNN_Batch_TCS_With_Softmax
 export DNN_Batch_TCS_With_Softmax

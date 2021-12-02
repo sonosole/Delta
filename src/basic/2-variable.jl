@@ -211,7 +211,7 @@ export clone
 export need2computeδ!
 export ifNotKeepδThenFreeδ!
 export elsizeof
-export value, delta
+export value, delta, ᵛ, ᵟ, δ
 
 export XVariable, VarOrNil
 const  XVariable = Tuple{Char, Variable}
