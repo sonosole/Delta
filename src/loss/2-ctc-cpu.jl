@@ -238,7 +238,7 @@ end
     CRNN_CTCLoss_With_Softmax(x::Variable{Array{T}}, seqlabels::Vector) where T -> LogLikely
 
 `x`         : 3-D Variable (featdims,timesteps,batchsize), a batch of padded input sequence.\n
-`seqlabels` : a vector contains a batch of 1-D Array labels.\n
+`seqlabels` : a batch of sequential labels, like [[i,j,k],[x,y],...]\n
 `weight`    : weight for CTC loss
 """
 function CRNN_Batch_CTC_With_Softmax(x::Variable{Array{T}}, seqlabels::Vector; blank=1, weight=1.0) where T
