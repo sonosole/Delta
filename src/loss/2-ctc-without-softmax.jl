@@ -5,7 +5,7 @@ export CRNN_Batch_CTC
 
 
 """
-    DNN_CTC(p::Variable, seq; blank=1, weight=1.0)
+    DNN_CTC(p::Variable{Array{T}}, seq; blank=1, weight=1.0)
 for case batchsize==1 for test case
 
 # Inputs
@@ -106,7 +106,7 @@ end
 
 
 """
-    RNN_Batch_CTC(p::Variable, seqlabels::Vector, inputlens; blank=1, weight=1.0) where T
+    RNN_Batch_CTC(p::Variable{Array{T}}, seqlabels::Vector, inputlens; blank=1, weight=1.0) where T
 # Inputs
 `seqlabels` : a batch of sequential labels, like [[i,j,k],[x,y],...]\n
 `inputlens` : each input's length, like [19,97,...]\n

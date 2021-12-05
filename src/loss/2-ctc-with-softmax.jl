@@ -5,7 +5,7 @@ export CRNN_Batch_CTC_With_Softmax
 
 
 """
-    DNN_CTC_With_Softmax(x::Variable, seq; blank=1, weight=1.0)
+    DNN_CTC_With_Softmax(x::Variable{Array{T}}, seq; blank=1, weight=1.0)
 for case batchsize==1 for test case
 
 `x`      : 2-D Variable, input sequence.\n
@@ -104,7 +104,7 @@ end
 
 
 """
-    RNN_Batch_CTC_With_Softmax(x::Variable, seqlabels::Vector, inputlens; blank=1, weight=1.0) where T
+    RNN_Batch_CTC_With_Softmax(x::Variable{Array{T}}, seqlabels::Vector, inputlens; blank=1, weight=1.0) where T
 
 `x`         : 3-D Variable with shape (featdims,timesteps,batchsize), a batch of padded input sequence.\n
 `seqlabels` : a batch of sequential labels, like [[i,j,k],[x,y],...]\n
