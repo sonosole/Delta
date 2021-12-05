@@ -46,7 +46,7 @@ function DNN_Batch_TCS(p::Variable{Array{T}},
 
     Threads.@threads for b = 1:batchsize
         span = I[b]:F[b]
-        r[:,span], loglikely[b] = TCS(p[:,span], seqlabels[b], background=background, foreground=foreground)
+        r[:,span], loglikely[b] = TCS(p.value[:,span], seqlabels[b], background=background, foreground=foreground)
         loglikely[b] /= length(seqlabels[b]) * 3 + 1
     end
 
@@ -109,9 +109,8 @@ function RNN_Batch_TCS(p::Variable{Array{T}},
     Threads.@threads for b = 1:batchsize
         Tᵇ = inputlens[b]
         Lᵇ = length(seqlabels[b])
-        p[:,1:Tᵇ,b] = softmax(x.value[:,1:Tᵇ,b]; dims=1)
-        r[:,1:Tᵇ,b], loglikely[b] = TCS(p[:,1:Tᵇ,b], seqlabels[b], background=background, foreground=foreground)
-        loglikely[   b] /= Lᵇ * 3 + 1
+        r[:,1:Tᵇ,b], loglikely[b] = TCS(p.value[:,1:Tᵇ,b], seqlabels[b], background=background, foreground=foreground)
+        loglikely[b] /= Lᵇ * 3 + 1
     end
 
     if p.backprop
@@ -167,7 +166,7 @@ function CRNN_Batch_TCS(p::Variable{Array{T}},
     r = zero(ᵛ(p))
 
     Threads.@threads for b = 1:batchsize
-        r[:,:,b], loglikely[b] = TCS(p[:,:,b], seqlabels[b], background=background, foreground=foreground)
+        r[:,:,b], loglikely[b] = TCS(p.value[:,:,b], seqlabels[b], background=background, foreground=foreground)
         loglikely[b] /= length(seqlabels[b]) * 3 + 1
     end
 

@@ -113,7 +113,7 @@ function RNN_Batch_TCS_With_Softmax(x::Variable{Array{T}},
         Lᵇ = length(seqlabels[b])
         p[:,1:Tᵇ,b] = softmax(x.value[:,1:Tᵇ,b]; dims=1)
         r[:,1:Tᵇ,b], loglikely[b] = TCS(p[:,1:Tᵇ,b], seqlabels[b], background=background, foreground=foreground)
-        loglikely[   b] /= Lᵇ * 3 + 1
+        loglikely[b] /= Lᵇ * 3 + 1
     end
 
     if x.backprop
