@@ -10,11 +10,15 @@ export RNN_Batch_TCS_With_Softmax
                                background::Int=1,
                                foreground::Int=2,
                                weight=1.0) where T
+
+a batch of concatenated input sequence is processed by neural networks into `x`
+
 # Inputs
-`x`         : 2-D Variable, a batch of concatenated input sequence.\n
+`x`         : 2-D Variable, a batch of concatenated input sequence\n
 `seqlabels` : a batch of sequential labels, like [[i,j,k],[x,y],...]\n
 `inputlens` : records each input sequence's length, like [20,17,...]\n
 `weight`    : weight for TCS loss
+
 # Structure
     ┌───┐
     │ │ │
@@ -74,11 +78,15 @@ end
                                background::Int=1,
                                foreground::Int=2,
                                weight=1.0) where T
+
+a batch of padded input sequence is processed by neural networks into `x`
+
 # Inputs
-`x`         : 3-D Variable with shape (featdims,timesteps,batchsize), a batch of padded input sequence.\n
+`x`         : 3-D Variable with shape (featdims,timesteps,batchsize), a batch of padded input sequence\n
 `seqlabels` : a batch of sequential labels, like [[i,j,k],[x,y],...]\n
 `inputlens` : records each input sequence's length, like [20,17,...]\n
 `weight`    : weight for TCS loss
+
 # Structure
     ┌───┐
     │ │ │
@@ -137,10 +145,14 @@ end
                                 background::Int=1,
                                 foreground::Int=2,
                                 weight=1.0) where T
+
+a batch of padded input sequence is processed by neural networks into `x`
+
 # Main Inputs
-`x`            : 3-D Variable with shape (featdims,timesteps,batchsize), resulted by a batch of padded input sequence.\n
+`x`            : 3-D Variable with shape (featdims,timesteps,batchsize), resulted by a batch of padded input sequence\n
 `seqlabels`    : a batch of sequential labels, like [[i,j,k],[x,y],...]\n
 `weight`       : weight for TCS loss
+
 # Structure
     ┌───┐
     │ │ │
