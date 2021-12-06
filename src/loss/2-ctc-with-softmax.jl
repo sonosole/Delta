@@ -6,11 +6,14 @@ export CRNN_Batch_CTC_With_Softmax
 
 """
     DNN_CTC_With_Softmax(x::Variable{Array{T}}, seq; blank=1, weight=1.0)
-for case batchsize==1 for test case
 
-`x`      : 2-D Variable, input sequence.\n
-`seq`    : 1-D Array, input sequence's label.\n
+case batchsize==1 for test case. `x` is the output of a whole complete input sequence
+
+# Inputs
+`x`      : 2-D Variable, input sequence\n
+`seq`    : 1-D Array, input sequence's label\n
 `weight` : weight for CTC loss
+
 # Structure
     ┌───┐
     │ │ │
@@ -52,10 +55,14 @@ end
 """
     DNN_Batch_CTC_With_Softmax(x::Variable{Array{T}}, seqlabels::Vector, inputlens; blank=1, weight=1.0) where T
 
-`x`         : 2-D Variable, a batch of concatenated sequential inputs.\n
+a batch of concatenated input sequence is processed by neural networks into `x`
+
+# Inputs
+`x`         : 2-D Variable, inputs of softmax\n
 `seqlabels` : a batch of sequential labels, like [[i,j,k],[x,y],...]\n
 `inputlens` : records each input sequence's length, like [20,17,...]\n
 `weight`    : weight for CTC loss
+
 # Structure
     ┌───┐
     │ │ │
@@ -106,10 +113,14 @@ end
 """
     RNN_Batch_CTC_With_Softmax(x::Variable{Array{T}}, seqlabels::Vector, inputlens; blank=1, weight=1.0) where T
 
-`x`         : 3-D Variable with shape (featdims,timesteps,batchsize), a batch of padded input sequence.\n
+a batch of padded input sequence is processed by neural networks into `x`
+
+# Inputs
+`x`         : 3-D Variable with shape (featdims,timesteps,batchsize), inputs of softmax\n
 `seqlabels` : a batch of sequential labels, like [[i,j,k],[x,y],...]\n
 `inputlens` : each input's length, like [19,97,...]\n
 `weight`    : weight for CTC loss
+
 # Structure
     ┌───┐
     │ │ │
@@ -161,9 +172,13 @@ end
 """
     CRNN_Batch_CTC_With_Softmax(x::Variable{Array{T}}, seqlabels::Vector; blank=1, weight=1.0) where T
 
-`x`         : 3-D Variable (featdims,timesteps,batchsize), a batch of padded input sequence.\n
+a batch of padded input sequence is processed by neural networks into `x`
+
+# Inputs
+`x`         : 3-D Variable (featdims,timesteps,batchsize), inputs of softmax\n
 `seqlabels` : a batch of sequential labels, like [[i,j,k],[x,y],...]\n
 `weight`    : weight for CTC loss
+
 # Structure
     ┌───┐
     │ │ │
