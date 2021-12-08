@@ -46,13 +46,13 @@ end
 
 
 
-function Broadcast.broadcasted(::typeof(+), x::Variable{T1}, y::Variable{T2}) where {T1,T2}
+function Base.Broadcast.broadcasted(::typeof(+), x::Variable{T1}, y::Variable{T2}) where {T1,T2}
     @assert T1 <: T2 || T1 >: T2
     T = T1 <: T2 ? T1 : T2
     backprop = (x.backprop || y.backprop)
     z = Variable{T}(ᵛ(x) .+ ᵛ(y), backprop)
     if backprop
-        function dotMulBackward()
+        function DotAddBackward()
             if need2computeδ!(x)
                 δx = δ(z)
                 δ(x) .+= unbcast(ᵛ(x), δx)
@@ -63,19 +63,19 @@ function Broadcast.broadcasted(::typeof(+), x::Variable{T1}, y::Variable{T2}) wh
             end
             ifNotKeepδThenFreeδ!(z);
         end
-        push!(graph.backward, dotMulBackward)
+        push!(graph.backward, DotAddBackward)
     end
     return z
 end
 
 
-function Broadcast.broadcasted(::typeof(-), x::Variable{T1}, y::Variable{T2}) where {T1,T2}
+function Base.Broadcast.broadcasted(::typeof(-), x::Variable{T1}, y::Variable{T2}) where {T1,T2}
     @assert T1 <: T2 || T1 >: T2
     T = T1 <: T2 ? T1 : T2
     backprop = (x.backprop || y.backprop)
     z = Variable{T}(ᵛ(x) .- ᵛ(y), backprop)
     if backprop
-        function dotMulBackward()
+        function DotMinusBackward()
             if need2computeδ!(x)
                 δx = δ(z)
                 δ(x) .+= unbcast(ᵛ(x), δx)
@@ -86,19 +86,19 @@ function Broadcast.broadcasted(::typeof(-), x::Variable{T1}, y::Variable{T2}) wh
             end
             ifNotKeepδThenFreeδ!(z);
         end
-        push!(graph.backward, dotMulBackward)
+        push!(graph.backward, DotMinusBackward)
     end
     return z
 end
 
 
-function Broadcast.broadcasted(::typeof(*), x::Variable{T1}, y::Variable{T2}) where {T1,T2}
+function Base.Broadcast.broadcasted(::typeof(*), x::Variable{T1}, y::Variable{T2}) where {T1,T2}
     @assert T1 <: T2 || T1 >: T2
     T = T1 <: T2 ? T1 : T2
     backprop = (x.backprop || y.backprop)
     z = Variable{T}(ᵛ(x) .* ᵛ(y), backprop)
     if backprop
-        function dotMulBackward()
+        function DotMulBackward()
             if need2computeδ!(x)
                 δx = δ(z) .* ᵛ(y)
                 δ(x) .+= unbcast(ᵛ(x), δx)
@@ -109,19 +109,19 @@ function Broadcast.broadcasted(::typeof(*), x::Variable{T1}, y::Variable{T2}) wh
             end
             ifNotKeepδThenFreeδ!(z);
         end
-        push!(graph.backward, dotMulBackward)
+        push!(graph.backward, DotMulBackward)
     end
     return z
 end
 
 
-function Broadcast.broadcasted(::typeof(/), x::Variable{T1}, y::Variable{T2}) where {T1,T2}
+function Base.Broadcast.broadcasted(::typeof(/), x::Variable{T1}, y::Variable{T2}) where {T1,T2}
     @assert T1 <: T2 || T1 >: T2
     T = T1 <: T2 ? T1 : T2
     backprop = (x.backprop || y.backprop)
     z = Variable{T}(ᵛ(x) ./ ᵛ(y), backprop)
     if backprop
-        function dotMulBackward()
+        function DotDivBackward()
             y⁻¹ = T(1) ./ ᵛ(y)
             y⁻² =  y⁻¹ .* y⁻¹
             if need2computeδ!(x)
@@ -134,7 +134,7 @@ function Broadcast.broadcasted(::typeof(/), x::Variable{T1}, y::Variable{T2}) wh
             end
             ifNotKeepδThenFreeδ!(z);
         end
-        push!(graph.backward, dotMulBackward)
+        push!(graph.backward, DotDivBackward)
     end
     return z
 end
