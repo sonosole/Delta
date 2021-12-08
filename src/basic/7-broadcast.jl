@@ -24,7 +24,7 @@ reduced `δx` to `∇x` according to shape difference from `x` and `δx`
 `x`  : comes from `z = broadcast(::typeof(+-*/...), x, y)`\n
 `δx` : unreduced gradient, i.e. `δx = δz .* ∂z/∂x`\n
 `∇x` : reduced gradient, i.e. ⤓\n
-       Δx = sum(δx, dims=axis2reduce(δx, x)) # reduced but still has redundant dimensions\n
+       Δx = sum(δx, dims=axes2reduce(δx, x)) # reduced but still has redundant dimensions\n
        ∇x = reshape(Δx, size(x))
 """
 function unbcast(δx::AbstractArray, x::AbstractArray)
