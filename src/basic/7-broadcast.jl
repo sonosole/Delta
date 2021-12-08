@@ -117,14 +117,12 @@ function Base.Broadcast.broadcasted(::typeof(/), x::Variable{T1}, y::Variable{T2
     z = Variable{T}(ᵛ(x) ./ ᵛ(y), backprop)
     if backprop
         function DotDivBackward()
-            y⁻¹ = T(1) ./ ᵛ(y)
-            y⁻² =  y⁻¹ .* y⁻¹
+            δx = δ(z) ./ y
             if need2computeδ!(x)
-                δx = δ(z) .* y⁻¹
                 δ(x) .+= unbcast(δx, ᵛ(x))
             end
             if need2computeδ!(y)
-                δy = - δ(z) .* ᵛ(x) .* y⁻²
+                δy = - δx .* ᵛ(z)
                 δ(y) .+= unbcast(δy, ᵛ(y))
             end
             ifNotKeepδThenFreeδ!(z);
