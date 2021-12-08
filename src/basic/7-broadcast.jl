@@ -1,10 +1,10 @@
 """
-    axis2reduce(z, x)
+    axes2reduce(z, x)
 z = broadcast(::typeof(+-*/), x, y)
 (3,4,5),(1,4,)  -> (1,3)
 (3,4,5),(1,4,1) -> (1,3)
 """
-function axis2reduce(z, x)
+function axes2reduce(z, x)
     a = Int[]
     for i = 1:ndims(z)
         if size(x, i) == 1
@@ -16,30 +16,25 @@ end
 
 
 """
-    axis2recover(δx, x)
+    unbcast(δx::AbstractArray, x::AbstractArray) -> ∇x
 
-`δx` 与 `x` 有相同的元素数，但 `δx` 的形状里有更多的1，删除 `δx` 的维度形状里比`x`的维度形状里多的1并返回
+reduced `δx` to `∇x` according to shape difference from `x` and `δx`
 
-# Example
-julia> axis2recover(ones(1,3,3,1,1), ones(1,3,3))
-(1, 3, 3)
-julia> axis2recover(ones(1,3,3,1,1), ones(1,3,3,1))
-(1, 3, 3, 1)
+# Params
+`x`  : comes from `z = broadcast(::typeof(+-*/...), x, y)`\n
+`δx` : unreduced gradient, i.e. `δx = δz .* ∂z/∂x`\n
+`∇x` : reduced gradient, i.e. ⤓\n
+       Δx = sum(δx, dims=axis2reduce(δx, x)) # reduced but still has redundant dimensions\n
+       ∇x = reshape(Δx, size(x))
 """
-function axis2recover(δx, x)
-    return ntuple(i -> size(δx, i), ndims(x))
-end
-
-
-function unbcast(x::AbstractArray, δx::AbstractArray)
-    #  z = broadcast(::typeof(+-*/...), x, y)
-    # δx = δz .* ∂z/∂x
+function unbcast(δx::AbstractArray, x::AbstractArray)
     if size(δx) == size(x)
         return δx
     elseif length(δx) == length(x)
-        return reshape(δx, axis2recover(δx, x))
+        return reshape(δx, size(x))
     else
-        return reshape(sum(δx, dims=axis2reduce(δx,x)), axis2recover(δx, x))
+        Δx = sum(δx, dims=axes2reduce(δx,x))
+        return reshape(Δx, size(x))
     end
 end
 
@@ -55,11 +50,11 @@ function Base.Broadcast.broadcasted(::typeof(+), x::Variable{T1}, y::Variable{T2
         function DotAddBackward()
             if need2computeδ!(x)
                 δx = δ(z)
-                δ(x) .+= unbcast(ᵛ(x), δx)
+                δ(x) .+= unbcast(δx, ᵛ(x))
             end
             if need2computeδ!(y)
                 δy = δ(z)
-                δ(y) .+= unbcast(ᵛ(y), δy)
+                δ(y) .+= unbcast(δy, ᵛ(y))
             end
             ifNotKeepδThenFreeδ!(z);
         end
@@ -78,11 +73,11 @@ function Base.Broadcast.broadcasted(::typeof(-), x::Variable{T1}, y::Variable{T2
         function DotMinusBackward()
             if need2computeδ!(x)
                 δx = δ(z)
-                δ(x) .+= unbcast(ᵛ(x), δx)
+                δ(x) .+= unbcast(δx, ᵛ(x))
             end
             if need2computeδ!(y)
                 δy = - δ(z)
-                δ(y) .+= unbcast(ᵛ(y), δy)
+                δ(y) .+= unbcast(δy, ᵛ(y))
             end
             ifNotKeepδThenFreeδ!(z);
         end
@@ -101,11 +96,11 @@ function Base.Broadcast.broadcasted(::typeof(*), x::Variable{T1}, y::Variable{T2
         function DotMulBackward()
             if need2computeδ!(x)
                 δx = δ(z) .* ᵛ(y)
-                δ(x) .+= unbcast(ᵛ(x), δx)
+                δ(x) .+= unbcast(δx, ᵛ(x))
             end
             if need2computeδ!(y)
                 δy = δ(z) .* ᵛ(x)
-                δ(y) .+= unbcast(ᵛ(y), δy)
+                δ(y) .+= unbcast(δy, ᵛ(y))
             end
             ifNotKeepδThenFreeδ!(z);
         end
@@ -126,11 +121,11 @@ function Base.Broadcast.broadcasted(::typeof(/), x::Variable{T1}, y::Variable{T2
             y⁻² =  y⁻¹ .* y⁻¹
             if need2computeδ!(x)
                 δx = δ(z) .* y⁻¹
-                δ(x) .+= unbcast(ᵛ(x), δx)
+                δ(x) .+= unbcast(δx, ᵛ(x))
             end
             if need2computeδ!(y)
                 δy = - δ(z) .* ᵛ(x) .* y⁻²
-                δ(y) .+= unbcast(ᵛ(y), δy)
+                δ(y) .+= unbcast(δy, ᵛ(y))
             end
             ifNotKeepδThenFreeδ!(z);
         end
