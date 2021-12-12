@@ -12,7 +12,8 @@ export PackedSeqPredict
 export PackedSeqForward
 
 global RNNLIST = [indrnn,INDRNN,
-                  indlstm,INDLSTM];
+                  indlstm,INDLSTM
+                  rnn,RNN];
 # global RNNLIST = [rnn, rin, lstm, indrnn, indlstm, RNN, RIN, LSTM, INDLSTM];
 
 
