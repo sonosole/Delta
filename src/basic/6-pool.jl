@@ -1,4 +1,4 @@
-function Base.maximum(x::Variable{T}; dims::Union{Int,NTuple{N,Int}}) where {T,N}
+function Base.maximum(x::Variable{T}; dims::Union{Int,NTuple{N,Int}}=1) where {T,N}
     y = Variable{T}(maximum(ᵛ(x), dims=dims), x.backprop)
     if x.backprop
         mask = ᵛ(x) .== ᵛ(y)
@@ -13,7 +13,7 @@ function Base.maximum(x::Variable{T}; dims::Union{Int,NTuple{N,Int}}) where {T,N
     return y
 end
 
-function Base.minimum(x::Variable{T}; dims::Union{Int,NTuple{N,Int}}) where {T,N}
+function Base.minimum(x::Variable{T}; dims::Union{Int,NTuple{N,Int}}=1) where {T,N}
     y = Variable{T}(minimum(ᵛ(x), dims=dims), x.backprop)
     if x.backprop
         mask = ᵛ(x) .== ᵛ(y)
@@ -28,7 +28,7 @@ function Base.minimum(x::Variable{T}; dims::Union{Int,NTuple{N,Int}}) where {T,N
     return y
 end
 
-function Base.sum(x::Variable{T}; dims::Union{Int,NTuple{N,Int}}) where {T,N}
+function Base.sum(x::Variable{T}; dims::Union{Int,NTuple{N,Int}}=1) where {T,N}
     y = Variable{T}(sum(ᵛ(x), dims=dims), x.backprop)
     if x.backprop
         function sumBackward()
@@ -43,8 +43,8 @@ function Base.sum(x::Variable{T}; dims::Union{Int,NTuple{N,Int}}) where {T,N}
 end
 
 
-function mean(x::Variable{T}; dims::Union{Int,NTuple{N,Int}}) where {T,N}
-    n = eltype(x)(1) / prod([size(x, i) for i in dims])
+function mean(x::Variable{T}; dims::Union{Int,NTuple{N,Int}}=1) where {T,N}
+    n = eltype(x)(1) / prod(size(x, i) for i in dims)
     μ = Variable{T}(sum(ᵛ(x), dims=dims) .* n, x.backprop)
     if x.backprop
         function meanBackward()
@@ -90,7 +90,7 @@ function Base.minmax(x::AbstractArray; dims1::Int, dims2::Int)
 end
 
 
-function linearpool(x::Variable{T}; dims::Union{Int,NTuple{N,Int}}) where {T,N}
+function linearpool(x::Variable{T}; dims::Union{Int,NTuple{N,Int}}=1) where {T,N}
     Σxᵢ² = sum(ᵛ(x) .* ᵛ(x), dims=dims)     # Σ xᵢ·xᵢ
     Σxᵢ  = sum(ᵛ(x),         dims=dims)     # Σ xᵢ
     y    = Variable{T}(Σxᵢ² ./ Σxᵢ, x.backprop)
@@ -108,12 +108,17 @@ function linearpool(x::Variable{T}; dims::Union{Int,NTuple{N,Int}}) where {T,N}
 end
 
 
-function linearpool(x::AbstractArray; dims::Union{Int,NTuple{N,Int}}) where N
+"""
+    linearpool(x::AbstractArray; dims=1) -> y
+
+    y = (Σᵢ xᵢ .* xᵢ) ./ Σᵢ xᵢ
+"""
+function linearpool(x::AbstractArray; dims::Union{Int,NTuple{N,Int}}=1) where N
     return sum(x .* x, dims=dims) ./ sum(x, dims=dims)
 end
 
 
-function exppool(x::Variable{T}; dims::Union{Int,NTuple{N,Int}}) where {T,N}
+function exppool(x::Variable{T}; dims::Union{Int,NTuple{N,Int}}=1) where {T,N}
     eˣ  = exp.(ᵛ(x))
     Σeˣⁱxᵢ = sum(eˣ .* ᵛ(x), dims=dims)   # Σ exp(xᵢ)·xᵢ
     Σeˣⁱ = sum(eˣ, dims=dims)             # Σ exp(xᵢ)
@@ -132,7 +137,12 @@ function exppool(x::Variable{T}; dims::Union{Int,NTuple{N,Int}}) where {T,N}
 end
 
 
-function exppool(x::AbstractArray; dims::Union{Int,NTuple{N,Int}}) where N
+"""
+    exppool(x::AbstractArray; dims=1) -> y
+
+    y = (Σᵢ exp.(xᵢ) .* xᵢ) ./ Σᵢ exp.(xᵢ)
+"""
+function exppool(x::AbstractArray; dims::Union{Int,NTuple{N,Int}}=1) where N
     e = exp.(x)
     return sum(e .* x, dims=dims) ./ sum(e, dims=dims)
 end
