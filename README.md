@@ -58,7 +58,9 @@ end
 + **Aggregation functions :** linearpool + exppool + mean + maximum + minimum + sum + maxmin + minmax
 
 ## Loss Functions
-+ mse
++ maeLoss (L1Loss)
++ mseLoss (L2Loss)
++ LpLoss
 + crossEntropy
 + binaryCrossEntropy
 + CTC
