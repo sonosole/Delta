@@ -46,29 +46,55 @@ end
 | * |  MatOrVec * Constant | Variable(rand((M,N)) * 7.0                          |
 | * |  Constant * MatOrVec | 7.0 * Variable(rand((M,N))                          |
 | * |  MatOrVec * MatOrVec | Variable(rand(M,N)) * Variable(rand(N,K))           |
-| ^ | MatOrVec ^ N         | Variable(rand((M,N)) ^ 7.0                          |
-| dotAdd    | .+           | dotAdd(Variable(rand((M,N)), Variable(rand((M,N)))  |
-| dotMul    | .\*          | dotMul(Variable(rand((M,N)), Variable(rand((M,N)))  |
+| ^ |  MatOrVec ^ N        | Variable(rand((M,N)) ^ 7.0                          |
+| .+|  dotAdd              | Variable(rand(M,N,K) .+ Variable(rand(M,1,1)        |
+| .-|  dotMinus            | Variable(rand(M,N,K) .- Variable(rand(1,M,1)        |
+| .*|  dotMul              | Variable(rand(M,N) .* Variable(rand(M)              |
+| ./|  dotDiv              | Variable(rand(M,1) ./ Variable(rand(M,1)            |
 | matAddVec | mat .+ Vec   | matAddVec(rand(M,N)), Variable(rand(N,1))           |
 | matMulVec | mat .* Vec   | matMulVec(rand(M,N)), Variable(rand(N,1))           |
 
-+ **Activation functions:** tan/tand/tanh + sin/sinc/sind/sinpi + log/log2/log10 + exp/exp2/exp10 + cos + swish + relu + P1Relu + leakyrelu + sigmoid + softmax + sqrt + inv + maxout
-+ **Aggregation functions :** linearpool + exppool + meanpool + maxpool
++ **Activation functions :** tan/tand/tanh + sin/sinc/sind/sinpi + log/log2/log10 + exp/exp2/exp10 + cos + swish + relu/P1Relu/leakyrelu/relu1/relu6 + min2max + sigmoid + softmax + sqrt + inv + maxout
++ **Aggregation functions :** linearpool + exppool + mean + maximum + minimum + sum + maxmin + minmax
 
 ## Loss Functions
-+ mse
++ maeLoss (L1Loss)
++ mseLoss (L2Loss)
++ LpLoss
 + crossEntropy
 + binaryCrossEntropy
 + CTC
++ TCS
 
 ## Basic Blocks
 + linear
 + dense
-+ MLP
++ MLP (stacked dense)
 + rnn + RNN(stacked rnn)
++ lstm + LSTM(stacked lstm)
 + rin  + RIN(stacked rin)
 + indrnn + INDRNN(stacked indrnn)
-+ lstm + LSTM(stacked lstm)
 + residual
 + dropout
 + conv1d
++ Res0d + Res0dWithBN
++ SelfLoopResNet + SelfLoopCumulativeResNet
++ MeanNormResDense
+
+## Optimizers
++ SGD, SGDL1, SGDL2, SGDL1L2
++ Momentum, MomentumL1, MomentumL2, MomentumL1L2
++ Adam, AdamL1, AdamL2, AdamL1L2
++ AdaGrad, AdaGradL1, AdaGradL2, AdaGradL1L2
++ RMSProp, RMSPropL1, RMSPropL2, RMSPropL1L2
+
+## Normilizers
++ ZNorm
++ BatchNorm0d
++ BatchNorm1d
++ MeanNorm
+
+## Scalers
++ ScaleChannels
++ ScalePath
++ SwitchPath
