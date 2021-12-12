@@ -1,16 +1,7 @@
-export uniform
-
-function uniform(dtype::Type, shape::Tuple; from=dtype(0.0), to=dtype(1.0))
-    From = dtype(from)
-    To   = dtype(to)
-    if from==dtype(0.0) && to==dtype(1.0)
-        return rand(dtype, shape)
-    else
-        return rand(dtype, shape) .* (To - From) .+ From
-    end
-end
-
-
+"""
+Independently Recurrent Neural Networks, i.e. ⤦\n
+    hᵗ = f(w*xᵗ + u .* hᵗ⁻¹ + b), where u is a vector
+"""
 mutable struct indrnn <: Block
     w::VarOrNil # input to hidden weights
     b::VarOrNil # bias of hidden units
