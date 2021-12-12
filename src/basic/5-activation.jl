@@ -24,8 +24,89 @@ export exp10
 export log2
 export log10
 
+
+export min2max, min2max!
+## -------------------------------------------------------- min2max
+"""
+    min2max!(x::AbstractArray; lower=0.0, upper=1.0) -> x
+
+limit the scope of the data, i.e. ⤦\n
+    @. x = min(max(x, lower), upper)
+"""
+function min2max!(x::AbstractArray; lower=0.0, upper=1.0)
+    T = eltype(x)
+    L = T(lower)
+    U = T(upper)
+    @. x = min(max(x, L), U)
+end
+
+
+"""
+    min2max(x::AbstractArray; lower=0.0, upper=1.0) -> y
+
+limit the scope of the data, i.e. ⤦\n
+    y = min.(max.(x, lower), upper)
+"""
+function min2max(x::AbstractArray; lower=0.0, upper=1.0)
+    T = eltype(x)
+    L = T(lower)
+    U = T(upper)
+    return min.(max.(x, L), U)
+end
+
+
+"""
+    min2max!(x::Variable{S}; lower=0.0, upper=1.0) -> y::Variable{S}
+
+limit the scope of the data, i.e. ⤦\n
+    y = Variable{S}(min2max!(ᵛ(x), lower=lower, upper=upper), x.backprop)
+"""
+function min2max!(x::Variable{S}; lower=0.0, upper=1.0) where S
+    y = Variable{S}(min2max!(ᵛ(x), lower=lower, upper=upper), x.backprop)
+    if x.backprop
+        function min2maxBackward()
+            if need2computeδ!(x)
+                T = eltype(S)
+                L = T(lower)
+                U = T(upper)
+                ∇ = L .< ᵛ(x) .< U
+                δ(x) .+= δ(y) .* ∇
+            end
+            ifNotKeepδThenFreeδ!(y);
+        end
+        push!(graph.backward, min2maxBackward)
+    end
+    return y
+end
+
+
+"""
+    min2max(x::Variable{S}; lower=0.0, upper=1.0) where S -> y::Variable{S}
+
+limit the scope of the data, i.e. ⤦\n
+    y = Variable{S}(min2max(ᵛ(x), lower=lower, upper=upper), x.backprop)
+"""
+function min2max(x::Variable{S}; lower=0.0, upper=1.0) where S
+    y = Variable{S}(min2max(ᵛ(x), lower=lower, upper=upper), x.backprop)
+    if x.backprop
+        function min2maxBackward()
+            if need2computeδ!(x)
+                T = eltype(S)
+                L = T(lower)
+                U = T(upper)
+                ∇ = L .< ᵛ(x) .< U
+                δ(x) .+= δ(y) .* ∇
+            end
+            ifNotKeepδThenFreeδ!(y);
+        end
+        push!(graph.backward, min2maxBackward)
+    end
+    return y
+end
+
+
 export relu, relu!
-# -------------------------------------------------------- relu
+## -------------------------------------------------------- relu
 function relu!(x::AbstractArray)
     @. x = max(0.0, x)
 end
@@ -68,18 +149,19 @@ function relu(x::Variable{T}) where T
     return y
 end
 
+
 export relu1, relu1!
-# -------------------------------------------------------- relu1
+## -------------------------------------------------------- relu1
 function relu1!(x::AbstractArray)
-    @. x = min(1.0, max(0.0, x))
+    @. x = min(max(x, 0.0), 1.0)
 end
 
 
 function relu1(x::AbstractArray)
     T = eltype(x)
-    𝟙 = T(1.0)
     𝟘 = T(0.0)
-    return min.(𝟙, max.(𝟘, x))
+    𝟙 = T(1.0)
+    return min.(max.(x, 𝟘), 𝟙)
 end
 
 
@@ -114,32 +196,33 @@ function relu1(x::Variable{T}) where T
     return y
 end
 
+
 export relu6, relu6!
-# -------------------------------------------------------- relu6
+## -------------------------------------------------------- relu6
 function relu6!(x::AbstractArray)
-    @. x = min(6.0, max(0.0, x))
+    @. x = min(max(x, 0.0), 6.0)
 end
 
 
 function relu6(x::AbstractArray)
     T = eltype(x)
-    𝟞 = T(6.0)
     𝟘 = T(0.0)
-    return min.(𝟞, max.(𝟘, x))
+    𝟞 = T(6.0)
+    return min.(max.(x, 𝟘), 𝟞)
 end
 
 
 function relu6!(x::Variable{T}) where T
     y = Variable{T}(relu6!(ᵛ(x)), x.backprop)
     if x.backprop
-        function relu1Backward()
+        function relu6Backward()
             if need2computeδ!(x)
                 ∇ = 0.0 .< ᵛ(x) .< 6.0
                 δ(x) .+= δ(y) .* ∇
             end
             ifNotKeepδThenFreeδ!(y);
         end
-        push!(graph.backward, relu1Backward)
+        push!(graph.backward, relu6Backward)
     end
     return y
 end
@@ -148,81 +231,34 @@ end
 function relu6(x::Variable{T}) where T
     y = Variable{T}(relu6(ᵛ(x)), x.backprop)
     if x.backprop
-        function relu1Backward()
+        function relu6Backward()
             if need2computeδ!(x)
                 ∇ = 0.0 .< ᵛ(x) .< 6.0
                 δ(x) .+= δ(y) .* ∇
             end
             ifNotKeepδThenFreeδ!(y);
         end
-        push!(graph.backward, relu1Backward)
-    end
-    return y
-end
-
-export line, line!
-# -------------------------------------------------------- line
-function line!(x::AbstractArray)
-    @. x = (-1.0 < x < 1.0) * x
-end
-
-
-function line(x::AbstractArray)
-    T  = eltype(x)
-    𝟙₊ = T( 1.0)
-    𝟙₋ = T(-1.0)
-    return (𝟙₋ .< x .< 𝟙₊) .* x
-end
-
-
-function line!(x::Variable{T}) where T
-    ∇ = -1.0 .< ᵛ(x) .< 1.0
-    ᵛ(x) .*= ∇
-    y = Variable{T}(ᵛ(x), x.backprop)
-    if x.backprop
-        function lineBackward()
-            if need2computeδ!(x)
-                δ(x) .+= δ(y) .* ∇
-            end
-            ifNotKeepδThenFreeδ!(y);
-        end
-        push!(graph.backward, lineBackward)
-    end
-    return y
-end
-
-
-function line(x::Variable{T}) where T
-    ∇ = -1.0f0 .< ᵛ(x) .< 1.0f0
-    y = Variable{T}(ᵛ(x) .* ∇, x.backprop)
-    if x.backprop
-        function lineBackward()
-            if need2computeδ!(x)
-                δ(x) .+= δ(y) .* ∇
-            end
-            ifNotKeepδThenFreeδ!(y);
-        end
-        push!(graph.backward, lineBackward)
+        push!(graph.backward, relu6Backward)
     end
     return y
 end
 
 
 export hardtanh, hardtanh!
-# -------------------------------------------------------- hardtanh
+## -------------------------------------------------------- hardtanh
 function hardtanh!(x::AbstractArray)
     T  = eltype(x)
-    𝟙₊ = T( 1.0)
     𝟙₋ = T(-1.0)
-    @. x = min(𝟙₊, max(𝟙₋, x))
+    𝟙₊ = T( 1.0)
+    @. x = min(max(x, 𝟙₋), 𝟙₊)
 end
 
 
 function hardtanh(x::AbstractArray)
     T = eltype(x)
-    𝟙₊ = T( 1.0)
     𝟙₋ = T(-1.0)
-    return min.(𝟙₊, max.(𝟙₋, x))
+    𝟙₊ = T( 1.0)
+    return min.(max.(x, 𝟙₋), 𝟙₊)
 end
 
 
@@ -259,7 +295,7 @@ end
 
 
 export leakyrelu, leakyrelu!
-# -------------------------------------------------------- leakyrelu
+## -------------------------------------------------------- leakyrelu
 function leakyrelu!(x::AbstractArray)
     ZPONE = eltype(x)(0.1)
     @. x = max(ZPONE * x, x)
@@ -312,7 +348,7 @@ end
 
 
 export sigmoid, sigmoid!
-# -------------------------------------------------------- sigmoid
+## -------------------------------------------------------- sigmoid
 function sigmoid!(x::AbstractArray)
     𝟙 = eltype(x)(1.0)
     @. x = 𝟙 / (𝟙 + exp(-x))
@@ -358,7 +394,7 @@ end
 
 
 export swish, swish!
-# -------------------------------------------------------- swish
+## -------------------------------------------------------- swish
 function swish!(x::AbstractArray)
     𝟙 = eltype(x)(1.0)
     @. x = x / (𝟙 + exp(-x))
@@ -382,7 +418,7 @@ end
 
 
 export softmax
-
+## -------------------------------------------------------- softmax
 function softmax(x::AbstractArray; dims::Union{Int,NTuple{N,Int}}) where N
     y = exp.(x .- maximum(x, dims=dims))
     Σ = eltype(x)(1.0) ./ sum(y, dims=dims)
