@@ -1,5 +1,6 @@
 include("./1-indrnn.jl")
 include("./2-indlstm.jl")
+include("./3-rnn.jl")
 
 export indrnn
 export INDRNN
@@ -12,7 +13,7 @@ export PackedSeqPredict
 export PackedSeqForward
 
 global RNNLIST = [indrnn,INDRNN,
-                  indlstm,INDLSTM
+                  indlstm,INDLSTM,
                   rnn,RNN];
 # global RNNLIST = [rnn, rin, lstm, indrnn, indlstm, RNN, RIN, LSTM, INDLSTM];
 
