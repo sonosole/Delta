@@ -33,9 +33,9 @@ function mae(x::Variable{T}, label::Variable{T}) where T
     return y
 end
 
-maeLoss(x::Variable{T}, label::Variable{T}) where T = loss( mae(x, label) )
+maeLoss(x::Variable{T}, label::Variable{T}; reduction::String="sum") where T = loss( mae(x, label), reduction=reduction )
+L1Loss(x::Variable{T},  label::Variable{T}; reduction::String="sum") where T = loss( mae(x, label), reduction=reduction )
 maeCost(x::Variable{T}, label::Variable{T}) where T = cost( mae(x, label) )
-L1Loss(x::Variable{T},  label::Variable{T}) where T = loss( mae(x, label) )
 L1Cost(x::Variable{T},  label::Variable{T}) where T = cost( mae(x, label) )
 
 
@@ -62,16 +62,16 @@ function mse(x::Variable{T}, label::Variable{T}) where T
     return y
 end
 
-mseLoss(x::Variable{T}, label::Variable{T}) where T = loss( mse(x, label) )
+mseLoss(x::Variable{T}, label::Variable{T}; reduction::String="sum") where T = loss( mse(x, label), reduction=reduction )
+L2Loss(x::Variable{T},  label::Variable{T}; reduction::String="sum") where T = loss( mse(x, label), reduction=reduction )
 mseCost(x::Variable{T}, label::Variable{T}) where T = cost( mse(x, label) )
-L2Loss(x::Variable{T},  label::Variable{T}) where T = loss( mse(x, label) )
 L2Cost(x::Variable{T},  label::Variable{T}) where T = cost( mse(x, label) )
 
 
 """
     Lp(x::Variable{T}, label::Variable{T}; p=3) -> y::Variable{T}
 
-absolute error's p-th power between each element in the input `x` and target `label`. Also called LpLoss. i.e. ⤦\n
+absolute error's `p`-th power between each element in the input `x` and target `label`. Also called LpLoss. i.e. ⤦\n
     y = |xᵢ - lᵢ|ᵖ
 """
 function Lp(x::Variable{T}, label::Variable{T}; p=3) where T
@@ -93,5 +93,5 @@ function Lp(x::Variable{T}, label::Variable{T}; p=3) where T
     return y
 end
 
-LpLoss(x::Variable{T}, label::Variable{T}; p=3) where T = loss( Lpnorm(x, label; p=p) )
-LpCost(x::Variable{T}, label::Variable{T}; p=3) where T = cost( Lpnorm(x, label; p=p) )
+LpLoss(x::Variable{T}, label::Variable{T}; p=3, reduction::String="sum") where T = loss( Lp(x, label; p=p), reduction=reduction )
+LpCost(x::Variable{T}, label::Variable{T}; p=3) where T = cost( Lp(x, label; p=p) )
