@@ -30,7 +30,7 @@ function crossEntropy(x::Variable{T}, label::Variable{T}) where T
     return y
 end
 
-crossEntropyLoss(x::Variable{T}, label::Variable{T}) where T = loss( crossEntropy(x, label) )
+crossEntropyLoss(x::Variable{T}, label::Variable{T}; reduction::String="sum") where T = loss( crossEntropy(x, label), reduction=reduction )
 crossEntropyCost(x::Variable{T}, label::Variable{T}) where T = cost( crossEntropy(x, label) )
 
 
@@ -61,5 +61,5 @@ function binaryCrossEntropy(x::Variable{T}, label::Variable{T}) where T
     return y
 end
 
-binaryCrossEntropyLoss(x::Variable{T}, label::Variable{T}) where T = loss( binaryCrossEntropy(x, label) )
+binaryCrossEntropyLoss(x::Variable{T}, label::Variable{T}; reduction::String="sum") where T = loss( binaryCrossEntropy(x, label), reduction=reduction)
 binaryCrossEntropyCost(x::Variable{T}, label::Variable{T}) where T = cost( binaryCrossEntropy(x, label) )
