@@ -8,7 +8,7 @@ export mse
 export mseLoss, mseCost
 export L2Loss, L2Cost
 
-export LpLoss, LpCost
+export Lp, LpLoss, LpCost
 
 
 """
