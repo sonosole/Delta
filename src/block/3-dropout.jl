@@ -1,50 +1,50 @@
-export dropout
+export Dropout
 
 
-mutable struct dropout <: Block
-    p # dropout probibility
-    dropout(   ) = new(0.1)
-    dropout(pro) = new(pro)
+mutable struct Dropout <: Block
+    p # Dropout probibility
+    Dropout(   ) = new(0.1)
+    Dropout(pro) = new(pro)
 end
 
 
-function paramsof(m::dropout)
+function paramsof(m::Dropout)
     return nothing
 end
 
 
-function xparamsof(m::dropout)
+function xparamsof(m::Dropout)
     return nothing
 end
 
 
-function forward(d::dropout, var::Variable{T}) where T
+function forward(d::Dropout, x::Variable{T}) where T
     # 对网络激活节点进行灭活
     # 属于in-place操作,但是输入输出共享节点值引用
-    type = eltype(var)
-    prob = type(d.p)
-    one  = type(1.0)
-    RandMask = (rand(type, var.shape) .< (one - prob)) .* (one/(one - prob))
-    var.value .*= RandMask
-    out = Variable{T}(var.value, var.backprop)
-    if var.backprop
+    type = eltype(x)
+    𝟙 = type(1.0)
+    𝕡 = type(d.p)
+    𝕄 = (rand(type, x.shape) .< (𝟙 - 𝕡)) .* (𝟙/(𝟙 - 𝕡)) # mask
+    x.value .*= 𝕄
+    y = Variable{T}(ᵛ(x), x.backprop)
+    if x.backprop
         function dropoutBackward()
-            if need2computeδ!(var)
-                var.delta += RandMask .* out.delta
+            if need2computeδ!(x)
+                δ(x) .+= δ(y) .* 𝕄
             end
-            ifNotKeepδThenFreeδ!(out);
+            ifNotKeepδThenFreeδ!(y);
         end
         push!(graph.backward, dropoutBackward)
     end
-    return out
+    return y
 end
 
 
-function predict(d::dropout, input)
+function predict(d::Dropout, input)
     return input
 end
 
 
-function nparamsof(m::dropout)
+function nparamsof(m::Dropout)
     return 0
 end
