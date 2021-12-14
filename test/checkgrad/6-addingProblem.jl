@@ -1,4 +1,4 @@
-@testset "check gradient for indrnn block in adding problem" begin
+@testset "check gradient for IndRNN block in adding problem" begin
     function addingProblemData(T::Int)
         #= 两个长度为 T 的序列组成输入：
         第一个序列在 (0,1)范围内均匀采样，
@@ -22,9 +22,9 @@
 
     # [0] prepare model
     model = Chain(
-    indrnn(2,128,relu; type=TYPE),
-    indrnn(128,64,cos; type=TYPE),
-    indrnn(64,64,cos;  type=TYPE),
+    IndRNN(2,128,relu; type=TYPE),
+    IndRNN(128,64,cos; type=TYPE),
+    IndRNN(64,64,cos;  type=TYPE),
     Dense(64,1,relu;   type=TYPE)
     )
 

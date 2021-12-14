@@ -73,7 +73,7 @@ end
 + RNN + RNNs(stacked RNN)
 + lstm + LSTM(stacked lstm)
 + rin  + RIN(stacked rin)
-+ indrnn + INDRNN(stacked indrnn)
++ IndRNN + IndRNNs(stacked IndRNN)
 + residual
 + dropout
 + PlainConv1d

@@ -1,8 +1,8 @@
 
 clear()
 model = Chain(
-indrnn(2,128,relu),
-indrnn(128,64,relu),
+IndRNN(2,128,relu),
+IndRNN(128,64,relu),
 Dense(64,1,relu)
 )
 

@@ -22,9 +22,9 @@ c5 = PlainConv1d(512,512,3,stride=1)
 chain1 = Chain(c1,c2,c3,c4,c5);
 
 # 4. build a structure with recurrent operators
-r1 = indrnn(512,512)
-r2 = indrnn(512,512)
-f1 = linear(512,1400)
+r1 = IndRNN(512,512)
+r2 = IndRNN(512,512)
+f1 = Linear(512,1400)
 chain2 = Chain(r1,r2,f1);
 
 p1 = xparamsof(chain1);
