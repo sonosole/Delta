@@ -2,8 +2,8 @@ include("./1-indrnn.jl")
 include("./2-indlstm.jl")
 include("./3-rnn.jl")
 
-export rnn
 export RNN
+export RNNs
 export indrnn
 export INDRNN
 export indlstm
@@ -16,8 +16,8 @@ export PackedSeqForward
 
 global RNNLIST = [indrnn,INDRNN,
                   indlstm,INDLSTM,
-                  rnn,RNN];
-# global RNNLIST = [rnn, rin, lstm, indrnn, indlstm, RNN, RIN, LSTM, INDLSTM];
+                  RNN,RNNs];
+# global RNNLIST = [RNN, rin, lstm, indrnn, indlstm, RNNs, RIN, LSTM, INDLSTM];
 
 
 
