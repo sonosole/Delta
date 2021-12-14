@@ -70,7 +70,7 @@ end
 + Linear
 + Dense
 + MLP (stacked Dense)
-+ rnn + RNN(stacked rnn)
++ RNN + RNNs(stacked RNN)
 + lstm + LSTM(stacked lstm)
 + rin  + RIN(stacked rin)
 + indrnn + INDRNN(stacked indrnn)
