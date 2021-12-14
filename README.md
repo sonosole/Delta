@@ -75,7 +75,7 @@ end
 + rin  + RIN(stacked rin)
 + IndRNN + IndRNNs(stacked IndRNN)
 + Residual
-+ dropout
++ Dropout
 + PlainConv1d
 + Res0d + Res0dWithBN
 + SelfLoopResNet + SelfLoopCumulativeResNet
