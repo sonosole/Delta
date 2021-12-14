@@ -71,7 +71,7 @@ L2Cost(x::Variable{T},  label::Variable{T}) where T = cost( mse(x, label) )
 """
     Lp(x::Variable{T}, label::Variable{T}; p=3) -> y::Variable{T}
 
-absolute error's p-th power between each element in the input `x` and target `label`. Also called LpLoss. i.e. ⤦\n
+absolute error's `p`-th power between each element in the input `x` and target `label`. Also called LpLoss. i.e. ⤦\n
     y = |xᵢ - lᵢ|ᵖ
 """
 function Lp(x::Variable{T}, label::Variable{T}; p=3) where T
