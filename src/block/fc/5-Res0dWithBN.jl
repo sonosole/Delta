@@ -12,9 +12,9 @@ Res0dWithBN is a residual whose neuron processing 0-d data. which has 2 BatchNor
 mutable struct Res0dWithBN <: Block
     blocks::Vector
     function Res0dWithBN(i::Int, m::Int; type::Type=Array{Float32})
-        a1 = affine(i, m, type=type)
+        a1 = Affine(i, m, type=type)
         b1 = BatchNorm0d(m)
-        a2 = affine(m, i, type=type)
+        a2 = Affine(m, i, type=type)
         b2 = BatchNorm0d(i)
         new([a1, b1, a2, b2])
     end
@@ -35,19 +35,19 @@ function clone(this::Res0dWithBN; type::Type=Array{Float32})
 end
 
 function forward(m::Res0dWithBN, x0)
-    x1 = forward(m[1], x0) # affine
+    x1 = forward(m[1], x0) # Affine
     x2 = forward(m[2], x1) # batchnorm0d
     x3 =          relu(x2) # activation
-    x4 = forward(m[3], x3) # affine
+    x4 = forward(m[3], x3) # Affine
     x5 = forward(m[4], x4) # batchnorm0d
     return relu(x5 + x0)   # short connectin + activation
 end
 
 function predict(m::Res0dWithBN, x0)
-    x1 = predict(m[1], x0) # affine
+    x1 = predict(m[1], x0) # Affine
     x2 = predict(m[2], x1) # batchnorm0d
     x3 =          relu(x2) # activation
-    x4 = predict(m[3], x3) # affine
+    x4 = predict(m[3], x3) # Affine
     x5 = predict(m[4], x4) # batchnorm0d
     return relu(x5 + x0)   # short connectin + activation
 end

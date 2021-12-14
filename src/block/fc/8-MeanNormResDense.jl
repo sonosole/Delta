@@ -4,9 +4,9 @@ mutable struct MeanNormResDense <: Block
                               mchannels;  # intermediary #channels (or dimension)
                               type::Type=Array{Float32})
 
-        linear1 = affine(ichannels, mchannels, type=type)
+        linear1 = Affine(ichannels, mchannels, type=type)
         normer1 = MeanNorm(ndims=2, keptdims=1, keptsize=mchannels, type=type)
-        linear2 = affine(mchannels, ichannels, type=type)
+        linear2 = Affine(mchannels, ichannels, type=type)
         normer2 = MeanNorm(ndims=2, keptdims=1, keptsize=ichannels, type=type)
         new([linear1, normer1, linear2, normer2])
     end
