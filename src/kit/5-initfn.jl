@@ -28,7 +28,7 @@ end
 """
     uniform(shape::Tuple; from=0.0, to=1.0)
 
-Returns a Tensor with random values of type Float32
+Returns a Tensor with random values of type `Float32`
 
 # Exmaple
     julia> uniform((2,4), from=0.2, to=1)
@@ -66,7 +66,7 @@ end
 """
     randdiagonal(N::Int; from=0.0, to=1.0)
 
-Returns a diagonal N×N matrix with Float32 random values for the diagonal elements
+Returns a diagonal N×N matrix with `Float32` random values for the diagonal elements
 
 # Exmaple
     julia> randdiagonal(4, from=2.0, to=-1.0)
@@ -106,7 +106,7 @@ end
 """
     randndiagonal(N::Int; mean=0.0, std=1.0)
 
-Returns a diagonal N×N matrix with Float32 random values for the diagonal elements
+Returns a diagonal N×N matrix with `Float32` random values for the diagonal elements
 
 # Exmaple
     julia> randndiagonal(4, mean=0.5, std=7)
@@ -144,7 +144,7 @@ end
 """
     eye(N::Int)
 
-Gives a N×N identity matrix of type Float32
+Gives a N×N identity matrix of type `Float32`
 
 # Exmaple
     julia> eye(3)
