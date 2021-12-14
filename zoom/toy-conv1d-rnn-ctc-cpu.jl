@@ -13,12 +13,12 @@ for i=1:batchsize
     seqlabels[i] = [2, 3, 4, 5]
 end
 
-# 3. build conv1d layers
-c1 = conv1d(featdims,256,8,stride=3)
-c2 = conv1d(256,256,3,stride=2)
-c3 = conv1d(256,512,3,stride=1)
-c4 = conv1d(512,512,3,stride=1)
-c5 = conv1d(512,512,3,stride=1)
+# 3. build PlainConv1d layers
+c1 = PlainConv1d(featdims,256,8,stride=3)
+c2 = PlainConv1d(256,256,3,stride=2)
+c3 = PlainConv1d(256,512,3,stride=1)
+c4 = PlainConv1d(512,512,3,stride=1)
+c5 = PlainConv1d(512,512,3,stride=1)
 chain1 = Chain(c1,c2,c3,c4,c5);
 
 # 4. build a structure with recurrent operators
@@ -27,8 +27,8 @@ r2 = indrnn(512,512)
 f1 = linear(512,1400)
 chain2 = Chain(r1,r2,f1);
 
-p1 = paramsof(chain1);
-p2 = paramsof(chain2);
+p1 = xparamsof(chain1);
+p2 = xparamsof(chain2);
 
 optim1 = Momentum(p1);
 optim2 = Momentum(p2);

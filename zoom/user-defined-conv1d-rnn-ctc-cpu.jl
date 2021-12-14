@@ -10,11 +10,11 @@ import Base.getindex
 mutable struct Model
     blocks::Vector
     function Model(featdims::Int)
-        c1 = conv1d(featdims,256,8,stride=3)
-        c2 = conv1d(256,256,3,stride=2)
-        c3 = conv1d(256,512,3,stride=1)
-        c4 = conv1d(512,512,3,stride=1)
-        c5 = conv1d(512,512,3,stride=1)
+        c1 = PlainConv1d(featdims,256,8,stride=3)
+        c2 = PlainConv1d(256,256,3,stride=2)
+        c3 = PlainConv1d(256,512,3,stride=1)
+        c4 = PlainConv1d(512,512,3,stride=1)
+        c5 = PlainConv1d(512,512,3,stride=1)
         r1 = indrnn(512,512)
         r2 = indrnn(512,512)
         f1 = Linear(512,140)

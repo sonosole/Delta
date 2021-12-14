@@ -76,7 +76,7 @@ end
 + indrnn + INDRNN(stacked indrnn)
 + residual
 + dropout
-+ conv1d
++ PlainConv1d
 + Res0d + Res0dWithBN
 + SelfLoopResNet + SelfLoopCumulativeResNet
 + MeanNormResDense

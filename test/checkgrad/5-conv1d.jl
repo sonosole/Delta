@@ -7,7 +7,7 @@
 # Float16 is 100.75
 # ochannels = 1
 
-@testset "check gradient for conv1d block" begin
+@testset "check gradient for PlainConv1d block" begin
     clear()
     # using Random
     # Random.seed!(1234);
@@ -16,8 +16,8 @@
     # [0] prepare model
     ichannels = 1;
     ochannels = 2;
-    c1 = conv1d(ichannels,4,3; type=TYPE);
-    c2 = conv1d(4,ochannels,2; type=TYPE);
+    c1 = PlainConv1d(ichannels,4,3; type=TYPE);
+    c2 = PlainConv1d(4,ochannels,2; type=TYPE);
 
     # [1] prepare input data and its label
     timeSteps = 128;
