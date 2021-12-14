@@ -1,9 +1,9 @@
-export residual
+export Residual
 
 
-mutable struct residual
+mutable struct Residual
     blocks::Vector
-    function residual(sequence::Vector)
+    function Residual(sequence::Vector)
         blocknum = length(sequence)
         blocks = Vector(undef,blocknum)
         for i = 1:blocknum
@@ -11,7 +11,7 @@ mutable struct residual
         end
         new(blocks)
     end
-    function residual(sequence...)
+    function Residual(sequence...)
         blocknum = length(sequence)
         blocks = Vector(undef,blocknum)
         for i = 1:blocknum
@@ -22,7 +22,7 @@ mutable struct residual
 end
 
 
-function paramsof(m::residual)
+function paramsof(m::Residual)
     params = Vector{Variable}(undef,0)
     for i = 1:length(m.blocks)
         append!(params, paramsof(m.blocks[i]))
@@ -31,7 +31,7 @@ function paramsof(m::residual)
 end
 
 
-function xparamsof(m::residual)
+function xparamsof(m::Residual)
     params = Vector{XVariable}(undef,0)
     for i = 1:length(m.blocks)
         append!(params, xparamsof(m.blocks[i]))
@@ -40,7 +40,7 @@ function xparamsof(m::residual)
 end
 
 
-function forward(r::residual, input::Variable)
+function forward(r::Residual, input::Variable)
     x = forward(r.blocks[1], input)
     for i = 2:length(r.blocks)
         x = forward(r.blocks[i], x)
@@ -50,7 +50,7 @@ function forward(r::residual, input::Variable)
 end
 
 
-function predict(r::residual, input)
+function predict(r::Residual, input)
     x = predict(r.blocks[1], input)
     for i = 2:length(r.blocks)
         x = predict(r.blocks[i], x)
@@ -60,7 +60,7 @@ end
 
 
 
-function nparamsof(r::residual)
+function nparamsof(r::Residual)
     c = 0
     for i = 1:length(r.blocks)
         c += nparamsof(r.blocks[i])
