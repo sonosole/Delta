@@ -67,9 +67,9 @@ end
 + TCS
 
 ## Basic Blocks
-+ linear
-+ dense
-+ MLP (stacked dense)
++ Linear
++ Dense
++ MLP (stacked Dense)
 + rnn + RNN(stacked rnn)
 + lstm + LSTM(stacked lstm)
 + rin  + RIN(stacked rin)

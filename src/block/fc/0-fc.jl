@@ -1,5 +1,5 @@
 export Linear
-export dense
+export Dense
 export MLP
 export maxout
 export affine

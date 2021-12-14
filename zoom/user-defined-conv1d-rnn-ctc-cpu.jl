@@ -17,7 +17,7 @@ mutable struct Model
         c5 = conv1d(512,512,3,stride=1)
         r1 = indrnn(512,512)
         r2 = indrnn(512,512)
-        f1 = linear(512,140)
+        f1 = Linear(512,140)
         new([c1,c2,c3,c4,c5, Chain(r1,r2,f1)])
     end
 end

@@ -25,7 +25,7 @@
     indrnn(2,128,relu; type=TYPE),
     indrnn(128,64,cos; type=TYPE),
     indrnn(64,64,cos;  type=TYPE),
-    dense(64,1,relu;   type=TYPE)
+    Dense(64,1,relu;   type=TYPE)
     )
 
     # [1] prepare input data and its label
