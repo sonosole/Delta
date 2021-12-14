@@ -3,7 +3,7 @@ clear()
 model = Chain(
 indrnn(2,128,relu),
 indrnn(128,64,relu),
-dense(64,1,relu)
+Dense(64,1,relu)
 )
 
 params = paramsof(model)

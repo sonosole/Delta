@@ -1,4 +1,4 @@
-@testset "check gradient for MLP and dense blocks" begin
+@testset "check gradient for MLP and Dense blocks" begin
     clear()
     # [1] prepare input data and its label
     T = Array{Float64}

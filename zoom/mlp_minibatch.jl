@@ -98,10 +98,10 @@ plot(l1,l2,l3)
 
 mlpmodel  = Chain(
     maxout(2,32,k=3),
-    residual(dense(32,32),dense(32,32),linear(32,32)),
-    residual(dense(32,32),dense(32,32),linear(32,32)),
-    residual(dense(32,32),dense(32,32),linear(32,32)),
-    dense(32,2)
+    residual(Dense(32,32),Dense(32,32),Linear(32,32)),
+    residual(Dense(32,32),Dense(32,32),Linear(32,32)),
+    residual(Dense(32,32),Dense(32,32),Linear(32,32)),
+    Dense(32,2)
 )
 
 epoch = 70

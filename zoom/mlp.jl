@@ -33,10 +33,10 @@ scatter!(input1[1,:],input1[2,:],color=:red)
 
 
 function runme(epoch, lr, opt)
-    mlpmodel  = Chain(dense(2,32),
-                      dense(32,32),
-                      dense(32,32),
-                      linear(32,2))
+    mlpmodel  = Chain(Dense(2,32),
+                      Dense(32,32),
+                      Dense(32,32),
+                      Linear(32,2))
 
     params  = xparamsof(mlpmodel)
     optim   = opt(params;lr=lr)
@@ -61,10 +61,10 @@ plot!(vec(log.(runme(400, 1e-3, AdaGrad))), color=:cyan,label="AdaGrad")
 
 L1 = 1.0
 function runmeL1(epoch, lr, opt, L1)
-    mlpmodel  = Chain(dense(2,32),
-                      dense(32,32),
-                      dense(32,32),
-                      linear(32,2))
+    mlpmodel  = Chain(Dense(2,32),
+                      Dense(32,32),
+                      Dense(32,32),
+                      Linear(32,2))
 
     params  = xparamsof(mlpmodel)
     optim   = opt(params;lr=lr,L1decay=L1)
@@ -88,10 +88,10 @@ plot!(vec(log.(runmeL1(400, 1e-3, AdaGradL1, L1))), color=:cyan,label="AdaGradL1
 
 L2 = 1.0
 function runmeL2(epoch, lr, opt, L2)
-    mlpmodel  = Chain(dense(2,32),
-                      dense(32,32),
-                      dense(32,32),
-                      linear(32,2))
+    mlpmodel  = Chain(Dense(2,32),
+                      Dense(32,32),
+                      Dense(32,32),
+                      Linear(32,2))
 
     params  = xparamsof(mlpmodel)
     optim   = opt(params;lr=lr,L2decay=L2)
@@ -116,10 +116,10 @@ plot!(vec(log.(runmeL2(400, 1e-3, AdaGradL2, L2))), color=:cyan,label="AdaGradL2
 L1 = 1.0
 L2 = 1.0
 function runmeL1L2(epoch, lr, opt, L1, L2)
-    mlpmodel  = Chain(dense(2,32),
-                      dense(32,32),
-                      dense(32,32),
-                      linear(32,2))
+    mlpmodel  = Chain(Dense(2,32),
+                      Dense(32,32),
+                      Dense(32,32),
+                      Linear(32,2))
 
     params  = xparamsof(mlpmodel)
     optim   = opt(params;lr=lr,L1decay=L1,L2decay=L2)

@@ -13,11 +13,11 @@ mlpmodel = MLP(topology, operator)
 
 # or equivalently construct a mlp like this:
 mlpmodel = Chain(
-    dense(784,256,relu),
-    dense(256,256,relu),
-    dense(256,256,relu),
-    dense(256,128,relu),
-    dense(128, 10,relu)
+    Dense(784,256,relu),
+    Dense(256,256,relu),
+    Dense(256,256,relu),
+    Dense(256,128,relu),
+    Dense(128, 10,relu)
 )
 
 # training function

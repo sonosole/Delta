@@ -1,23 +1,28 @@
-mutable struct dense <: Block
+"""
+    mutable struct Dense <: Block
+
+Applies y = fn(w * x .+ b) transformation to the incoming data x
+"""
+mutable struct Dense <: Block
     w::VarOrNil
     b::VarOrNil
     f::Function
     # type specilized may be CuArray/AFArray/ClArray/Array etc
-    function dense(inputSize::Int, hiddenSize::Int, fn::Function=relu; type::Type=Array{Float32})
+    function Dense(inputSize::Int, hiddenSize::Int, fn::Function=relu; type::Type=Array{Float32})
         T = eltype(type)
         a = sqrt(T(2/inputSize))
         w = randn(T, hiddenSize, inputSize) .* a
         b = randn(T, hiddenSize,         1) .* a
         new(Variable{type}(w,true,true,true), Variable{type}(b,true,true,true), fn)
     end
-    function dense(fn::Function)
+    function Dense(fn::Function)
         new(nothing, nothing, fn)
     end
 end
 
 
-function clone(this::dense; type::Type=Array{Float32})
-    cloned = dense(this.f)
+function clone(this::Dense; type::Type=Array{Float32})
+    cloned = Dense(this.f)
     cloned.w = clone(this.w, type=type)
     cloned.b = clone(this.b, type=type)
     return cloned
@@ -25,29 +30,29 @@ end
 
 
 # pretty show
-function Base.show(io::IO, m::dense)
+function Base.show(io::IO, m::Dense)
     SIZE = size(m.w)
     TYPE = typeof(m.w.value)
-    print(io, "dense($(SIZE[2]), $(SIZE[1]), $(m.f); type=$TYPE)")
+    print(io, "Dense($(SIZE[2]), $(SIZE[1]), $(m.f); type=$TYPE)")
 end
 
 
 mutable struct MLP <: Block
-    layers::Vector{dense}
+    layers::Vector{Dense}
     function MLP(topology::Vector{Int}; type::Type=Array{Float32})
         n = length(topology) - 1
-        layers = Vector{dense}(undef, n)
+        layers = Vector{Dense}(undef, n)
         for i = 1:n
-            layers[i] = dense(topology[i], topology[i+1], relu; type=type)
+            layers[i] = Dense(topology[i], topology[i+1], relu; type=type)
         end
         new(layers)
     end
 
     function MLP(topology::Vector{Int}, fn::Vector{F}; type::Type=Array{Float32}) where F
         n = length(topology) - 1
-        layers = Vector{dense}(undef, n)
+        layers = Vector{Dense}(undef, n)
         for i = 1:n
-            layers[i] = dense(topology[i], topology[i+1], fn[i]; type=type)
+            layers[i] = Dense(topology[i], topology[i+1], fn[i]; type=type)
         end
         new(layers)
     end
@@ -70,7 +75,7 @@ Base.firstindex(m::MLP) = 1
 Base.iterate(m::MLP, i=firstindex(m)) = i>length(m) ? nothing : (m[i], i+1)
 
 
-function forward(m::dense, x::Variable)
+function forward(m::Dense, x::Variable)
     f = m.f
     w = m.w
     b = m.b
@@ -86,7 +91,7 @@ function forward(m::MLP, x::Variable)
 end
 
 
-function predict(m::dense, x)
+function predict(m::Dense, x)
     f = m.f
     w = m.w.value
     b = m.b.value
@@ -103,18 +108,18 @@ end
 
 
 """
-    unbiasedof(m::dense)
+    unbiasedof(m::Dense)
 
-unbiased weights of dense block
+unbiased weights of Dense block
 """
-function unbiasedof(m::dense)
+function unbiasedof(m::Dense)
     weights = Vector(undef, 1)
     weights[1] = m.w.value
     return weights
 end
 
 
-function weightsof(m::dense)
+function weightsof(m::Dense)
     weights = Vector(undef, 2)
     weights[1] = m.w.value
     weights[2] = m.b.value
@@ -145,7 +150,7 @@ function weightsof(m::MLP)
 end
 
 
-function gradsof(m::dense)
+function gradsof(m::Dense)
     grads = Vector(undef, 2)
     grads[1] = m.w.delta
     grads[2] = m.b.delta
@@ -162,7 +167,7 @@ function gradsof(m::MLP)
 end
 
 
-function zerograds!(m::dense)
+function zerograds!(m::Dense)
     for v in gradsof(m)
         v .= 0.0
     end
@@ -176,7 +181,7 @@ function zerograds!(m::MLP)
 end
 
 
-function paramsof(m::dense)
+function paramsof(m::Dense)
     params = Vector{Variable}(undef,2)
     params[1] = m.w
     params[2] = m.b
@@ -184,7 +189,7 @@ function paramsof(m::dense)
 end
 
 
-function xparamsof(m::dense)
+function xparamsof(m::Dense)
     xparams = Vector{XVariable}(undef,2)
     xparams[1] = ('w', m.w)
     xparams[2] = ('b', m.b)
@@ -210,14 +215,14 @@ function xparamsof(m::MLP)
 end
 
 
-function nparamsof(m::dense)
+function nparamsof(m::Dense)
     lw = length(m.w)
     lb = length(m.b)
     return (lw + lb)
 end
 
 
-function bytesof(model::dense, unit::String="MB")
+function bytesof(model::Dense, unit::String="MB")
     n = nparamsof(model) * elsizeof(model.w)
     return blocksize(n, uppercase(unit))
 end
@@ -237,14 +242,14 @@ function bytesof(model::MLP, unit::String="MB")
     return blocksize(n, uppercase(unit))
 end
 
-function to(type::Type, m::dense)
+function to(type::Type, m::Dense)
     m.w = to(type, m.w)
     m.b = to(type, m.b)
     return m
 end
 
 
-function to!(type::Type, m::dense)
+function to!(type::Type, m::Dense)
     m.w = to(type, m.w)
     m.b = to(type, m.b)
     return nothing

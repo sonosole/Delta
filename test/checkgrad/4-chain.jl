@@ -10,15 +10,15 @@
     l = Variable(l; type=TYPE)
 
     blocks = [
-        dense(256,128,tanh; type=TYPE),
-        dense(128,128,cos;  type=TYPE),
-        dense(128,128,sin;  type=TYPE),
-        dense(128,128,cos!; type=TYPE),
-        dense(128,128,sin!; type=TYPE),
-        dense(128, 64,relu; type=TYPE),
+        Dense(256,128,tanh; type=TYPE),
+        Dense(128,128,cos;  type=TYPE),
+        Dense(128,128,sin;  type=TYPE),
+        Dense(128,128,cos!; type=TYPE),
+        Dense(128,128,sin!; type=TYPE),
+        Dense(128, 64,relu; type=TYPE),
         maxout(64, 64; k=3, type=TYPE),
         residual(
-            dense(64,32,sin;type=TYPE),
+            Dense(64,32,sin;type=TYPE),
             Linear(32,64,   type=TYPE)
         )
     ]
