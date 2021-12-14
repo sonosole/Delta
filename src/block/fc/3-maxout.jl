@@ -1,9 +1,9 @@
-mutable struct maxout <: Block
+mutable struct Maxout <: Block
     w::VarOrNil # input to middle hidden weights
     b::VarOrNil # bias of middle hidden units
     h::Int
     k::Int
-    function maxout(inputSize::Int, hiddenSize::Int; k::Int=2, type::Type=Array{Float32})
+    function Maxout(inputSize::Int, hiddenSize::Int; k::Int=2, type::Type=Array{Float32})
         @assert (k>=2) "# of affine layers should no less than 2"
         T = eltype(type)
         d = hiddenSize * k
@@ -12,15 +12,15 @@ mutable struct maxout <: Block
         new(Variable{type}(w,true,true,true),
             Variable{type}(b,true,true,true), hiddenSize, k)
     end
-    function maxout(hiddenSize::Int; k::Int=2)
+    function Maxout(hiddenSize::Int; k::Int=2)
         @assert (k>=2) "# of affine layers should no less than 2"
         new(nothing, nothing, hiddenSize, k)
     end
 end
 
 
-function clone(this::maxout; type::Type=Array{Float32})
-    cloned = maxout(this.h, k=this.k)
+function clone(this::Maxout; type::Type=Array{Float32})
+    cloned = Maxout(this.h, k=this.k)
     cloned.w = clone(this.w, type=type)
     cloned.b = clone(this.b, type=type)
     return cloned
@@ -28,27 +28,27 @@ end
 
 
 # pretty show
-function Base.show(io::IO, m::maxout)
+function Base.show(io::IO, m::Maxout)
     SIZE = size(m.w)
     TYPE = typeof(m.w.value)
     maxk = m.k
-    print(io, "maxout($(SIZE[2]), $(SIZE[1]÷maxk); k=$maxk, type=$TYPE)")
+    print(io, "Maxout($(SIZE[2]), $(SIZE[1]÷maxk); k=$maxk, type=$TYPE)")
 end
 
 
 """
-    unbiasedof(m::maxout)
+    unbiasedof(m::Maxout)
 
-unbiased weights of maxout block
+unbiased weights of `Maxout` block
 """
-function unbiasedof(m::maxout)
+function unbiasedof(m::Maxout)
     weights = Vector(undef, 1)
     weights[1] = m.w.value
     return weights
 end
 
 
-function paramsof(m::maxout)
+function paramsof(m::Maxout)
     params = Vector{Variable}(undef,2)
     params[1] = m.w
     params[2] = m.b
@@ -56,7 +56,7 @@ function paramsof(m::maxout)
 end
 
 
-function xparamsof(m::maxout)
+function xparamsof(m::Maxout)
     xparams = Vector{XVariable}(undef,2)
     xparams[1] = ('w', m.w)
     xparams[2] = ('b', m.b)
@@ -64,20 +64,20 @@ function xparamsof(m::maxout)
 end
 
 
-function nparamsof(m::maxout)
+function nparamsof(m::Maxout)
     lw = length(m.w)
     lb = length(m.b)
     return (lw + lb)
 end
 
 
-function bytesof(model::maxout, unit::String="MB")
+function bytesof(model::Maxout, unit::String="MB")
     n = nparamsof(model) * elsizeof(model.w)
     return blocksize(n, uppercase(unit))
 end
 
 
-function forward(model::maxout, x::Variable{T}) where T
+function forward(model::Maxout, x::Variable{T}) where T
     h = model.h
     k = model.k
     w = model.w
@@ -101,7 +101,7 @@ function forward(model::maxout, x::Variable{T}) where T
 end
 
 
-function predict(model::maxout, x::AbstractArray)
+function predict(model::Maxout, x::AbstractArray)
     h = model.h
     k = model.k
     w = model.w.value
@@ -115,14 +115,14 @@ function predict(model::maxout, x::AbstractArray)
 end
 
 
-function to(type::Type, m::maxout)
+function to(type::Type, m::Maxout)
     m.w = to(type, m.w)
     m.b = to(type, m.b)
     return m
 end
 
 
-function to!(type::Type, m::maxout)
+function to!(type::Type, m::Maxout)
     m.w = to(type, m.w)
     m.b = to(type, m.b)
     return nothing

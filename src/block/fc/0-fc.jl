@@ -1,7 +1,7 @@
 export Linear
 export Dense
 export MLP
-export maxout
+export Maxout
 export affine
 export Res0d, Res0dWithBN
 export SelfLoopResNet

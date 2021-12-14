@@ -54,7 +54,7 @@ end
 | matAddVec | mat .+ Vec   | matAddVec(rand(M,N)), Variable(rand(N,1))           |
 | matMulVec | mat .* Vec   | matMulVec(rand(M,N)), Variable(rand(N,1))           |
 
-+ **Activation functions :** tan/tand/tanh + sin/sinc/sind/sinpi + log/log2/log10 + exp/exp2/exp10 + cos + swish + relu/P1Relu/leakyrelu/relu1/relu6 + min2max + sigmoid + softmax + sqrt + inv + maxout
++ **Activation functions :** tan/tand/tanh + sin/sinc/sind/sinpi + log/log2/log10 + exp/exp2/exp10 + cos + swish + relu/P1Relu/leakyrelu/relu1/relu6 + min2max + sigmoid + softmax + sqrt + inv + Maxout
 + **Aggregation functions :** linearpool + exppool + mean + maximum + minimum + sum + maxmin + minmax
 
 ## Loss Functions
