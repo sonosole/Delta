@@ -12,8 +12,8 @@ Res0d is a residual block whose neuron deals with 0-d data, but without BatchNor
 mutable struct Res0d <: Block
     blocks::Vector
     function Res0d(i::Int, m::Int; type::Type=Array{Float32})
-        l1 = linear(i, m, type=type)
-        l2 = linear(m, i, type=type)
+        l1 = Linear(i, m, type=type)
+        l2 = Linear(m, i, type=type)
         new([l1, l2])
     end
     function Res0d()

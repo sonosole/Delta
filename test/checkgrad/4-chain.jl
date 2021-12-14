@@ -19,7 +19,7 @@
         maxout(64, 64; k=3, type=TYPE),
         residual(
             dense(64,32,sin;type=TYPE),
-            linear(32,64,   type=TYPE)
+            Linear(32,64,   type=TYPE)
         )
     ]
 

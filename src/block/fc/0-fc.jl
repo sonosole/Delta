@@ -1,4 +1,4 @@
-export linear
+export Linear
 export dense
 export MLP
 export maxout

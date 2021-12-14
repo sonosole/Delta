@@ -1,11 +1,11 @@
-@testset "check gradient for linear block " begin
+@testset "check gradient for Linear block " begin
     clear()
     # [1] prepare input data and its label
     T = Array{Float64}
     x = randn(256, 62)
     l = rand(64, 62)
     l = l ./ sum(l,dims=1)
-    m = linear(256, 64; type=T)
+    m = Linear(256, 64; type=T)
 
     x = Variable(x; type=T);
     l = Variable(l; type=T);
