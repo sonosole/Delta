@@ -4,7 +4,7 @@ mutable struct Maxout <: Block
     h::Int
     k::Int
     function Maxout(inputSize::Int, hiddenSize::Int; k::Int=2, type::Type=Array{Float32})
-        @assert (k>=2) "# of affine layers should no less than 2"
+        @assert (k>=2) "# of Affine layers should no less than 2"
         T = eltype(type)
         d = hiddenSize * k
         w = randn(T, d, inputSize) .* sqrt( T(1/d) )
@@ -13,7 +13,7 @@ mutable struct Maxout <: Block
             Variable{type}(b,true,true,true), hiddenSize, k)
     end
     function Maxout(hiddenSize::Int; k::Int=2)
-        @assert (k>=2) "# of affine layers should no less than 2"
+        @assert (k>=2) "# of Affine layers should no less than 2"
         new(nothing, nothing, hiddenSize, k)
     end
 end
