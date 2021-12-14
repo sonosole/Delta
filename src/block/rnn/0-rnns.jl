@@ -4,8 +4,8 @@ include("./3-rnn.jl")
 
 export RNN
 export RNNs
-export indrnn
-export INDRNN
+export IndRNN
+export IndRNNs
 export indlstm
 export INDLSTM
 
@@ -14,10 +14,10 @@ export PadSeqPackBatch
 export PackedSeqPredict
 export PackedSeqForward
 
-global RNNLIST = [indrnn,INDRNN,
+global RNNLIST = [IndRNN,IndRNNs,
                   indlstm,INDLSTM,
                   RNN,RNNs];
-# global RNNLIST = [RNN, rin, lstm, indrnn, indlstm, RNNs, RIN, LSTM, INDLSTM];
+# global RNNLIST = [RNN, rin, lstm, IndRNN, indlstm, RNNs, RIN, LSTM, INDLSTM];
 
 
 

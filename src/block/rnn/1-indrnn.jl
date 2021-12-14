@@ -2,13 +2,13 @@
 Independently Recurrent Neural Networks, i.e. ⤦\n
     hᵗ = f(w*xᵗ + u .* hᵗ⁻¹ + b), where u is a vector
 """
-mutable struct indrnn <: Block
+mutable struct IndRNN <: Block
     w::VarOrNil # input to hidden weights
     b::VarOrNil # bias of hidden units
     u::VarOrNil # recurrent weights
     f::Function # activation function
     h::Any      # hidden variable
-    function indrnn(inputSize::Int, hiddenSize::Int, fn::Function=relu; type::Type=Array{Float32})
+    function IndRNN(inputSize::Int, hiddenSize::Int, fn::Function=relu; type::Type=Array{Float32})
         T = eltype(type)
         w = randn(T, hiddenSize, inputSize) .* sqrt( T(2/inputSize) )
         b = zeros(T, hiddenSize, 1)
@@ -17,14 +17,14 @@ mutable struct indrnn <: Block
             Variable{type}(b,true,true,true),
             Variable{type}(u,true,true,true), fn, nothing)
     end
-    function indrnn(fn::Function)
+    function IndRNN(fn::Function)
         new(nothing, nothing, nothing, fn, nothing)
     end
 end
 
 
-function clone(this::indrnn; type::Type=Array{Float32})
-    cloned = indrnn(this.f)
+function clone(this::IndRNN; type::Type=Array{Float32})
+    cloned = IndRNN(this.f)
     cloned.w = clone(this.w, type=type)
     cloned.b = clone(this.b, type=type)
     cloned.u = clone(this.u, type=type)
@@ -32,54 +32,54 @@ function clone(this::indrnn; type::Type=Array{Float32})
 end
 
 
-mutable struct INDRNN <: Block
-    layers::Vector{indrnn}
-    function INDRNN(topology::Vector{Int}, fn::Array{F}; type::Type=Array{Float32}) where F
+mutable struct IndRNNs <: Block
+    layers::Vector{IndRNN}
+    function IndRNNs(topology::Vector{Int}, fn::Array{F}; type::Type=Array{Float32}) where F
         n = length(topology) - 1
-        layers = Vector{indrnn}(undef, n)
+        layers = Vector{IndRNN}(undef, n)
         for i = 1:n
-            layers[i] = indrnn(topology[i], topology[i+1], fn[i]; type=type)
+            layers[i] = IndRNN(topology[i], topology[i+1], fn[i]; type=type)
         end
         new(layers)
     end
 end
 
 
-Base.getindex(m::INDRNN,     k...) =  m.layers[k...]
-Base.setindex!(m::INDRNN, v, k...) = (m.layers[k...] = v)
-Base.length(m::INDRNN)       = length(m.layers)
-Base.lastindex(m::INDRNN)    = length(m.layers)
-Base.firstindex(m::INDRNN)   = 1
-Base.iterate(m::INDRNN, i=firstindex(m)) = i>length(m) ? nothing : (m[i], i+1)
+Base.getindex(m::IndRNNs,     k...) =  m.layers[k...]
+Base.setindex!(m::IndRNNs, v, k...) = (m.layers[k...] = v)
+Base.length(m::IndRNNs)       = length(m.layers)
+Base.lastindex(m::IndRNNs)    = length(m.layers)
+Base.firstindex(m::IndRNNs)   = 1
+Base.iterate(m::IndRNNs, i=firstindex(m)) = i>length(m) ? nothing : (m[i], i+1)
 
 
-function Base.show(io::IO, m::indrnn)
+function Base.show(io::IO, m::IndRNN)
     SIZE = size(m.w)
     TYPE = typeof(m.w.value)
-    print(io, "indrnn($(SIZE[2]), $(SIZE[1]), $(m.f); type=$TYPE)")
+    print(io, "IndRNN($(SIZE[2]), $(SIZE[1]), $(m.f); type=$TYPE)")
 end
 
 
-function Base.show(io::IO, m::INDRNN)
-    print(io, "INDRNN\n      (\n          ")
+function Base.show(io::IO, m::IndRNNs)
+    print(io, "IndRNNs\n      (\n          ")
     join(io,      m.layers, ",\n          ")
     print(io,                   "\n      )")
 end
 
 
-function resethidden(m::indrnn)
+function resethidden(m::IndRNN)
     m.h = nothing
 end
 
 
-function resethidden(model::INDRNN)
+function resethidden(model::IndRNNs)
     for m in model
         resethidden(m)
     end
 end
 
 
-function forward(m::indrnn, x::Variable{T}) where T
+function forward(m::IndRNN, x::Variable{T}) where T
     f = m.f  # activition function
     w = m.w  # input's weights
     b = m.b  # input's bias
@@ -91,7 +91,7 @@ function forward(m::indrnn, x::Variable{T}) where T
 end
 
 
-function forward(model::INDRNN, x::Variable)
+function forward(model::IndRNNs, x::Variable)
     for m in model
         x = forward(m, x)
     end
@@ -99,7 +99,7 @@ function forward(model::INDRNN, x::Variable)
 end
 
 
-function predict(m::indrnn, x::T) where T
+function predict(m::IndRNN, x::T) where T
     f = m.f        # activition function
     w = m.w.value  # input's weights
     b = m.b.value  # input's bias
@@ -111,7 +111,7 @@ function predict(m::indrnn, x::T) where T
 end
 
 
-function predict(model::INDRNN, x)
+function predict(model::IndRNNs, x)
     for m in model
         x = predict(m, x)
     end
@@ -120,18 +120,18 @@ end
 
 
 """
-    unbiasedof(m::indrnn)
+    unbiasedof(m::IndRNN)
 
-unbiased weights of indrnn block
+unbiased weights of IndRNN block
 """
-function unbiasedof(m::indrnn)
+function unbiasedof(m::IndRNN)
     weights = Vector(undef, 1)
     weights[1] = m.w.value
     return weights
 end
 
 
-function weightsof(m::indrnn)
+function weightsof(m::IndRNN)
     weights = Vector(undef,3)
     weights[1] = m.w.value
     weights[2] = m.b.value
@@ -141,11 +141,11 @@ end
 
 
 """
-    unbiasedof(model::INDRNN)
+    unbiasedof(model::IndRNNs)
 
-unbiased weights of INDRNN block
+unbiased weights of IndRNNs block
 """
-function unbiasedof(model::INDRNN)
+function unbiasedof(model::IndRNNs)
     weights = Vector(undef, 0)
     for m in model
         append!(weights, unbiasedof(m))
@@ -154,7 +154,7 @@ function unbiasedof(model::INDRNN)
 end
 
 
-function weightsof(m::INDRNN)
+function weightsof(m::IndRNNs)
     weights = Vector(undef,0)
     for i = 1:length(m)
         append!(weights, weightsof(m[i]))
@@ -163,7 +163,7 @@ function weightsof(m::INDRNN)
 end
 
 
-function gradsof(m::indrnn)
+function gradsof(m::IndRNN)
     grads = Vector(undef,3)
     grads[1] = m.w.delta
     grads[2] = m.b.delta
@@ -172,7 +172,7 @@ function gradsof(m::indrnn)
 end
 
 
-function gradsof(m::INDRNN)
+function gradsof(m::IndRNNs)
     grads = Vector(undef,0)
     for i = 1:length(m)
         append!(grads, gradsof(m[i]))
@@ -181,21 +181,21 @@ function gradsof(m::INDRNN)
 end
 
 
-function zerograds!(m::indrnn)
+function zerograds!(m::IndRNN)
     for v in gradsof(m)
         v .= zero(v)
     end
 end
 
 
-function zerograds!(m::INDRNN)
+function zerograds!(m::IndRNNs)
     for v in gradsof(m)
         v .= zero(v)
     end
 end
 
 
-function paramsof(m::indrnn)
+function paramsof(m::IndRNN)
     params = Vector{Variable}(undef,3)
     params[1] = m.w
     params[2] = m.b
@@ -204,7 +204,7 @@ function paramsof(m::indrnn)
 end
 
 
-function xparamsof(m::indrnn)
+function xparamsof(m::IndRNN)
     xparams = Vector{XVariable}(undef,3)
     xparams[1] = ('w', m.w)
     xparams[2] = ('b', m.b)
@@ -213,7 +213,7 @@ function xparamsof(m::indrnn)
 end
 
 
-function paramsof(m::INDRNN)
+function paramsof(m::IndRNNs)
     params = Vector{Variable}(undef,0)
     for i = 1:length(m)
         append!(params, paramsof(m[i]))
@@ -222,7 +222,7 @@ function paramsof(m::INDRNN)
 end
 
 
-function xparamsof(m::INDRNN)
+function xparamsof(m::IndRNNs)
     xparams = Vector{XVariable}(undef,0)
     for i = 1:length(m)
         append!(xparams, xparamsof(m[i]))
@@ -231,7 +231,7 @@ function xparamsof(m::INDRNN)
 end
 
 
-function nparamsof(m::indrnn)
+function nparamsof(m::IndRNN)
     lw = length(m.w)
     lb = length(m.b)
     lu = length(m.u)
@@ -239,13 +239,13 @@ function nparamsof(m::indrnn)
 end
 
 
-function bytesof(model::indrnn, unit::String="MB")
+function bytesof(model::IndRNN, unit::String="MB")
     n = nparamsof(model) * elsizeof(model.w)
     return blocksize(n, uppercase(unit))
 end
 
 
-function nparamsof(m::INDRNN)
+function nparamsof(m::IndRNNs)
     num = 0
     for i = 1:length(m)
         num += nparamsof(m[i])
@@ -254,13 +254,13 @@ function nparamsof(m::INDRNN)
 end
 
 
-function bytesof(model::INDRNN, unit::String="MB")
+function bytesof(model::IndRNNs, unit::String="MB")
     n = nparamsof(model) * elsizeof(model[1].w)
     return blocksize(n, uppercase(unit))
 end
 
 
-function to(type::Type, m::indrnn)
+function to(type::Type, m::IndRNN)
     m.w = to(type, m.w)
     m.b = to(type, m.b)
     m.u = to(type, m.u)
@@ -268,13 +268,13 @@ function to(type::Type, m::indrnn)
 end
 
 
-function to!(type::Type, m::indrnn)
+function to!(type::Type, m::IndRNN)
     m = to(type, m)
     return nothing
 end
 
 
-function to(type::Type, m::INDRNN)
+function to(type::Type, m::IndRNNs)
     for layer in m
         layer = to(type, layer)
     end
@@ -282,7 +282,7 @@ function to(type::Type, m::INDRNN)
 end
 
 
-function to!(type::Type, m::INDRNN)
+function to!(type::Type, m::IndRNNs)
     for layer in m
         to!(type, layer)
     end
