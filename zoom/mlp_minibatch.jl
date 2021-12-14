@@ -98,9 +98,9 @@ plot(l1,l2,l3)
 
 mlpmodel  = Chain(
     Maxout(2,32,k=3),
-    residual(Dense(32,32),Dense(32,32),Linear(32,32)),
-    residual(Dense(32,32),Dense(32,32),Linear(32,32)),
-    residual(Dense(32,32),Dense(32,32),Linear(32,32)),
+    Residual(Dense(32,32),Dense(32,32),Linear(32,32)),
+    Residual(Dense(32,32),Dense(32,32),Linear(32,32)),
+    Residual(Dense(32,32),Dense(32,32),Linear(32,32)),
     Dense(32,2)
 )
 

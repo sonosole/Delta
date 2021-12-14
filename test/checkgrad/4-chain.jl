@@ -17,7 +17,7 @@
         Dense(128,128,sin!; type=TYPE),
         Dense(128, 64,relu; type=TYPE),
         Maxout(64, 64; k=3, type=TYPE),
-        residual(
+        Residual(
             Dense(64,32,sin;type=TYPE),
             Linear(32,64,   type=TYPE)
         )
