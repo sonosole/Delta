@@ -3,7 +3,7 @@
     1. Dense, MLP
     2. rnn irnn indrnn rin lstm indlstm
     3. RNN IRNN INDRNN RIN LSTM INDLSTM
-    4. conv1d
+    4. PlainConv1d
 
 """
 abstract type Block end
