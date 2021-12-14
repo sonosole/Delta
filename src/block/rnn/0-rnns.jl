@@ -2,6 +2,8 @@ include("./1-indrnn.jl")
 include("./2-indlstm.jl")
 include("./3-rnn.jl")
 
+export rnn
+export RNN
 export indrnn
 export INDRNN
 export indlstm
