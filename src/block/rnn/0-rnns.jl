@@ -6,8 +6,8 @@ export RNN
 export RNNs
 export IndRNN
 export IndRNNs
-export indlstm
-export INDLSTM
+export IndLSTM
+export IndLSTMs
 
 export resethidden
 export PadSeqPackBatch
@@ -15,9 +15,9 @@ export PackedSeqPredict
 export PackedSeqForward
 
 global RNNLIST = [IndRNN,IndRNNs,
-                  indlstm,INDLSTM,
+                  IndLSTM,IndLSTMs,
                   RNN,RNNs];
-# global RNNLIST = [RNN, rin, lstm, IndRNN, indlstm, RNNs, RIN, LSTM, INDLSTM];
+# global RNNLIST = [RNN, rin, lstm, IndRNN, IndLSTM, RNNs, RIN, LSTM, IndLSTMs];
 
 
 

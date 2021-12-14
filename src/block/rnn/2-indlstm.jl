@@ -1,4 +1,4 @@
-mutable struct indlstm <: Block
+mutable struct IndLSTM <: Block
     # input control gate params
     wi::VarOrNil
     ui::VarOrNil
@@ -17,7 +17,7 @@ mutable struct indlstm <: Block
     bc::VarOrNil
     h  # hidden variable
     c  #   cell variable
-    function indlstm(inputSize::Int, hiddenSize::Int; type::Type=Array{Float32})
+    function IndLSTM(inputSize::Int, hiddenSize::Int; type::Type=Array{Float32})
         T  = eltype(type)
         A  = T(1E-1)
 
@@ -42,7 +42,7 @@ mutable struct indlstm <: Block
             Variable{type}(wo,true,true,true), Variable{type}(uo,true,true,true), Variable{type}(bo,true,true,true),
             Variable{type}(wc,true,true,true), Variable{type}(uc,true,true,true), Variable{type}(bc,true,true,true), nothing, nothing)
     end
-    function indlstm()
+    function IndLSTM()
         new(nothing, nothing, nothing,
             nothing, nothing, nothing,
             nothing, nothing, nothing,
@@ -51,8 +51,8 @@ mutable struct indlstm <: Block
 end
 
 
-function clone(this::indlstm; type::Type=Array{Float32})
-    cloned = indlstm()
+function clone(this::IndLSTM; type::Type=Array{Float32})
+    cloned = IndLSTM()
 
     cloned.wi = clone(this.wi, type=type)
     cloned.bi = clone(this.bi, type=type)
@@ -74,55 +74,55 @@ function clone(this::indlstm; type::Type=Array{Float32})
 end
 
 
-mutable struct INDLSTM <: Block
-    layers::Vector{indlstm}
-    function INDLSTM(topology::Vector{Int}; type::Type=Array{Float32})
+mutable struct IndLSTMs <: Block
+    layers::Vector{IndLSTM}
+    function IndLSTMs(topology::Vector{Int}; type::Type=Array{Float32})
         n = length(topology) - 1
-        layers = Vector{indlstm}(undef, n)
+        layers = Vector{IndLSTM}(undef, n)
         for i = 1:n
-            layers[i] = indlstm(topology[i], topology[i+1]; type=type)
+            layers[i] = IndLSTM(topology[i], topology[i+1]; type=type)
         end
         new(layers)
     end
 end
 
 
-Base.getindex(m::INDLSTM,     k...) =  m.layers[k...]
-Base.setindex!(m::INDLSTM, v, k...) = (m.layers[k...] = v)
-Base.length(m::INDLSTM)       = length(m.layers)
-Base.lastindex(m::INDLSTM)    = length(m.layers)
-Base.firstindex(m::INDLSTM)   = 1
-Base.iterate(m::INDLSTM, i=firstindex(m)) = i>length(m) ? nothing : (m[i], i+1)
+Base.getindex(m::IndLSTMs,     k...) =  m.layers[k...]
+Base.setindex!(m::IndLSTMs, v, k...) = (m.layers[k...] = v)
+Base.length(m::IndLSTMs)       = length(m.layers)
+Base.lastindex(m::IndLSTMs)    = length(m.layers)
+Base.firstindex(m::IndLSTMs)   = 1
+Base.iterate(m::IndLSTMs, i=firstindex(m)) = i>length(m) ? nothing : (m[i], i+1)
 
 
-function Base.show(io::IO, m::indlstm)
+function Base.show(io::IO, m::IndLSTM)
     SIZE = size(m.wi)
     TYPE = typeof(m.wi.value)
-    print(io, "indlstm($(SIZE[2]), $(SIZE[1]); type=$TYPE)")
+    print(io, "IndLSTM($(SIZE[2]), $(SIZE[1]); type=$TYPE)")
 end
 
 
-function Base.show(io::IO, model::INDLSTM)
+function Base.show(io::IO, model::IndLSTMs)
     for m in model
         show(io, m)
     end
 end
 
 
-function resethidden(model::indlstm)
+function resethidden(model::IndLSTM)
     model.h = nothing
     model.c = nothing
 end
 
 
-function resethidden(model::INDLSTM)
+function resethidden(model::IndLSTMs)
     for m in model
         resethidden(m)
     end
 end
 
 
-function forward(model::indlstm, x::Variable{T}) where T
+function forward(model::IndLSTM, x::Variable{T}) where T
     wi = model.wi
     ui = model.ui
     bi = model.bi
@@ -156,7 +156,7 @@ function forward(model::indlstm, x::Variable{T}) where T
 end
 
 
-function forward(model::INDLSTM, x::Variable)
+function forward(model::IndLSTMs, x::Variable)
     for m in model
         x = forward(m, x)
     end
@@ -164,7 +164,7 @@ function forward(model::INDLSTM, x::Variable)
 end
 
 
-function predict(model::indlstm, x::T) where T
+function predict(model::IndLSTM, x::T) where T
     wi = model.wi.value
     ui = model.ui.value
     bi = model.bi.value
@@ -198,7 +198,7 @@ function predict(model::indlstm, x::T) where T
 end
 
 
-function predict(model::INDLSTM, x)
+function predict(model::IndLSTMs, x)
     for m in model
         x = predict(m, x)
     end
@@ -207,11 +207,11 @@ end
 
 
 """
-    unbiasedof(m::indlstm)
+    unbiasedof(m::IndLSTM)
 
-unbiased weights of indlstm block
+unbiased weights of IndLSTM block
 """
-function unbiasedof(m::indlstm)
+function unbiasedof(m::IndLSTM)
     weights = Vector(undef, 4)
     weights[1] = m.wi.value
     weights[2] = m.wf.value
@@ -221,7 +221,7 @@ function unbiasedof(m::indlstm)
 end
 
 
-function weightsof(m::indlstm)
+function weightsof(m::IndLSTM)
     weights = Vector{Variable}(undef,12)
     weights[1] = m.wi.value
     weights[2] = m.ui.value
@@ -243,11 +243,11 @@ end
 
 
 """
-    unbiasedof(model::INDLSTM)
+    unbiasedof(model::IndLSTMs)
 
-unbiased weights of INDLSTM block
+unbiased weights of IndLSTMs block
 """
-function unbiasedof(model::INDLSTM)
+function unbiasedof(model::IndLSTMs)
     weights = Vector(undef, 0)
     for m in model
         append!(weights, unbiasedof(m))
@@ -256,7 +256,7 @@ function unbiasedof(model::INDLSTM)
 end
 
 
-function weightsof(model::INDLSTM)
+function weightsof(model::IndLSTMs)
     weights = Vector(undef,0)
     for m in model
         append!(weights, weightsof(m))
@@ -265,7 +265,7 @@ function weightsof(model::INDLSTM)
 end
 
 
-function gradsof(m::indlstm)
+function gradsof(m::IndLSTM)
     grads = Vector{Variable}(undef,12)
     grads[1] = m.wi.delta
     grads[2] = m.ui.delta
@@ -286,7 +286,7 @@ function gradsof(m::indlstm)
 end
 
 
-function gradsof(model::INDLSTM)
+function gradsof(model::IndLSTMs)
     grads = Vector(undef,0)
     for m in model
         append!(grads, gradsof(m))
@@ -295,21 +295,21 @@ function gradsof(model::INDLSTM)
 end
 
 
-function zerograds!(m::indlstm)
+function zerograds!(m::IndLSTM)
     for v in gradsof(m)
         v .= zero(v)
     end
 end
 
 
-function zerograds!(m::INDLSTM)
+function zerograds!(m::IndLSTMs)
     for v in gradsof(m)
         v .= zero(v)
     end
 end
 
 
-function paramsof(m::indlstm)
+function paramsof(m::IndLSTM)
     params = Vector{Variable}(undef,12)
     params[1] = m.wi
     params[2] = m.ui
@@ -330,7 +330,7 @@ function paramsof(m::indlstm)
 end
 
 
-function xparamsof(m::indlstm)
+function xparamsof(m::IndLSTM)
     xparams = Vector{XVariable}(undef,12)
     xparams[1] = ('w', m.wi)
     xparams[2] = ('u', m.ui)
@@ -351,7 +351,7 @@ function xparamsof(m::indlstm)
 end
 
 
-function paramsof(model::INDLSTM)
+function paramsof(model::IndLSTMs)
     params = Vector{Variable}(undef,0)
     for m in model
         append!(params, paramsof(m))
@@ -360,7 +360,7 @@ function paramsof(model::INDLSTM)
 end
 
 
-function xparamsof(model::INDLSTM)
+function xparamsof(model::IndLSTMs)
     xparams = Vector{XVariable}(undef,0)
     for m in model
         append!(xparams, xparamsof(m))
@@ -369,7 +369,7 @@ function xparamsof(model::INDLSTM)
 end
 
 
-function nparamsof(m::indlstm)
+function nparamsof(m::IndLSTM)
     lw = length(m.wi)
     lu = length(m.ui)
     lb = length(m.bi)
@@ -377,13 +377,13 @@ function nparamsof(m::indlstm)
 end
 
 
-function bytesof(model::indlstm, unit::String="MB")
+function bytesof(model::IndLSTM, unit::String="MB")
     n = nparamsof(model) * elsizeof(model.wi)
     return blocksize(n, uppercase(unit))
 end
 
 
-function nparamsof(model::INDLSTM)
+function nparamsof(model::IndLSTMs)
     num = 0
     for m in model
         num += nparamsof(m)
@@ -392,13 +392,13 @@ function nparamsof(model::INDLSTM)
 end
 
 
-function bytesof(model::INDLSTM, unit::String="MB")
+function bytesof(model::IndLSTMs, unit::String="MB")
     n = nparamsof(model) * elsizeof(model[1].wi)
     return blocksize(n, uppercase(unit))
 end
 
 
-function to(type::Type, m::indlstm)
+function to(type::Type, m::IndLSTM)
     m.wi = to(type, m.wi)
     m.ui = to(type, m.ui)
     m.bi = to(type, m.bi)
@@ -418,13 +418,13 @@ function to(type::Type, m::indlstm)
 end
 
 
-function to!(type::Type, m::indlstm)
+function to!(type::Type, m::IndLSTM)
     m = to(type, m)
     return nothing
 end
 
 
-function to(type::Type, m::INDLSTM)
+function to(type::Type, m::IndLSTMs)
     for layer in m
         layer = to(type, layer)
     end
@@ -432,7 +432,7 @@ function to(type::Type, m::INDLSTM)
 end
 
 
-function to!(type::Type, m::INDLSTM)
+function to!(type::Type, m::IndLSTMs)
     for layer in m
         to!(type, layer)
     end

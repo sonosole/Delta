@@ -1,8 +1,8 @@
 """
     abstract type Block includes basic network struct like:
     1. Dense, MLP
-    2. RNN irnn IndRNN rin lstm indlstm
-    3. RNNs IRNN IndRNNs RIN LSTM INDLSTM
+    2. RNN irnn IndRNN rin lstm IndLSTM
+    3. RNNs IRNN IndRNNs RIN LSTM IndLSTMs
     4. PlainConv1d
 
 """
