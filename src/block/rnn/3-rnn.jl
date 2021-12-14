@@ -1,6 +1,6 @@
 """
 Vanilla RNN, i.e. ⤦\n
-    hᵗ = f(w*xᵗ + u*hᵗ⁻¹ + b)
+    hᵗ = f(w*xᵗ + u*hᵗ⁻¹ .+ b)
 """
 mutable struct rnn <: Block
     w::VarOrNil # input to hidden weights
