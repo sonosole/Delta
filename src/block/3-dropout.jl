@@ -1,36 +1,27 @@
-export Dropout
+export dropout
+export dropout!
 
 
-mutable struct Dropout <: Block
-    p # Dropout probibility
-    Dropout(   ) = new(0.1)
-    Dropout(pro) = new(pro)
-end
+"""
+    dropout(x::Variable{T}; p=0.1) -> y::Variable{T}
 
-
-function paramsof(m::Dropout)
-    return nothing
-end
-
-
-function xparamsof(m::Dropout)
-    return nothing
-end
-
-
-function forward(d::Dropout, x::Variable{T}) where T
-    # 对网络激活节点进行灭活
-    # 属于in-place操作,但是输入输出共享节点值引用
-    type = eltype(x)
-    𝟙 = type(1.0)
-    𝕡 = type(d.p)
-    𝕄 = (rand(type, x.shape) .< (𝟙 - 𝕡)) .* (𝟙/(𝟙 - 𝕡)) # mask
-    x.value .*= 𝕄
-    y = Variable{T}(ᵛ(x), x.backprop)
+Randomly zeroes some elements of the input tensor `x` with probability `p` using samples
+from a Bernoulli distribution. This is an effective way to regularization and preventing
+the co-adaptation of neurons. The output elements of `y` are scaled by a factor of `1/(1-p)`
+during training. During evaluation, `dropout` should be removed. `dropout` is also viewed as
+a mean of data augmentation.
+"""
+function dropout(x::Variable{T}; p=0.1) where T
+    @assert 0.0<=p<=1.0 "p is in [0,1), but got p=$p"
+    τ = eltype(T)
+    l = τ(1)
+    p = τ(p)
+    m = T(rand(τ, x.shape) .< (l - p)) .* (l/(l - p)) # weighted mask
+    y = Variable{T}(ᵛ(x) .* m, x.backprop)
     if x.backprop
         function dropoutBackward()
             if need2computeδ!(x)
-                δ(x) .+= δ(y) .* 𝕄
+                δ(x) .+= δ(y) .* m
             end
             ifNotKeepδThenFreeδ!(y);
         end
@@ -40,11 +31,31 @@ function forward(d::Dropout, x::Variable{T}) where T
 end
 
 
-function predict(d::Dropout, input)
-    return input
-end
 
+"""
+    dropout!(x::Variable{T}; p=0.1) -> y::Variable{T}
 
-function nparamsof(m::Dropout)
-    return 0
+Randomly zeroes some elements of the input tensor `x` with probability `p` using samples
+from a Bernoulli distribution. This is an effective way to regularization and preventing
+the co-adaptation of neurons. The output elements of `y` are scaled by a factor of `1/(1-p)`
+during training. During evaluation, `dropout!` should be removed. `dropout` is also viewed as
+a mean of data augmentation.
+"""
+function dropout!(x::Variable{T}; p=0.1) where T
+    @assert 0.0<=p<=1.0 "p is in [0,1), but got p=$p"
+    τ = eltype(T)
+    l = τ(1)
+    p = τ(p)
+    m = T(rand(τ, x.shape) .< (l - p)) .* (l/(l - p)) # weighted mask
+    y = Variable{T}(dotmul!(ᵛ(x), m), x.backprop)
+    if x.backprop
+        function dropoutBackward()
+            if need2computeδ!(x)
+                δ(x) .+= δ(y) .* m
+            end
+            ifNotKeepδThenFreeδ!(y);
+        end
+        push!(graph.backward, dropoutBackward)
+    end
+    return y
 end
