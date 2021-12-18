@@ -26,7 +26,21 @@ function Base.deleteat!(atuple::Tuple, iters::Union{Tuple,Array,Vector,Int})
 end
 
 
-function ShapeAndViews(ndims::Int,                    # total dims
+"""
+    ShapeAndViews(ndims::Int,
+                  keptdims::Union{Tuple,Int},
+                  keptsize::Union{Tuple,Int}) -> (shape, views)
+
+mainly serves for batchnorm like operations. `ndims` is the dims of input Tensor x.
+`keptdims` is the dims that will be kept after reduction like mean(x,dims=`views`) and
+`keptsize` is the number of elements on the `keptdims`. i.e. ⤦\n
+`shape` = size( reductionFunction(x, dims=`views`) )
+
+# Example
+    julia> Delta.ShapeAndViews(4, (1,4), (5,3))
+    ((5, 1, 1, 3), (2, 3))
+"""
+function ShapeAndViews(ndims::Int,                    # ndims of input Tensor
                        keptdims::Union{Tuple,Int},    # must be unique and sorted and positive
                        keptsize::Union{Tuple,Int})    # must be positive
 
@@ -52,4 +66,10 @@ function ShapeAndViews(ndims::Int,                    # total dims
         views = deleteat!(ntuple(i -> i, ndims), keptdims)
     end
     return shape, views
+end
+
+
+@inline function dotmul!(x::AbstractArray, y::AbstractArray)
+    x .*= y
+    return x
 end
