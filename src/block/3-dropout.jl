@@ -47,8 +47,7 @@ function dropout!(x::Variable{T}; p=0.1) where T
     l = τ(1)
     p = τ(p)
     m = T(rand(τ, x.shape) .< (l - p)) .* (l/(l - p)) # weighted mask
-    x.value .*= m
-    y = Variable{T}(ᵛ(x), x.backprop)
+    y = Variable{T}(dotmul!(ᵛ(x), m), x.backprop)
     if x.backprop
         function dropoutBackward()
             if need2computeδ!(x)
