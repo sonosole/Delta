@@ -68,6 +68,6 @@ end
 
 
 function predict(m::ScalePath, x::AbstractArray)
-    k = m.scale.value
-    return x.value .* k
+    k = ᵛ(m.scale)
+    return ᵛ(x) .* k
 end
