@@ -12,7 +12,7 @@ during training. During evaluation, `dropout` should be removed. `dropout` is al
 a mean of data augmentation.
 """
 function dropout(x::Variable{T}; p=0.1) where T
-    @assert 0.0<=p<=1.0 "p is in [0,1), but got p=$p"
+    @assert 0.0<=p<1.0 "p is in [0,1), but got p=$p"
     τ = eltype(T)
     l = τ(1)
     p = τ(p)
@@ -42,7 +42,7 @@ during training. During evaluation, `dropout!` should be removed. `dropout` is a
 a mean of data augmentation.
 """
 function dropout!(x::Variable{T}; p=0.1) where T
-    @assert 0.0<=p<=1.0 "p is in [0,1), but got p=$p"
+    @assert 0.0<=p<1.0 "p is in [0,1), but got p=$p"
     τ = eltype(T)
     l = τ(1)
     p = τ(p)
