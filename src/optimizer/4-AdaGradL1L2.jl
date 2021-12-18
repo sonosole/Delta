@@ -43,9 +43,9 @@ function update!(O::AdaGrad; clipfn::Function=LPInfNormClip, clipvalue=10.0)
         if c == 'w'
             if λ₁==0 && λ₂==0
                 @. 𝒗 += μ / (sqrt(w[i]) + ϵ) * ∇
-            else if λ₁==0 && λ₂!=0
+            elseif λ₁==0 && λ₂!=0
                 @. 𝒗 += μ / (sqrt(w[i]) + ϵ) * (∇ + λ₂ * 𝒗)
-            else if λ₁!=0 && λ₂==0
+            elseif λ₁!=0 && λ₂==0
                 @. 𝒗 += μ / (sqrt(w[i]) + ϵ) * (∇ + λ₁ * sign(𝒗))
             else  # λ₁!=0 && λ₂!=0
                 @. 𝒗 += μ / (sqrt(w[i]) + ϵ) * (∇ + λ₁ * sign(𝒗) + λ₂ * 𝒗)
