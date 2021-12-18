@@ -1,32 +1,46 @@
-mutable struct SGDL1L2 <: Optimizer
+"""
+    SGD(::Vector{XVariable}; lr=1e-4, L1decay=0.001, L2decay=0.01)
+
+Implements stochastic gradient descent
+"""
+mutable struct SGD <: Optimizer
     xparams::Vector{XVariable}
     lr::AbstractFloat
     L1decay::AbstractFloat
     L2decay::AbstractFloat
     name::String
-    function SGDL1L2(xparams::Vector{XVariable}; lr=1e-4, L1decay=0.001, L2decay=0.01)
-        new(xparams, lr, L1decay, L2decay, "SGDL1L2")
+    function SGD(xparams::Vector{XVariable}; lr=1e-4, L1decay=0.001, L2decay=0.01)
+        new(xparams, lr, L1decay, L2decay, "SGD")
     end
 end
 
 # pretty printing
-function Base.show(io::IO, O::SGDL1L2)
-    print("SGDL1L2(lr=$(O.lr), L1decay=$(O.L1decay), L2decay=$(O.L2decay))")
+function Base.show(io::IO, O::SGD)
+    print("SGD(lr=$(O.lr), L1decay=$(O.L1decay), L2decay=$(O.L2decay))")
 end
 
 
-function update!(O::SGDL1L2; clipfn::Function=LPInfNormClip, clipvalue=10.0)
+function update!(O::SGD; clipfn::Function=LPInfNormClip, clipvalue=10.0)
     μ = - O.lr
     λ₁ = O.L1decay
     λ₂ = O.L2decay
 
     for i = 1:length(O.xparams)
         c , θ = O.xparams[i]
-        ∇ = clipfn(setNanInfZero(θ.delta), clipvalue)
+        ∇ = clipfn(setNanInfZero(δ(θ)), clipvalue)
+        𝒗 = ᵛ(θ)
         if c == 'w'
-            @. θ.value += μ * (∇ + λ₁ * sign(θ.value) + λ₂ * θ.value)
+            if λ₁==0 && λ₂==0
+                @. 𝒗 += μ * ∇
+            else if λ₁==0 && λ₂!=0
+                @. 𝒗 += μ * (∇ + λ₂ * 𝒗)
+            else if λ₁!=0 && λ₂==0
+                @. 𝒗 += μ * (∇ + λ₁ * sign(𝒗))
+            else  # λ₁!=0 && λ₂!=0
+                @. 𝒗 += μ * (∇ + λ₁ * sign(𝒗) + λ₂ * 𝒗)
+            end
         else
-            @. θ.value += μ * ∇
+            @. 𝒗 += μ * ∇
         end
     end
 end
