@@ -40,6 +40,7 @@ function update!(O::Momentum; clipfn::Function=LPInfNormClip, clipvalue=10.0)
         ∇ = clipfn(setNanInfZero(δ(θ)), clipvalue)
         𝒗 = ᵛ(θ)
         @. vel[i] = ρ * vel[i] + ∇
+        
         if c == 'w'
             if λ₁==0 && λ₂==0
                 @. 𝒗 += μ * vel[i]
