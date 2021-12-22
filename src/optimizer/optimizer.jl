@@ -31,6 +31,37 @@ export setNanInfZero
 export lrarray
 
 
+"""
+    clip!(::Vector{XVariable}, kind='u'; L1decay=0.0, L2decay=0.0, clipvalue=1.0)
+
+Limit the amplitude of parameters.
+"""
+function clip!(xparams::Vector{XVariable}, kind='u'; L1decay=0.0, L2decay=0.0, clipvalue=1.0)
+    @assert clipvalue>0 "clipvalue is positive, but got $clipvalue"
+    if !(kind=='u' || kind=='b' || kind=='w')
+        @error "type of XVariable not among u/w/b, but got $kind"
+    end
+
+    λ₁ = -L1decay
+    λ₂ = -L2decay
+    for (c, θ) in xparams
+        if c == kind
+            𝒗 = ᵛ(θ)
+            i = abs.(𝒗) .> clipvalue
+            if λ₁==0 && λ₂==0                     # Hard truncation
+                @. 𝒗[i] = clipvalue * sign(𝒗[i])
+            elseif λ₁==0 && λ₂!=0                 # Soft truncation (L2)
+                @. 𝒗[i] += λ₂ * 𝒗[i]
+            elseif λ₁!=0 && λ₂==0                 # Gradual truncation (L1)
+                @. 𝒗[i] += λ₁ * sign(𝒗[i])
+            else  # λ₁!=0 && λ₂!=0
+                @. 𝒗[i] += λ₁ * sign(𝒗[i]) + λ₂ * 𝒗[i]
+            end
+        end
+    end
+end
+
+
 function decay(params::Vector{Variable}; ratio=0.999)
     for p in params
         p.value .*= ratio
