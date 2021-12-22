@@ -29,6 +29,43 @@ export LPInfNormClip
 export LNInfNormClip
 export setNanInfZero
 export lrarray
+export clip!
+
+"""
+    clip!(::Vector{XVariable}, kind='u'; L1decay=0.0, L2decay=0.0, clipvalue=1.0)
+
+Limit the amplitude of parameters. `kind` has four options:\n
+`'u'` for recurrent params\n
+`'b'` for bias params\n
+`'w'` for projection params\n
+`'a'` for `'u'`, `'b'` and `'w'` params\n
+as show in `yᵗ = f(w*xᵗ + u*hᵗ⁻¹ + b)` or other similar formulas
+"""
+function clip!(xparams::Vector{XVariable}, kind='u'; L1decay=0.0, L2decay=0.0, clipvalue=1.0)
+    @assert clipvalue>0 "clipvalue is positive, but got $clipvalue"
+    if !(kind=='u' || kind=='b' || kind=='w' || kind=='a')
+        @error "type of XVariable not among u/w/b/a, but got $kind"
+    end
+
+    λ₁ = -L1decay
+    λ₂ = -L2decay
+    for (c, θ) in xparams
+        if c == kind || kind=='a'
+            𝒗 = ᵛ(θ)
+            i = abs.(𝒗) .> clipvalue
+            if sum(i) == 0 continue end
+            if λ₁==0 && λ₂==0                     # Hard truncation
+                @. 𝒗[i] = clipvalue * sign(𝒗[i])
+            elseif λ₁==0 && λ₂!=0                 # Soft truncation (L2)
+                @. 𝒗[i] += λ₂ * 𝒗[i]
+            elseif λ₁!=0 && λ₂==0                 # Gradual truncation (L1)
+                @. 𝒗[i] += λ₁ * sign(𝒗[i])
+            else  # λ₁!=0 && λ₂!=0
+                @. 𝒗[i] += λ₁ * sign(𝒗[i]) + λ₂ * 𝒗[i]
+            end
+        end
+    end
+end
 
 
 function decay(params::Vector{Variable}; ratio=0.999)
