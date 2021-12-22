@@ -29,7 +29,7 @@ export LPInfNormClip
 export LNInfNormClip
 export setNanInfZero
 export lrarray
-
+export clip!
 
 """
     clip!(::Vector{XVariable}, kind='u'; L1decay=0.0, L2decay=0.0, clipvalue=1.0)
