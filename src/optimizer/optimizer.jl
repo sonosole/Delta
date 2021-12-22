@@ -53,6 +53,7 @@ function clip!(xparams::Vector{XVariable}, kind='u'; L1decay=0.0, L2decay=0.0, c
         if c == kind || kind=='a'
             𝒗 = ᵛ(θ)
             i = abs.(𝒗) .> clipvalue
+            if sum(i) == 0 continue end
             if λ₁==0 && λ₂==0                     # Hard truncation
                 @. 𝒗[i] = clipvalue * sign(𝒗[i])
             elseif λ₁==0 && λ₂!=0                 # Soft truncation (L2)
