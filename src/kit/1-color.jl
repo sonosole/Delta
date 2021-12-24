@@ -1,4 +1,4 @@
-export black,red,green,yellow,blue,magenta,cyan,white
+export black!, red!, green!, yellow!, blue!, magenta!, cyan!, white!
 export color
 
 COLORS = Dict(
@@ -25,19 +25,18 @@ MODES = Dict(
 
 
 function color(color::String, str::String; background::String="default", mode::String="default")
-    FColor = "\e[$(30 + COLORS[color]);"
-    BColor =    "$(40 + COLORS[background])m"
-    Action = "\e[$(MODES[mode]);m"
-    return FColor * BColor * str * Action
+    FColor = "\e[$(30 + COLORS[color])m"
+    BColor = "\e[$(40 + COLORS[background])m"
+    Action = "\e[$(MODES[mode])m"
+    return Action * BColor * FColor * str * "\e[0m"
 end
 
 
-black(str)   = color("black",   string(str))
-red(str)     = color("red",     string(str))
-green(str)   = color("green",   string(str))
-yellow(str)  = color("yellow",  string(str))
-blue(str)    = color("blue",    string(str))
-magenta(str) = color("magenta", string(str))
-cyan(str)    = color("cyan",    string(str))
-white(str)   = color("white",   string(str))
-
+black!(str; mode::String="default")   = color("black",   string(str), mode=mode)
+red!(str; mode::String="default")     = color("red",     string(str), mode=mode)
+green!(str; mode::String="default")   = color("green",   string(str), mode=mode)
+yellow!(str; mode::String="default")  = color("yellow",  string(str), mode=mode)
+blue!(str; mode::String="default")    = color("blue",    string(str), mode=mode)
+magenta!(str; mode::String="default") = color("magenta", string(str), mode=mode)
+cyan!(str; mode::String="default")    = color("cyan",    string(str), mode=mode)
+white!(str; mode::String="default")   = color("white",   string(str), mode=mode)
