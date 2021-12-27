@@ -1,5 +1,6 @@
 export CTC
 export CTCGreedySearch
+export CTCGreedySearchWithTimestamp
 export indexbounds
 
 """
@@ -110,18 +111,38 @@ end
 
 
 """
-    CTCGreedySearch(x::Array; blank=1, dims=1)
+    CTCGreedySearch(x::Array; blank=1, dims=1) -> hypothesis
 remove repeats and blanks of argmax(x, dims=dims)
 """
 function CTCGreedySearch(x::Array; blank::Int=1, dims=1)
     hyp = Vector{Int}(undef, 0)
     idx = argmax(x, dims=dims)
-    for i = 1:length(idx)
-        previous = idx[i≠1 ? i-1 : i][1]
-        current  = idx[i][1]
-        if !((i≠1 && current==previous) || (current==blank))
+    for t = 1:length(idx)
+        previous = idx[t≠1 ? t-1 : t][1]
+        current  = idx[t][1]
+        if !((t≠1 && current==previous) || (current==blank))
             push!(hyp, current)
         end
     end
     return hyp
+end
+
+
+"""
+    CTCGreedySearchWithTimestamp(x::Array; blank::Int=1, dims=1) -> hypothesis, timestamp
+"""
+function CTCGreedySearchWithTimestamp(x::Array; blank::Int=1, dims=1)
+    hyp = Vector{Int}(undef, 0)
+    stp = Vector{Float32}(undef, 0)
+    idx = argmax(x, dims=dims)
+    T   = length(idx)
+    for t = 1:T
+        previous = idx[t≠1 ? t-1 : t][1]
+        current  = idx[t][1]
+        if !((t≠1 && current==previous) || (current==blank))
+            push!(hyp, current)
+            push!(stp, t / T)
+        end
+    end
+    return hyp, stp
 end
