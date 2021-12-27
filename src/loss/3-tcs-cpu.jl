@@ -106,20 +106,41 @@ end
 
 
 """
-    TCSGreedySearch(x::Array; background::Int=1, foreground::Int=2, dims=1)
+    TCSGreedySearch(x::Array; background::Int=1, foreground::Int=2, dims=1) -> hypothesis
 remove repeats and background/foreground of argmax(x, dims=dims)
 """
 function TCSGreedySearch(x::Array; background::Int=1, foreground::Int=2, dims=1)
     hyp = Vector{Int}(undef, 0)
     idx = argmax(x,dims=dims)
-    for i = 1:length(idx)
-        previous = idx[i≠1 ? i-1 : i][1]
-        current  = idx[i][1]
-        if !((current==previous && i≠1) ||
+    for t = 1:length(idx)
+        previous = idx[t≠1 ? t-1 : t][1]
+        current  = idx[t][1]
+        if !((current==previous && t≠1) ||
              (current==background) ||
              (current==foreground))
             push!(hyp, current)
         end
     end
     return hyp
+end
+
+"""
+    TCSGreedySearch(x::Array; background::Int=1, foreground::Int=2, dims=1) -> hypothesis, timestamp
+"""
+function TCSGreedySearchWithTimestamp(x::Array; background::Int=1, foreground::Int=2, dims=1)
+    hyp = Vector{Int}(undef, 0)
+    stp = Vector{Float32}(undef, 0)
+    idx = argmax(x,dims=dims)
+    T   = length(idx)
+    for t = 1:T
+        previous = idx[t≠1 ? t-1 : t][1]
+        current  = idx[t][1]
+        if !((current==previous && t≠1) ||
+             (current==background) ||
+             (current==foreground))
+            push!(hyp, current)
+            push!(stp, t / T)
+        end
+    end
+    return hyp, stp
 end
