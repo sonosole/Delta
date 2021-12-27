@@ -238,21 +238,21 @@ function alignops(tar, src; subcost=1, show=true, cn=false)
             marks[3,𝕚] = INS
             TAR = tar[𝕥] * repeat(" ", Tmax - Tlen[𝕥])
             SRC = repeat(" ", Smax)
-            show && println(TAR, _V_, SRC, _V_, "ins"|>blue) # Insertion
+            show && println(TAR, _V_, SRC, _V_, "ins"|>blue!) # Insertion
         elseif d[t,s]==d[t,𝕤]+1
             marks[1,𝕚] = ""
             marks[2,𝕚] = src[𝕤]
             marks[3,𝕚] = DEL
             TAR = repeat(" ", Tmax)
             SRC = src[𝕤] * repeat(" ", Smax - length(src[𝕤]))
-            show && println(TAR, _V_, SRC, _V_, "del"|>red) # Deletion
+            show && println(TAR, _V_, SRC, _V_, "del"|>red!) # Deletion
         elseif d[t,s]==d[r,c]+subcost
             marks[1,𝕚] = tar[𝕥]
             marks[2,𝕚] = src[𝕤]
             marks[3,𝕚] = SUB
             TAR = tar[𝕥] * repeat(" ", Tmax - Tlen[𝕥])
             SRC = src[𝕤] * repeat(" ", Smax - Slen[𝕤])
-            show && println(TAR, _V_, SRC, _V_, "sub"|>yellow) # Substitution
+            show && println(TAR, _V_, SRC, _V_, "sub"|>yellow!) # Substitution
         end
     end
     return marks
@@ -364,21 +364,21 @@ function alignerrs(tar, src; subcost=1, show=true, cn=false)
             marks[3,𝕚] = INS
             TAR = tar[𝕥] * repeat(" ", Tmax - Tlen[𝕥])
             SRC = repeat(" ", Smax)
-            show && println(TAR, _V_, SRC, _V_, "del"|>red) # Deletion errors
+            show && println(TAR, _V_, SRC, _V_, "del"|>red!) # Deletion errors
         elseif d[t,s]==d[t,𝕤]+1
             marks[1,𝕚] = ""
             marks[2,𝕚] = src[𝕤]
             marks[3,𝕚] = DEL
             TAR = repeat(" ", Tmax)
             SRC = src[𝕤] * repeat(" ", Smax - length(src[𝕤]))
-            show && println(TAR, _V_, SRC, _V_, "ins"|>blue) # Insertion errors
+            show && println(TAR, _V_, SRC, _V_, "ins"|>blue!) # Insertion errors
         elseif d[t,s]==d[r,c]+subcost
             marks[1,𝕚] = tar[𝕥]
             marks[2,𝕚] = src[𝕤]
             marks[3,𝕚] = SUB
             TAR = tar[𝕥] * repeat(" ", Tmax - Tlen[𝕥])
             SRC = src[𝕤] * repeat(" ", Smax - Slen[𝕤])
-            show && println(TAR, _V_, SRC, _V_, "sub"|>yellow) # Substitution errors
+            show && println(TAR, _V_, SRC, _V_, "sub"|>yellow!) # Substitution errors
         end
     end
     return marks
