@@ -1,5 +1,6 @@
 export CTC
 export CTCGreedySearch
+export CTCGreedySearchWithTimestamp
 export indexbounds
 
 """

@@ -1,5 +1,6 @@
 export TCS, seqtcs
 export TCSGreedySearch
+export TCSGreedySearchWithTimestamp
 
 """
     seqtcs(seq, background::Int=1, foreground::Int=2) -> newseq
