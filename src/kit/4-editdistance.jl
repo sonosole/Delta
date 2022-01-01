@@ -15,7 +15,7 @@ Editing operations are `Insertion(i)`, `Deletion(d)` and `Substitution(s)`, e.g.
          d s s   i s          (Note: the transformation direction is src -> tar)
 `subcost`=2 is so called Levenshtein distance. `subcost`=1 is often used in speech recognition tasks.
 """
-function editcost(tar, src, subcost=1)
+function editcost(tar::V, src::V, subcost=1) where V
     T = length(tar)+1
     S = length(src)+1
     d = zeros(Int, T, S)
@@ -46,7 +46,7 @@ operations. `subcost`=2 is so called Levenshtein distance. e.g.\n
     julia> d,ins,del,sub = editcosts("ABCDEfghi","abcABCdE")
     (8, 4, 3, 1)
 """
-function editcosts(tar, src, subcost=1)
+function editcosts(tar::V, src::V, subcost=1) where V
     T = length(tar)+1
     S = length(src)+1
     d = zeros(Int, T, S)
@@ -130,7 +130,7 @@ and `sub` is substitution(s) errors, e.g.\n
     julia> d,ins,del,sub = editcosts("ABCDEfghi","abcABCdE")
     (8, 4, 3, 1)
 """
-function editerrs(correct, estimated, subcost=1)
+function editerrs(correct::V, estimated::V, subcost=1) where V
     d, ins,del,sub = editcosts(estimated, correct, subcost)
     return d, ins,del,sub
 end
@@ -156,7 +156,7 @@ operations to transform `src` into `tar`. `subcost`=2 is Levenshtein distance.
     ok      OKAY    sub
     bu              ins
 """
-function alignops(tar, src; subcost=1, show=true, cn=false)
+function alignops(tar::V, src::V; subcost=1, show=true, cn=false) where V
     T = length(tar) + 1
     S = length(src) + 1
     d =   zeros(Int, T, S)
@@ -279,7 +279,7 @@ the 3rd is the errors to align `src` to `tar`. `subcost`=2 is Levenshtein distan
     ok      OKAY    sub
     bu              del
 """
-function alignerrs(tar, src; subcost=1, show=true, cn=false)
+function alignerrs(tar::V, src::V; subcost=1, show=true, cn=false) where V
     T = length(tar) + 1
     S = length(src) + 1
     d =   zeros(Int, T, S)
