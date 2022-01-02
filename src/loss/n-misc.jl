@@ -1,5 +1,5 @@
 export timeslotmat
-
+export adjustLossWeights
 
 """
     timeslotmat(matrix::AbstractMatrix, timestamp::AbstractVector; dim=2, slotvalue=1.0)
@@ -30,4 +30,23 @@ function timeslotmat(matrix::AbstractMatrix{S1}, timestamp::AbstractVector{S2}; 
         @error "dim is 1 or 2, but got $dim"
     end
     return x
+end
+
+
+"""
+    adjustLossWeights(x...) -> w
+
+`x` is the loss values of multiple losses at training step i, so the weights for
+each loss function at training step (i+1) is `w` , `w` is from:
+
+    yᵢ = 1 / xᵢ
+    wᵢ = yᵢ / ∑ yᵢ
+"""
+function adjustLossWeights(x...)
+    n = length(x)
+    w = zeros(n)
+    for i = 1:n
+        w[i] = 1 / x[i]
+    end
+    return w ./ sum(w)
 end
