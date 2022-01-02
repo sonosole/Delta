@@ -58,7 +58,7 @@ function PadSeqPackBatch(inputs::Vector; epsilon::Real=0.0)
 end
 
 
-function PackedSeqForward(chain::Chain, x::Variable{S}) where S
+function PackedSeqForward(chain::Block, x::Variable{S}) where S
     T = size(x, 2)
     y = Vector{Variable{S}}(undef, T)
     resethidden(chain)
@@ -90,7 +90,7 @@ function PackedSeqForward(chain::Chain, x::Variable{S}) where S
 end
 
 
-function PackedSeqPredict(chain::Chain, x::AbstractArray{S}) where S
+function PackedSeqPredict(chain::Block, x::AbstractArray{S}) where S
     T = size(x,2)
     y = Vector{AbstractArray{S}}(undef,T)
     resethidden(chain)
