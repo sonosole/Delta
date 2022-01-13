@@ -8,3 +8,6 @@ include("./2-ctc-without-softmax.jl")
 include("./3-tcs-cpu.jl")
 include("./3-tcs-with-softmax.jl")
 include("./3-tcs-without-softmax.jl")
+
+include("./4-bctc-cpu.jl")
+include("./4-bctc-with-softmax.jl")
