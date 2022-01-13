@@ -8,9 +8,15 @@ LogZero(T::DataType) = - floatmax(T)
 
 """
     LogSum2Exp(a::Real, b::Real) -> max(a,b) + log(1.0 + exp(-abs(a-b)))
+
+LogSum2Exp(log(a), log(b)) isequal to log(a + b)
+
 ```julia
 julia> LogSum2Exp(Float32(1.2),Float64(3.3))
 3.4155195283818967
+
+julia> LogSum2Exp(log(1.0), log(2.0)) ≈ log(1.0 + 2.0)
+true
 ```
 """
 function LogSum2Exp(a::Real, b::Real)
