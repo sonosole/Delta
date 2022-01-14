@@ -50,3 +50,41 @@ function adjustLossWeights(x...)
     end
     return w ./ sum(w)
 end
+
+
+function reduce3d(Δ::Array{T}, loglikely::Vector{T}, seqlabels::Vector, reduction::String) where T
+    featdims, timesteps, batchsize = size(Δ)
+    # 标签长度归一化 ⤦
+    if isequal(reduction, "seqlen")
+        Threads.@threads for b = 1:batchsize
+            seqlen   = length(seqlabels[b]) * batchsize
+            seqlen⁻¹ = 1 / ifelse(seqlen≠0, seqlen, batchsize)
+            Δ[:,:,b]    .*= seqlen⁻¹
+            loglikely[b] *= seqlen⁻¹
+        end
+    # 时间长度归一化 ⤦
+    elseif isequal(reduction, "timesteps")
+        timesteps⁻¹ = 1 / (timesteps * batchsize)
+        Δ         .*= timesteps⁻¹
+        loglikely .*= timesteps⁻¹
+    # 网格归一化 ⤦
+    elseif isequal(reduction, "trellis")
+        Threads.@threads for b = 1:batchsize
+            volume   = length(seqlabels[b]) * timesteps * batchsize
+            volume⁻¹ = 1 / ifelse(volume≠0, volume, timesteps * batchsize)
+            Δ[:,:,b]    .*= volume⁻¹
+            loglikely[b] *= volume⁻¹
+        end
+    # 只是 batchsize 归一化 ⤦
+    elseif isequal(reduction, "normal")
+        batchsize⁻¹ = 1 / batchsize
+        Δ         .*= batchsize⁻¹
+        loglikely .*= batchsize⁻¹
+    # 无归一化 ⤦
+    elseif isequal(reduction, "nil")
+        return nothing
+    else
+        @warn "reduction is one of seqlen/timesteps/trellis/normal/nil, but got $reduction"
+    end
+    return nothing
+end

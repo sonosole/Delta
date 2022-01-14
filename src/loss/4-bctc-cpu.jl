@@ -1,6 +1,6 @@
-export BoundedCTC, seqbctc
-export BoundedCTCGreedySearch
-export BoundedCTCGreedySearchWithTimestamp
+export BoundsCTC, seqbctc
+export BoundsCTCGreedySearch
+export BoundsCTCGreedySearchWithTimestamp
 
 """
     seqbctc(seq, blank::Int=1, risebound::Int=2, fallbound::Int=3) -> newseq
@@ -26,25 +26,35 @@ function seqbctc(seq, blank::Int=1, risebound::Int=2, fallbound::Int=3)
 end
 
 
-function BoundedCTC(p::Array{TYPE,2}, seqlabel; blank::Int=1, risebound::Int=2, fallbound::Int=3) where TYPE
+"""
+    BoundsCTC(p::Array{T,2}, seqlabel; blank::Int=1, risebound::Int=2, fallbound::Int=3) where T
+
+# Topology Example
+      ┌─►─┐      ┌─►─┐      ┌─►─┐      ┌─►─┐      ┌─►─┐      ┌─►─┐      ┌─►─┐      ┌─►─┐       ┌─►─┐
+    ┌─┴───┴─┐  ┌─┴───┴─┐  ┌─┴───┴─┐  ┌─┴───┴─┐  ┌─┴───┴─┐  ┌─┴───┴─┐  ┌─┴───┴─┐  ┌─┴───┴─┐   ┌─┴───┴─┐
+    │ blank ├─►│   ↑   ├─►│ Hello ├─►│   ↓   ├─►│ blank ├─►│   ↑   ├─►│ World ├─►│   ↓   ├──►│ blank │
+    └───────┘  └───────┘  └───────┘  └───┬───┘  └───────┘  └───┬───┘  └───────┘  └───────┘   └───────┘
+                                         └──────────►──────────┘
+"""
+function BoundsCTC(p::Array{TYPE,2}, seqlabel; blank::Int=1, risebound::Int=2, fallbound::Int=3) where TYPE
     seq  = seqbctc(seqlabel, blank, risebound, fallbound)
     Log0 = LogZero(TYPE)   # approximate -Inf of TYPE
     ZERO = TYPE(0.0)       # typed zero, e.g. Float32(0)
     S, T = size(p)         # assert p is a 2-D tensor
     L = length(seq)        # topology length
-    a = fill(Log0, L,T)    # 𝜶 = p(s[k,t], x[1:t]), k in TCS topology's indexing
-    b = fill(Log0, L,T)    # 𝛃 = p(x[t+1:T] | s[k,t]), k in TCS topology's indexing
     r = zero(p)            # 𝜸 = p(s[k,t] | x[1:T]), k in softmax's indexing
 
-	if L>1
-		a[1,1] = log(p[seq[1],1])
-		a[2,1] = log(p[seq[2],1])
-		b[L-1,T] = ZERO
-		b[L  ,T] = ZERO
-	else
-		a[1,1] = log(p[seq[1],1])
-		b[L,T] = ZERO
-	end
+    if L == 1
+        r[seq[1],:] .= TYPE(1)
+        return r, - sum(log.(p[seq[1],:]))
+    end
+
+    a = fill!(Array{TYPE,2}(undef,L,T), Log0)
+    b = fill!(Array{TYPE,2}(undef,L,T), Log0)
+	a[1,1] = log(p[seq[1],1])
+	a[2,1] = log(p[seq[2],1])
+	b[L-1,T] = ZERO
+	b[L  ,T] = ZERO
 
     # --- forward in log scale ---
 	for t = 2:T
@@ -105,7 +115,10 @@ function BoundedCTC(p::Array{TYPE,2}, seqlabel; blank::Int=1, risebound::Int=2, 
 end
 
 
-function BoundedCTCGreedySearch(x::Array, blank::Int=1, risebound::Int=2, fallbound::Int=3)
+"""
+    BoundsCTCGreedySearch(x::Array; blank::Int=1, risebound::Int=2, fallbound::Int=3) -> hypothesis
+"""
+function BoundsCTCGreedySearch(x::Array; blank::Int=1, risebound::Int=2, fallbound::Int=3)
     hyp = Vector{Int}(undef, 0)
     idx = argmax(x,dims=1)
     for t = 1:length(idx)
@@ -123,9 +136,9 @@ end
 
 
 """
-    BoundedCTCGreedySearchWithTimestamp(x::Array, blank::Int=1, risebound::Int=2, fallbound::Int=3) -> hypothesis, timestamp
+    BoundsCTCGreedySearchWithTimestamp(x::Array; blank::Int=1, risebound::Int=2, fallbound::Int=3) -> hypothesis, timestamp
 """
-function BoundedCTCGreedySearchWithTimestamp(x::Array, blank::Int=1, risebound::Int=2, fallbound::Int=3)
+function BoundsCTCGreedySearchWithTimestamp(x::Array; blank::Int=1, risebound::Int=2, fallbound::Int=3)
     hyp = Vector{Int}(undef, 0)
     stp = Vector{Float32}(undef, 0)
     idx = argmax(x,dims=1)
