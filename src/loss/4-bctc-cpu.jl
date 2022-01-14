@@ -3,18 +3,18 @@ export BoundsCTCGreedySearch
 export BoundsCTCGreedySearchWithTimestamp
 
 """
-    seqbctc(seq, blank::Int=1, risebound::Int=2, fallbound::Int=3) -> newseq
+    seqbsctc(seq, blank::Int=1, risebound::Int=2, fallbound::Int=3) -> newseq
 expand `seq` with `blank`, `risebound` and `fallbound`'s indexes. For example, if `seq` is [i,j,k], then
 `newseq` is
 `[B, ↑,i,↓, B, ↑,j,↓, B, ↑,k,↓, B]`,
 of which B is `blank` index, ↑ is `risebound` index and ↓ is `fallbound` index.
 
 # Example
-    julia> seqbctc([7,9,5])'
+    julia> seqbsctc([7,9,5])'
     1×13 adjoint(::Vector{Int64}) with eltype Int64:
      1  2  7  3  1  2  9  3  1  2  5  3  1
 """
-function seqbctc(seq, blank::Int=1, risebound::Int=2, fallbound::Int=3)
+function seqbsctc(seq, blank::Int=1, risebound::Int=2, fallbound::Int=3)
     L = length(seq)       # sequence length
     N = 4 * L + 1         # topology length
     label = zeros(Int, N)
@@ -37,7 +37,7 @@ end
                                          └──────────►──────────┘
 """
 function BoundsCTC(p::Array{TYPE,2}, seqlabel; blank::Int=1, risebound::Int=2, fallbound::Int=3) where TYPE
-    seq  = seqbctc(seqlabel, blank, risebound, fallbound)
+    seq  = seqbsctc(seqlabel, blank, risebound, fallbound)
     Log0 = LogZero(TYPE)   # approximate -Inf of TYPE
     ZERO = TYPE(0.0)       # typed zero, e.g. Float32(0)
     S, T = size(p)         # assert p is a 2-D tensor
