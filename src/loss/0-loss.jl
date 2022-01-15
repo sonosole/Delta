@@ -11,3 +11,6 @@ include("./3-tcs-without-softmax.jl")
 
 include("./4-bctc-cpu.jl")
 include("./4-bctc-with-softmax.jl")
+
+include("./5-boundedctc-cpu.jl")
+include("./5-boundedctc-with-softmax.jl")
