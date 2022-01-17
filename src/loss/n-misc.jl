@@ -1,5 +1,6 @@
 export timeslotmat
 export adjustLossWeights
+export reduce3d
 
 """
     timeslotmat(matrix::AbstractMatrix, timestamp::AbstractVector; dim=2, slotvalue=1.0)

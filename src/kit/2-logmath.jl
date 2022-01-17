@@ -1,6 +1,7 @@
 export LogZero
 export LogSum2Exp
 export LogSum3Exp
+export LogSum4Exp
 export LogSumExp
 
 
@@ -31,6 +32,11 @@ end
 
 function LogSum3Exp(a::Real, b::Real, c::Real)
     return LogSum2Exp(LogSum2Exp(a,b),c)
+end
+
+
+function LogSum4Exp(a::Real, b::Real, c::Real, d::Real)
+    return LogSum2Exp(LogSum2Exp(LogSum2Exp(a,b),c),d)
 end
 
 
