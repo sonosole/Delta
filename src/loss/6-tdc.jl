@@ -15,7 +15,7 @@ function seqtdc(seq, blank::Int=1, front::Int=2)
         label[4:4:N] .= blank
         return label
     else
-        return ones(Int, blank)
+        return fill!(zeros(Int, 1), blank)
     end
 end
 
