@@ -106,10 +106,10 @@ function TDC(p::Array{TYPE,2}, seqlabel; blank::Int=1, front::Int=2) where TYPE
     # reduce lines
     for n = 1:div(L,4)
         s = n<<2
-        r[seq[s-3],:] .+= g[s-3,:]  # reduce blank states
-        r[seq[s-2],:] .+= g[s-2,:]  # reduce front states
-        r[seq[s-1],:] .+= g[s-1,:]  # reduce labels' states
-        r[seq[s  ],:] .+= g[s,  :]  # reduce blank state
+        r[seq[s-3],:] .+= g[s-3,:]  # reduce blank states ──┐
+        r[seq[s-2],:] .+= g[s-2,:]  # reduce front states   │
+        r[seq[s-1],:] .+= g[s-1,:]  # reduce labels' states │
+        r[seq[s  ],:] .+= g[s,  :]  # reduce blank state    ├────► could be merged
     end
 
     return r, -logsum
