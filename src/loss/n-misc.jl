@@ -53,7 +53,7 @@ function adjustLossWeights(x...)
 end
 
 
-function reduce3d(Δ::Array{T}, loglikely::Vector{T}, seqlabels::Vector, reduction::String) where T
+function reduce3d(Δ::AbstractArray, loglikely::AbstractVector, seqlabels::Vector, reduction::String)
     featdims, timesteps, batchsize = size(Δ)
     # 标签长度归一化 ⤦
     if isequal(reduction, "seqlen")
