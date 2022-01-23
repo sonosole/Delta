@@ -16,3 +16,4 @@ include("./5-boundedctc-cpu.jl")
 include("./5-boundedctc-with-softmax.jl")
 
 include("./6-tdc.jl")
+include("./7-fast-ctc.jl")
