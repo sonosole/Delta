@@ -14,6 +14,15 @@ function seqfastctc(seq, blank::Int=1)
 end
 
 
+"""
+    FastCTC(p::Array{T,2}, seqlabel; blank::Int=1) where T
+
+# Topology Example
+     ┌─►─┐    ┌─►─┐    ┌─►─┐    ┌─►─┐    ┌─►─┐    ┌─►─┐    ┌─►─┐
+    ┌┴───┴┐  ┌┴───┴┐  ┌┴───┴┐  ┌┴───┴┐  ┌┴───┴┐  ┌┴───┴┐  ┌┴───┴┐
+    │blank├─►│  C  ├─►│blank├─►│  A  ├─►│blank├─►│  T  ├─►│blank│
+    └─────┘  └─────┘  └─────┘  └─────┘  └─────┘  └─────┘  └─────┘
+"""
 function FastCTC(p::Array{TYPE,2}, seqlabel; blank::Int=1) where TYPE
     seq  = seqfastctc(seqlabel, blank)
     Log0 = LogZero(TYPE)   # approximate -Inf of TYPE
