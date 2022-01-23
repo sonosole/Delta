@@ -119,7 +119,11 @@ end
 
 
 
-function CRNN_FastCTC_With_Softmax(x::Variable{Array{T}}, seqlabels::Vector; blank::Int=1, weight=1.0) where T
+function CRNN_FastCTC_With_Softmax(x::Variable{Array{T}},
+                                   seqlabels::Vector;
+                                   blank::Int=1,
+                                   weight::Float64=1.0,
+                                   reduction::String="seqlen") where T
     featdims, timesteps, batchsize = size(x)
     loglikely = zeros(T, batchsize)
     p = softmax(ᵛ(x); dims=1)
